@@ -30,7 +30,7 @@ Browser extension + dashboard that lets users tip MUSD (Bitcoin-backed stablecoi
 - TypeScript strict mode everywhere
 - Solidity: GPL-3.0, OpenZeppelin v5 imports
 - No emojis in code/comments unless user asks
-- Indonesian comments OK in docs, English in code
+- All copy, comments, and docs in English (public-facing submission)
 - Test on matsnet only for hackathon submission
 
 ## Run the dev loop

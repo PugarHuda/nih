@@ -82,4 +82,4 @@ $5K veMEZO First Place (MUSD Track) + milestone-based grant for mainnet deployme
 
 ---
 
-> *"Nih, gue tip lo."*
+> *Nih* — Indonesian for "here you go". The casual hand-off, made on-chain.

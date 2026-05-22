@@ -38,7 +38,7 @@ export default function Home() {
               transition={{ duration: 0.6, delay: 0.05 }}
               className="text-4xl md:text-6xl font-semibold tracking-tighter leading-[1.05]"
             >
-              Nih, gue tip lo.<br />
+              Here, have a tip.<br />
               <span className="text-brand text-glow">Bitcoin-backed.</span>
             </motion.h1>
 
@@ -62,10 +62,10 @@ export default function Home() {
               className="flex flex-wrap gap-3"
             >
               <Button size="lg" asChild>
-                <a href="#install">
+                <Link href="/install">
                   <Chrome className="h-4 w-4" />
                   Install extension
-                </a>
+                </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/dashboard">
@@ -180,9 +180,11 @@ export default function Home() {
               Chrome & Firefox extension. Free, self-custodial, takes 30 seconds.
             </p>
             <div className="flex flex-wrap gap-3 justify-center">
-              <Button size="lg">
-                <Chrome className="h-4 w-4" />
-                Add to Chrome
+              <Button size="lg" asChild>
+                <Link href="/install">
+                  <Chrome className="h-4 w-4" />
+                  Add to Chrome
+                </Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/dashboard">Open dashboard</Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { keccak256, encodePacked } from "viem";
 import { motion } from "framer-motion";
@@ -12,21 +12,54 @@ import { Input } from "@/components/ui/input";
 import { addresses, registryAbi, vaultAbi } from "@/lib/contracts";
 import { formatMUSD } from "@/lib/utils";
 import { useRequireChain } from "@/lib/use-require-chain";
-import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { CheckCircle2, AlertCircle, Loader2, Copy, ExternalLink } from "lucide-react";
 
 type Platform = "twitter" | "youtube" | "github" | "substack" | "medium";
+
+const PLATFORM_HINTS: Record<Platform, { where: string; cta?: string; ctaUrl?: (u: string) => string }> = {
+  twitter: {
+    where: "Post a public tweet from this account containing the exact text below.",
+    cta: "Compose tweet",
+    ctaUrl: () => `https://twitter.com/intent/tweet`,
+  },
+  github: {
+    where: "Add the text to your profile README at github.com/{username}/{username}, or any public gist.",
+    cta: "Open profile README",
+    ctaUrl: (u) => `https://github.com/${u}/${u}/edit/main/README.md`,
+  },
+  youtube: {
+    where: "Paste the text into your channel description (youtube.com/{username}/about).",
+  },
+  substack: {
+    where: "Paste the text into your Substack About page ({username}.substack.com/about).",
+  },
+  medium: {
+    where: "Paste the text into your Medium bio (medium.com/@{username}).",
+  },
+};
 
 export default function ClaimPage() {
   const { address, isConnected } = useAccount();
   const [platform, setPlatform] = useState<Platform>("twitter");
   const [username, setUsername] = useState("");
   const [step, setStep] = useState<"input" | "verifying" | "registered" | "claiming" | "done">("input");
+  const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [challenge, setChallenge] = useState<string>("");
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
 
   const handleIdHash = username
     ? keccak256(encodePacked(["string", "string", "string"], [platform, ":", username]))
     : undefined;
+
+  // Pull challenge text from backend whenever wallet changes
+  useEffect(() => {
+    if (!address) return;
+    fetch(`/api/verify?wallet=${address}`)
+      .then((r) => r.json())
+      .then((data) => setChallenge(data.challenge ?? ""))
+      .catch(() => {});
+  }, [address]);
 
   const { data: pending, refetch: refetchPending } = useReadContract({
     address: addresses.Vault,
@@ -48,15 +81,21 @@ export default function ClaimPage() {
     if (!address || !username) return;
     if (!(await ensure())) return;
     setStep("verifying");
+    setVerifyError(null);
     try {
-      // Hit backend /api/verify to get a verifier-signed attestation
       const resp = await fetch("/api/verify", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ platform, username, wallet: address }),
       });
-      if (!resp.ok) throw new Error("Verification failed");
-      const { tier, deadline, signature } = await resp.json();
+      const data = await resp.json();
+      if (!resp.ok) {
+        setVerifyError(data.reason ?? data.error ?? "Verification failed");
+        setStep("input");
+        toast.error(data.reason ?? data.error ?? "Verification failed");
+        return;
+      }
+      const { tier, deadline, signature } = data;
 
       await writeContractAsync({
         address: addresses.Registry,
@@ -97,6 +136,7 @@ export default function ClaimPage() {
   const pendingAmount = (pending as bigint) ?? 0n;
   const resolvedTuple = resolved as readonly [`0x${string}`, number] | undefined;
   const isRegistered = !!resolvedTuple && resolvedTuple[0] !== "0x0000000000000000000000000000000000000000";
+  const hint = PLATFORM_HINTS[platform];
 
   return (
     <>
@@ -105,7 +145,8 @@ export default function ClaimPage() {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
           <h1 className="text-3xl font-semibold tracking-tight mb-2">Claim your tips</h1>
           <p className="text-muted mb-10">
-            Someone tipped you before you registered. Verify your handle, then claim.
+            Prove you own the handle by posting a challenge text on your public profile, then claim
+            on-chain.
           </p>
         </motion.div>
 
@@ -117,65 +158,116 @@ export default function ClaimPage() {
             </CardHeader>
           </Card>
         ) : (
-          <Card>
-            <CardHeader>
-              <CardTitle>What&apos;s your handle?</CardTitle>
-              <CardDescription>Tell us which social account is yours.</CardDescription>
-            </CardHeader>
+          <div className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>1. Pick your handle</CardTitle>
+                <CardDescription>Tell us which social account is yours.</CardDescription>
+              </CardHeader>
 
-            <div className="space-y-4 pt-2">
-              <div>
-                <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Platform</label>
-                <div className="flex flex-wrap gap-2">
-                  {(["twitter", "youtube", "github", "substack", "medium"] as const).map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPlatform(p)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
-                        platform === p
-                          ? "bg-brand text-bg border-brand"
-                          : "bg-surface text-fg border-border hover:border-brand/50"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Username</label>
-                <Input
-                  placeholder={platform === "twitter" ? "hajislamet" : "yourhandle"}
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value.trim().replace(/^@/, ""))}
-                />
-              </div>
-
-              {username && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="rounded-lg border border-border bg-bg/50 p-4 flex items-center justify-between"
-                >
-                  <div>
-                    <p className="text-xs text-muted">Pending in vault</p>
-                    <p className="text-2xl font-semibold mt-1">{formatMUSD(pendingAmount)} MUSD</p>
+              <div className="space-y-4 pt-2">
+                <div>
+                  <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Platform</label>
+                  <div className="flex flex-wrap gap-2">
+                    {(["twitter", "youtube", "github", "substack", "medium"] as const).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setPlatform(p)}
+                        className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                          platform === p
+                            ? "bg-brand text-bg border-brand"
+                            : "bg-surface text-fg border-border hover:border-brand/50"
+                        }`}
+                      >
+                        {p}
+                      </button>
+                    ))}
                   </div>
-                  {pendingAmount > 0n ? (
-                    <CheckCircle2 className="h-6 w-6 text-accent" />
-                  ) : (
-                    <AlertCircle className="h-6 w-6 text-muted" />
-                  )}
-                </motion.div>
-              )}
+                </div>
 
+                <div>
+                  <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Username</label>
+                  <Input
+                    placeholder={platform === "twitter" ? "hajislamet" : "yourhandle"}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.trim().replace(/^@/, ""))}
+                  />
+                </div>
+
+                {username && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="rounded-lg border border-border bg-bg/50 p-4 flex items-center justify-between"
+                  >
+                    <div>
+                      <p className="text-xs text-muted">Pending in vault</p>
+                      <p className="text-2xl font-semibold mt-1">{formatMUSD(pendingAmount)} MUSD</p>
+                    </div>
+                    {pendingAmount > 0n ? (
+                      <CheckCircle2 className="h-6 w-6 text-accent" />
+                    ) : (
+                      <AlertCircle className="h-6 w-6 text-muted" />
+                    )}
+                  </motion.div>
+                )}
+              </div>
+            </Card>
+
+            {username && !isRegistered && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>2. Post this challenge text</CardTitle>
+                  <CardDescription>{hint.where.replace("{username}", username)}</CardDescription>
+                </CardHeader>
+                <div className="space-y-3 pt-2">
+                  <div className="rounded-lg border border-border bg-bg/50 p-3 font-mono text-sm break-all relative group">
+                    {challenge || "Connecting…"}
+                    <button
+                      onClick={() => {
+                        navigator.clipboard.writeText(challenge);
+                        toast.success("Challenge text copied");
+                      }}
+                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition p-1.5 rounded bg-surface border border-border hover:bg-bg"
+                      aria-label="Copy"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                  <p className="text-xs text-muted">
+                    Wallet-bound — only you can post this exact text from the account you control.
+                  </p>
+                  {hint.cta && hint.ctaUrl && (
+                    <Button variant="outline" size="sm" asChild>
+                      <a href={hint.ctaUrl(username)} target="_blank" rel="noopener noreferrer">
+                        {hint.cta} <ExternalLink className="h-3.5 w-3.5" />
+                      </a>
+                    </Button>
+                  )}
+                  {verifyError && (
+                    <div className="rounded-lg bg-danger/10 border border-danger/30 p-3 text-xs text-danger">
+                      {verifyError}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
+
+            <Card>
+              <CardHeader>
+                <CardTitle>{isRegistered ? "3. Claim" : "3. Verify ownership"}</CardTitle>
+                <CardDescription>
+                  {isRegistered
+                    ? "All set — claim accumulated tips into your wallet."
+                    : "We'll fetch your public profile, look for the challenge text, and sign your Tier 1 attestation."}
+                </CardDescription>
+              </CardHeader>
               <div className="pt-2">
                 {!isRegistered ? (
                   <Button onClick={handleVerify} disabled={!username || step === "verifying"} className="w-full">
                     {step === "verifying" ? (
                       <>
-                        <Loader2 className="h-4 w-4 animate-spin" /> Verifying…
+                        <Loader2 className="h-4 w-4 animate-spin" /> Checking your profile…
                       </>
                     ) : (
                       "Verify handle"
@@ -197,8 +289,8 @@ export default function ClaimPage() {
                   </Button>
                 )}
               </div>
-            </div>
-          </Card>
+            </Card>
+          </div>
         )}
       </main>
     </>

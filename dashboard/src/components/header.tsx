@@ -15,11 +15,13 @@ export function Header() {
             Nih
           </span>
         </Link>
-        <nav className="hidden md:flex items-center gap-7 text-sm text-muted">
+        <nav className="hidden md:flex items-center gap-6 text-sm text-muted">
           <Link href="/dashboard" className="hover:text-fg transition-colors">Dashboard</Link>
           <Link href="/leaderboard" className="hover:text-fg transition-colors">Leaderboard</Link>
           <Link href="/claim" className="hover:text-fg transition-colors">Claim</Link>
           <Link href="/borrow" className="hover:text-fg transition-colors">Borrow</Link>
+          <Link href="/faucet" className="hover:text-fg transition-colors">Faucet</Link>
+          <Link href="/install" className="hover:text-fg transition-colors">Install</Link>
         </nav>
         <ConnectWallet />
       </div>

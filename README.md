@@ -1,6 +1,8 @@
 # Nih — Tip MUSD anywhere on the web
 
-> *"Nih, gue tip lo"* — Bitcoin-backed tipping with self-service banking baked in.
+> Bitcoin-backed tipping with self-service banking baked in.
+
+*Nih* (Indonesian: "here you go") — the casual way to hand someone something.
 
 **Mezo Hackathon submission — Track: Supernormal dApps (MUSD)**
 
