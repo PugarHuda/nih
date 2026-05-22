@@ -1,51 +1,53 @@
 "use client";
 
 import { useAccount, useChainId, useSwitchChain } from "wagmi";
-import { motion, AnimatePresence } from "framer-motion";
-import { AlertTriangle } from "lucide-react";
 import { matsnet } from "@/lib/chain";
-import { Button } from "./ui/button";
 
 /**
- * Sticky top-of-page banner that nags the user when their wallet is on the
- * wrong network. Auto-prompt to switch (and Add chain if unknown) lives in
- * <ConnectWallet />; this is the visual fallback when the user rejects.
+ * Sticky comic-style banner — only renders when the wallet is on the
+ * wrong network. CSS-driven entrance keeps it light (no framer-motion
+ * AnimatePresence which broke on React 19 concurrent renders).
  */
 export function ChainGuard() {
   const { isConnected } = useAccount();
   const chainId = useChainId();
   const { switchChainAsync, isPending } = useSwitchChain();
-
   const wrong = isConnected && chainId !== matsnet.id;
+  if (!wrong) return null;
 
   return (
-    <AnimatePresence>
-      {wrong && (
-        <motion.div
-          initial={{ y: -40, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -40, opacity: 0 }}
-          className="sticky top-0 z-50 bg-danger text-fg shadow-lg"
+    <div
+      className="sticky top-0 z-50"
+      style={{
+        background: "var(--accent-2)",
+        color: "var(--paper)",
+        borderBottom: "3.5px solid var(--ink)",
+        animation: "nih-pop .35s cubic-bezier(.2,.7,.2,1)",
+      }}
+    >
+      <div className="container mx-auto flex items-center justify-between gap-4 px-6 py-2.5 text-sm">
+        <div className="flex items-center gap-3">
+          <span className="sfx" style={{ background: "var(--accent)", color: "var(--ink)", fontSize: 14 }}>
+            POW!
+          </span>
+          <span className="font-semibold">
+            Wrong network — Nih runs on Mezo matsnet (chainId {matsnet.id}).
+          </span>
+        </div>
+        <button
+          onClick={() => switchChainAsync({ chainId: matsnet.id })}
+          disabled={isPending}
+          className="comic-btn"
+          style={{
+            background: "var(--paper)",
+            color: "var(--ink)",
+            fontSize: 14,
+            padding: "6px 14px",
+          }}
         >
-          <div className="container flex items-center justify-between gap-4 py-2.5 text-sm">
-            <div className="flex items-center gap-2.5">
-              <AlertTriangle className="h-4 w-4" />
-              <span>
-                Wrong network — Nih only works on <strong>Mezo matsnet (chainId {matsnet.id})</strong>.
-                Switch your wallet to continue.
-              </span>
-            </div>
-            <Button
-              size="sm"
-              variant="secondary"
-              onClick={() => switchChainAsync({ chainId: matsnet.id })}
-              disabled={isPending}
-            >
-              {isPending ? "Switching…" : "Switch network"}
-            </Button>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
+          {isPending ? "Switching…" : "Switch"}
+        </button>
+      </div>
+    </div>
   );
 }

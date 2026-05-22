@@ -51,13 +51,31 @@ export function ConnectWallet() {
 
         return (
           <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-accent">
-              <span className="h-1.5 w-1.5 rounded-full bg-accent animate-pulse" />
+            <span
+              className="hidden sm:inline-flex items-center gap-1.5 text-[10px] uppercase mono"
+              style={{ color: "var(--good)", letterSpacing: ".12em" }}
+            >
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  background: "var(--good)",
+                  border: "2px solid var(--ink)",
+                }}
+              />
               matsnet
             </span>
             <button
               onClick={openAccountModal}
-              className="text-xs text-muted hover:text-fg px-3 py-2 bg-surface rounded-lg border border-border font-mono transition"
+              className="mono text-xs"
+              style={{
+                background: "var(--paper)",
+                color: "var(--ink)",
+                border: "3px solid var(--ink)",
+                boxShadow: "3px 3px 0 0 var(--ink)",
+                padding: "6px 12px",
+                cursor: "pointer",
+              }}
             >
               {account.displayName}
             </button>

@@ -5,23 +5,39 @@ import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
+/**
+ * Comic-style Button — Bangers display + hard 5px shadow + 3.5px ink border.
+ * Variants map onto the design system's accent / accent-2 / accent-3 tokens
+ * so every page picks up the same visual language as the landing.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium ring-offset-bg transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap select-none text-sm font-semibold tracking-wider uppercase transition-[transform,box-shadow] duration-75 active:translate-x-[2px] active:translate-y-[2px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-2)] focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
   {
     variants: {
       variant: {
-        default: "bg-brand text-bg hover:bg-brandSoft shadow-[0_0_24px_-8px_hsl(22_90%_56%/_0.6)]",
-        ghost: "text-fg hover:bg-surface",
-        outline: "border border-border bg-transparent text-fg hover:bg-surface",
-        secondary: "bg-surface text-fg hover:bg-surface/70 border border-border",
-        danger: "bg-danger text-fg hover:opacity-90",
-        link: "text-brand underline-offset-4 hover:underline",
+        // primary action — comic yellow with ink border
+        default:
+          "bg-[var(--accent)] text-[var(--accent-ink)] border-[3.5px] border-[var(--ink)] shadow-[5px_5px_0_0_var(--ink)] hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[6px_6px_0_0_var(--ink)] active:shadow-[2px_2px_0_0_var(--ink)]",
+        // soft tertiary — paper background
+        ghost:
+          "bg-[var(--paper)] text-[var(--ink)] border-[3.5px] border-[var(--ink)] shadow-[5px_5px_0_0_var(--ink)] hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[6px_6px_0_0_var(--ink)] active:shadow-[2px_2px_0_0_var(--ink)]",
+        // outline — transparent background, just the comic border
+        outline:
+          "bg-transparent text-[var(--ink)] border-[3.5px] border-[var(--ink)] shadow-[5px_5px_0_0_var(--ink)] hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[6px_6px_0_0_var(--ink)] active:shadow-[2px_2px_0_0_var(--ink)]",
+        // bold dark button on white sections
+        secondary:
+          "bg-[var(--ink)] text-[var(--paper)] border-[3.5px] border-[var(--ink)] shadow-[5px_5px_0_0_var(--accent)] hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[6px_6px_0_0_var(--accent)] active:shadow-[2px_2px_0_0_var(--accent)]",
+        // destructive
+        danger:
+          "bg-[var(--accent-2)] text-[var(--paper)] border-[3.5px] border-[var(--ink)] shadow-[5px_5px_0_0_var(--ink)] hover:-translate-x-[1px] hover:-translate-y-[1px] hover:shadow-[6px_6px_0_0_var(--ink)] active:shadow-[2px_2px_0_0_var(--ink)]",
+        // text-only link
+        link: "bg-transparent border-0 shadow-none text-[var(--accent-2)] underline underline-offset-4 hover:opacity-80",
       },
       size: {
-        default: "h-10 px-5 py-2",
-        sm: "h-8 px-3 text-xs",
-        lg: "h-12 px-7 text-base",
-        icon: "h-10 w-10",
+        default: "h-11 px-5 text-[15px]",
+        sm: "h-9 px-3 text-xs",
+        lg: "h-13 px-7 text-base",
+        icon: "h-11 w-11",
       },
     },
     defaultVariants: { variant: "default", size: "default" },
@@ -35,9 +51,21 @@ export interface ButtonProps
 }
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, asChild = false, style, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
-    return <Comp className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props} />;
+    const fontStyle: React.CSSProperties = {
+      fontFamily: "var(--font-display)",
+      letterSpacing: ".04em",
+      ...style,
+    };
+    return (
+      <Comp
+        className={cn(buttonVariants({ variant, size, className }))}
+        ref={ref}
+        style={fontStyle}
+        {...props}
+      />
+    );
   }
 );
 Button.displayName = "Button";

@@ -1,31 +1,61 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { ConnectWallet } from "./connect-wallet";
 
 export function Header() {
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-bg/70 backdrop-blur-xl">
-      <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 group">
-          <div className="h-8 w-8 rounded-lg bg-brand flex items-center justify-center font-bold text-bg text-lg shadow-[0_0_24px_-4px_hsl(22_90%_56%)]">
-            N
-          </div>
-          <span className="text-lg font-semibold tracking-tight group-hover:text-brand transition-colors">
-            Nih
-          </span>
+    <header
+      className="sticky top-0 z-40 backdrop-blur-md"
+      style={{
+        background: "rgba(251, 246, 232, 0.85)",
+        borderBottom: "3.5px solid var(--ink)",
+      }}
+    >
+      <div className="container mx-auto flex h-16 items-center justify-between px-6">
+        <Link href="/" className="flex items-center gap-3 group">
+          <Image
+            src="/assets/logo.svg"
+            alt="Nih"
+            width={88}
+            height={32}
+            priority
+            className="h-8 w-auto"
+          />
         </Link>
-        <nav className="hidden md:flex items-center gap-5 text-sm text-muted">
-          <Link href="/dashboard" className="hover:text-fg transition-colors">Dashboard</Link>
-          <Link href="/stream" className="hover:text-fg transition-colors">Stream</Link>
-          <Link href="/earn" className="hover:text-fg transition-colors">Earn</Link>
-          <Link href="/borrow" className="hover:text-fg transition-colors">Borrow</Link>
-          <Link href="/claim" className="hover:text-fg transition-colors">Claim</Link>
-          <Link href="/leaderboard" className="hover:text-fg transition-colors">Top</Link>
-          <Link href="/install" className="hover:text-fg transition-colors">Install</Link>
+        <nav
+          className="hidden md:flex items-center gap-6 text-sm"
+          style={{
+            fontFamily: "var(--font-display)",
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+          }}
+        >
+          <NavLink href="/dashboard">Dashboard</NavLink>
+          <NavLink href="/stream">Stream</NavLink>
+          <NavLink href="/earn">Earn</NavLink>
+          <NavLink href="/borrow">Borrow</NavLink>
+          <NavLink href="/claim">Claim</NavLink>
+          <NavLink href="/leaderboard">Top</NavLink>
+          <NavLink href="/install">Install</NavLink>
         </nav>
         <ConnectWallet />
       </div>
     </header>
+  );
+}
+
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+  return (
+    <Link
+      href={href}
+      className="transition-colors"
+      style={{ color: "var(--ink-2)" }}
+      onMouseEnter={(e) => (e.currentTarget.style.color = "var(--accent-2)")}
+      onMouseLeave={(e) => (e.currentTarget.style.color = "var(--ink-2)")}
+    >
+      {children}
+    </Link>
   );
 }
