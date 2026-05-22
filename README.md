@@ -10,7 +10,7 @@
 - 📦 **GitHub**: https://github.com/PugarHuda/nih
 - ⛓ **Contracts deployed**: Mezo matsnet (chainId 31611) — see [addresses below](#deployed-contract-addresses-matsnet)
 - 📊 **Goldsky subgraph**: [`nih/v1`](https://api.goldsky.com/api/public/project_cmo5pukv64upu01y48tefank9/subgraphs/nih/v1/gn) — live event indexing
-- 🧩 **Extension**: `extension/build/chrome-mv3-prod.zip` (load unpacked to test)
+- 🧩 **Extension**: [v0.2.0 release](https://github.com/PugarHuda/nih/releases/tag/v0.2.0) — supports Twitter, YouTube, Substack, Medium, GitHub
 - 🚀 **Auto-deploy**: every push to `main` ships to Vercel production
 
 A browser extension + dashboard that turns any social profile (Twitter, YouTube, Substack, Medium, GitHub) into a Bitcoin-backed bank account. Tip in MUSD with a click; creators receive stable Bitcoin-backed money and instantly borrow against accumulated tips without selling.
