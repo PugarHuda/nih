@@ -4,6 +4,11 @@
 
 **Mezo Hackathon submission — Track: Supernormal dApps (MUSD)**
 
+- 🌐 **Live demo**: https://nih-seven.vercel.app
+- 📦 **GitHub**: https://github.com/PugarHuda/nih
+- ⛓ **Contracts deployed**: Mezo matsnet (chainId 31611) — see [addresses below](#deployed-contract-addresses-matsnet)
+- 🚀 **Auto-deploy**: every push to `main` ships to Vercel production
+
 A browser extension + dashboard that turns any social profile (Twitter, YouTube, Substack, Medium, GitHub) into a Bitcoin-backed bank account. Tip in MUSD with a click; creators receive stable Bitcoin-backed money and instantly borrow against accumulated tips without selling.
 
 ---
