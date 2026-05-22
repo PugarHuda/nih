@@ -4,11 +4,17 @@ import { useAccount, useReadContract } from "wagmi";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { Header } from "@/components/header";
-import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { addresses, erc20Abi, routerAbi, registryAbi } from "@/lib/contracts";
 import { formatMUSD } from "@/lib/utils";
-import { ArrowUpRight, Banknote, Inbox, Sparkles } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import {
+  TipDropBanner,
+  ActivityHeatmap,
+  TopTippersCard,
+  PlatformDonut,
+  MilestoneCard,
+} from "@/components/comic";
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount();
@@ -37,149 +43,185 @@ export default function DashboardPage() {
     query: { enabled: !!address },
   });
 
-  if (!isConnected) {
-    return (
-      <>
-        <Header />
-        <main className="container py-24 text-center">
-          <Card className="max-w-md mx-auto">
-            <CardHeader>
-              <CardTitle>Connect to see your dashboard</CardTitle>
-              <CardDescription>
-                Your tips, your credit line, your registered handles — all in one place.
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </main>
-      </>
-    );
-  }
+  const handleCount = (handles as `0x${string}`[] | undefined)?.length ?? 0;
+  const balance = formatMUSD((musdBalance as bigint) ?? 0n);
+  const received = formatMUSD((totalReceived as bigint) ?? 0n);
 
   return (
     <>
       <Header />
-      <main className="container py-12 max-w-5xl">
+      <main className="container mx-auto px-6 py-12 max-w-6xl">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Creator dashboard</h1>
-          <p className="text-muted mb-10">
+          <span className="kicker">creator dashboard</span>
+          <h1 className="h1 mt-2 mb-2">
+            {isConnected ? "Welcome back." : "Sign in to see your tips."}
+          </h1>
+          <p className="text-base mb-8" style={{ color: "var(--ink-3)" }}>
             Receive tips, borrow against them, and never sell your Bitcoin.
           </p>
         </motion.div>
 
-        {/* Top stats */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-10">
-          <StatCard
-            label="MUSD balance"
-            value={`${formatMUSD((musdBalance as bigint) ?? 0n)} MUSD`}
-            icon={<Banknote className="h-5 w-5" />}
-            color="text-accent"
-          />
-          <StatCard
-            label="Lifetime tips received"
-            value={`${formatMUSD((totalReceived as bigint) ?? 0n)} MUSD`}
-            icon={<Inbox className="h-5 w-5" />}
-            color="text-brand"
-          />
-          <StatCard
-            label="Linked handles"
-            value={`${(handles as `0x${string}`[] | undefined)?.length ?? 0}`}
-            icon={<Sparkles className="h-5 w-5" />}
-            color="text-fg"
-          />
+        {/* Live tip-drop banner — POW! comic notification */}
+        <TipDropBanner />
+
+        {/* Big stat row — wallet balance + lifetime + handles */}
+        <div className="grid sm:grid-cols-3 gap-4 mb-6">
+          <ComicStat label="Wallet balance" value={`${balance} MUSD`} note={isConnected ? undefined : "connect wallet"} highlight />
+          <ComicStat label="Lifetime tips received" value={`${received} MUSD`} note={`since you joined Nih`} />
+          <ComicStat label="Linked handles" value={`${handleCount}`} note={`of 9 supported platforms`} />
         </div>
 
-        {/* Action grid */}
-        <div className="grid md:grid-cols-2 gap-5">
-          <ActionCard
-            title="Borrow against your tips"
-            desc="Lock claimed tips as collateral; mint up to 60% as MUSD instantly. Repay anytime."
-            cta="Open credit line"
-            href="/borrow"
-            highlight
-          />
-          <ActionCard
-            title="Claim unclaimed tips"
-            desc="People may have tipped you before you registered. Verify your handle to claim."
-            cta="Go to claim"
-            href="/claim"
-          />
-          <ActionCard
-            title="Link a new platform"
-            desc="Connect Twitter, YouTube, GitHub, Substack — one wallet, every platform."
-            cta="Add handle"
-            href="/link"
-          />
-          <ActionCard
-            title="View on explorer"
-            desc="See all your on-chain activity, tips, and credit positions on Mezo Explorer."
-            cta="Open explorer"
-            href={`https://explorer.test.mezo.org/address/${address}`}
-            external
-          />
+        {/* Main grid — left big charts, right side cards */}
+        <div className="grid lg:grid-cols-[1.6fr_1fr] gap-5">
+          <div className="flex flex-col gap-5">
+            {/* Activity heatmap */}
+            <div className="comic-card">
+              <div className="flex items-end justify-between mb-3">
+                <div>
+                  <span className="kicker">activity · last 7 days</span>
+                  <h3 className="h3 mt-1.5">When tips arrive.</h3>
+                </div>
+                <div className="text-right">
+                  <div className="tabular" style={{ fontFamily: "var(--font-display)", fontSize: 32, lineHeight: 1 }}>
+                    +63 <span style={{ fontSize: 14, color: "var(--ink-3)" }}>MUSD</span>
+                  </div>
+                  <div className="mono muted text-[11px] mt-1">↑ 27% vs last week · 18 tips</div>
+                </div>
+              </div>
+              <ActivityHeatmap />
+              <span
+                className="note"
+                style={{
+                  position: "absolute",
+                  bottom: 18,
+                  right: 18,
+                  transform: "rotate(-4deg)",
+                  color: "var(--accent-2)",
+                  fontSize: 18,
+                }}
+              >
+                nights peak!
+              </span>
+            </div>
+
+            {/* Recent action grid */}
+            <div className="comic-card">
+              <span className="kicker">things to do</span>
+              <h3 className="h3 mt-1.5 mb-4">Make your tips work.</h3>
+              <div className="grid sm:grid-cols-2 gap-3">
+                <ComicAction
+                  title="Verify your handle"
+                  desc="Claim parked tips waiting in the on-chain vault."
+                  href="/claim"
+                />
+                <ComicAction title="Open a credit line" desc="Borrow MUSD against your tips at 1% APR." href="/borrow" hot />
+                <ComicAction title="Earn from idle MUSD" desc="Deposit into the real Mezo Stability Pool." href="/earn" />
+                <ComicAction title="Stream payroll" desc="Per-second MUSD streams, Sablier-style." href="/stream" />
+              </div>
+            </div>
+
+            {/* Public profile card */}
+            <div className="comic-card ink">
+              <span className="kicker" style={{ color: "rgba(255,255,255,.55)" }}>
+                your public profile
+              </span>
+              <h3 className="h3 mt-1.5" style={{ color: "var(--paper)" }}>
+                nih.app/@{handleCount > 0 ? "you" : "creator"}
+              </h3>
+              <p className="text-[13px] leading-snug mt-2" style={{ color: "rgba(255,255,255,.7)" }}>
+                Drop this link anywhere. We render OG cards for X, Discord and Slack.
+              </p>
+              <div className="flex gap-2 mt-3.5">
+                <Link
+                  href="/c/twitter/hajislamet"
+                  className="comic-btn primary"
+                  style={{ fontSize: 14, padding: "8px 14px" }}
+                >
+                  Preview <ArrowUpRight className="h-3.5 w-3.5" />
+                </Link>
+                <Link
+                  href={address ? `https://explorer.test.mezo.org/address/${address}` : "/c/twitter/hajislamet"}
+                  className="comic-btn"
+                  style={{
+                    fontSize: 14,
+                    padding: "8px 14px",
+                    background: "transparent",
+                    color: "var(--paper)",
+                    borderColor: "rgba(255,255,255,.3)",
+                    boxShadow: "4px 4px 0 0 rgba(255,255,255,.2)",
+                  }}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View on explorer
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-5">
+            <MilestoneCard current={Math.min(68, Number(received) || 22)} target={100} />
+            <TopTippersCard />
+            <PlatformDonut />
+          </div>
         </div>
       </main>
     </>
   );
 }
 
-function StatCard({
+function ComicStat({
   label,
   value,
-  icon,
-  color,
+  note,
+  highlight,
 }: {
   label: string;
   value: string;
-  icon: React.ReactNode;
-  color: string;
+  note?: string;
+  highlight?: boolean;
 }) {
   return (
-    <Card>
-      <div className="flex items-start justify-between mb-3">
-        <span className="text-xs uppercase tracking-widest text-muted">{label}</span>
-        <span className={color}>{icon}</span>
+    <div className={`comic-card ${highlight ? "" : ""}`}>
+      <span className="kicker">{label}</span>
+      <div className="tabular mt-2.5" style={{ fontFamily: "var(--font-display)", fontSize: 36, lineHeight: 1 }}>
+        {value}
       </div>
-      <p className="text-2xl font-semibold tracking-tight">{value}</p>
-    </Card>
+      {note && <div className="mono muted text-[11px] mt-2">{note}</div>}
+    </div>
   );
 }
 
-function ActionCard({
+function ComicAction({
   title,
   desc,
-  cta,
   href,
-  highlight,
-  external,
+  hot,
 }: {
   title: string;
   desc: string;
-  cta: string;
   href: string;
-  highlight?: boolean;
-  external?: boolean;
+  hot?: boolean;
 }) {
   return (
-    <Card className={highlight ? "border-brand/40" : ""}>
-      <CardHeader>
-        <CardTitle>{title}</CardTitle>
-        <CardDescription>{desc}</CardDescription>
-      </CardHeader>
-      <div className="pt-2">
-        {external ? (
-          <Button variant={highlight ? "default" : "outline"} asChild>
-            <a href={href} target="_blank" rel="noopener noreferrer">
-              {cta} <ArrowUpRight className="h-4 w-4" />
-            </a>
-          </Button>
-        ) : (
-          <Button variant={highlight ? "default" : "outline"} asChild>
-            <Link href={href}>
-              {cta} <ArrowUpRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        )}
+    <Link
+      href={href}
+      className="block"
+      style={{
+        padding: "14px 16px",
+        background: hot ? "var(--accent)" : "var(--bg-2)",
+        color: hot ? "var(--accent-ink)" : "var(--ink)",
+        border: "var(--border-w) var(--border-style) var(--line)",
+        boxShadow: "4px 4px 0 0 var(--ink)",
+        textDecoration: "none",
+        transition: "transform .08s, box-shadow .08s",
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <b className="text-[15px]">{title}</b>
+        <ArrowUpRight className="h-4 w-4" />
       </div>
-    </Card>
+      <div className="text-[12px] opacity-80 mt-1.5 leading-snug">{desc}</div>
+    </Link>
   );
 }

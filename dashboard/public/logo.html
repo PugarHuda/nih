@@ -1,0 +1,607 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Nih — brand identity</title>
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Bangers&family=Bungee&family=Special+Elite&family=Yeseva+One&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400;1,500&family=IBM+Plex+Mono:wght@400;500;600&family=Playfair+Display:wght@400;700;900&family=VT323&family=Press+Start+2P&family=Archivo+Black&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body { padding: 0 !important; }
+    .bp {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 56px 32px 96px;
+      position: relative;
+      z-index: 3;
+    }
+
+    /* page header */
+    .bp-head { margin-bottom: 56px; display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; flex-wrap: wrap; }
+    .bp-head .crumbs { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); text-transform: uppercase; letter-spacing: .12em; }
+    .bp-head a.back { font-family: var(--font-mono); font-size: 12px; color: var(--ink-2); text-decoration: none; padding: 6px 12px; border: var(--border-w) var(--border-style) var(--line); border-radius: var(--radius-sm); }
+    .bp-head a.back:hover { background: var(--bg-2); }
+
+    /* section header */
+    .sec { margin-top: 80px; }
+    .sec-head { margin-bottom: 28px; }
+    .sec-num {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .18em;
+      text-transform: uppercase; color: var(--ink-3);
+    }
+    .sec h2 {
+      font-family: var(--font-display); font-weight: var(--display-weight);
+      font-size: clamp(28px, 3vw, 44px); line-height: 1; margin: 8px 0 0;
+      letter-spacing: -.015em;
+    }
+    .sec .lead { color: var(--ink-2); max-width: 60ch; line-height: 1.5; margin-top: 12px; }
+
+    /* hero — wordmark display */
+    .hero-mark {
+      background: var(--paper);
+      border: var(--border-w) var(--border-style) var(--line);
+      border-radius: var(--radius);
+      padding: 80px 60px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 24px;
+      min-height: 360px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero-mark .logo { width: clamp(280px, 50vw, 560px); height: auto; }
+    .hero-mark .tag {
+      font-family: var(--font-display);
+      font-style: italic;
+      color: var(--ink-3);
+      font-size: 18px;
+    }
+    .hero-mark .corner {
+      position: absolute;
+      top: 16px; left: 16px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: .14em;
+      color: var(--ink-3);
+      text-transform: uppercase;
+    }
+
+    /* grids */
+    .grid { display: grid; gap: 14px; }
+    .grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+    @media (max-width: 720px) {
+      .grid.cols-3, .grid.cols-4 { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    /* card */
+    .item {
+      background: var(--paper);
+      border: var(--border-w) var(--border-style) var(--line);
+      border-radius: var(--radius);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      min-height: 180px;
+    }
+    .item-disp {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100px;
+      background: var(--bg);
+      border: var(--border-w) dashed var(--line);
+      border-radius: var(--radius-sm);
+      padding: 16px;
+      overflow: hidden;
+    }
+    .item .lbl { font-family: var(--font-mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+    .item h3 {
+      margin: 0;
+      font-family: var(--font-display); font-weight: var(--display-weight);
+      font-size: 18px;
+    }
+    .item p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+    .item .meta {
+      font-family: var(--font-mono); font-size: 11px; color: var(--ink-3);
+      display: flex; justify-content: space-between; gap: 8px;
+    }
+    .item.dark { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+    .item.dark .item-disp { background: rgba(255,255,255,.05); border-color: rgba(255,255,255,.15); }
+    .item.dark .lbl, .item.dark p, .item.dark .meta { color: rgba(255,255,255,.7); }
+    .item.dark h3 { color: var(--paper); }
+    .item.accent { background: var(--accent); border-color: var(--ink); color: var(--ink); }
+    .item.accent .item-disp { background: rgba(0,0,0,.05); border-color: rgba(0,0,0,.2); }
+    .item.imgbg .item-disp {
+      background:
+        radial-gradient(circle at 30% 30%, #C8A2C8 0, transparent 40%),
+        radial-gradient(circle at 70% 70%, #6EB5C0 0, transparent 50%),
+        radial-gradient(circle at 50% 50%, #E89B5C 0, transparent 60%);
+    }
+
+    .mark-img { display: block; max-width: 100%; max-height: 100%; }
+
+    /* color swatches */
+    .swatch {
+      display: flex; flex-direction: column;
+      border: var(--border-w) var(--border-style) var(--line);
+      border-radius: var(--radius-sm);
+      overflow: hidden;
+      background: var(--paper);
+    }
+    .swatch .chip { height: 100px; }
+    .swatch .info { padding: 12px 14px; }
+    .swatch .info b { font-size: 14px; display: block; margin-bottom: 4px; }
+    .swatch .info code { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); display: block; }
+
+    /* style preview row */
+    .style-row {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+    }
+    @media (max-width: 900px) { .style-row { grid-template-columns: repeat(2, 1fr); } }
+    .style-cell {
+      background: var(--paper);
+      border: var(--border-w) var(--border-style) var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-card);
+      padding: 22px 18px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 170px;
+      position: relative;
+      overflow: hidden;
+    }
+    .style-cell .name {
+      font-family: var(--font-mono); font-size: 10px; letter-spacing: .14em;
+      text-transform: uppercase; color: var(--ink-3);
+    }
+    .style-cell .mark {
+      display: flex; align-items: center;
+      gap: 4px;
+      font-size: 48px; line-height: 1;
+      color: var(--ink);
+    }
+    .style-cell.s-paper       .mark { font-family: "Instrument Serif", Georgia, serif; }
+    .style-cell.s-pos         .mark { font-family: "Special Elite", monospace; }
+    .style-cell.s-tabungan    .mark { font-family: "IBM Plex Mono", monospace; font-weight: 600; }
+    .style-cell.s-kebun       .mark { font-family: "EB Garamond", serif; font-style: italic; font-weight: 500; }
+    .style-cell.s-warung      .mark { font-family: "Yeseva One", serif; }
+    .style-cell.s-komik       .mark { font-family: "Bangers", sans-serif; }
+    .style-cell.s-koran       .mark { font-family: "Playfair Display", serif; font-weight: 900; }
+    .style-cell.s-brutal      .mark { font-family: "Archivo Black", sans-serif; }
+    .style-cell.s-pixel       .mark { font-family: "Press Start 2P", monospace; font-size: 26px; }
+    .style-cell.s-brutalpixel .mark { font-family: "VT323", monospace; font-size: 56px; }
+    .style-cell .mark .dot {
+      width: 0.3em; height: 0.3em;
+      background: #F7931A;
+      border: 0.04em solid #1A1714;
+      border-radius: 50%;
+      display: inline-block;
+      align-self: flex-end;
+      margin-bottom: 0.08em;
+    }
+    .style-cell.s-pixel .mark .dot,
+    .style-cell.s-brutal .mark .dot,
+    .style-cell.s-brutalpixel .mark .dot { border-radius: 0; }
+    .style-cell .meta { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+
+    /* usage grid */
+    .usage {
+      background: var(--paper);
+      border: var(--border-w) var(--border-style) var(--line);
+      border-radius: var(--radius);
+      padding: 36px;
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 32px;
+      box-shadow: var(--shadow-card);
+    }
+    @media (max-width: 720px) { .usage { grid-template-columns: 1fr; } }
+    .usage .clear-space {
+      background: var(--bg);
+      border: var(--border-w) dashed var(--line);
+      border-radius: var(--radius-sm);
+      padding: 60px 40px;
+      position: relative;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .usage .clear-space img { width: 60%; max-width: 280px; }
+    .usage .clear-space::before,
+    .usage .clear-space::after {
+      content: "x";
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: var(--accent);
+    }
+    .usage .clear-space::before { top: 16px; left: 16px; }
+    .usage .clear-space::after  { bottom: 16px; right: 16px; }
+    .usage .rules h3 { margin-top: 0; }
+    .usage .rules ul { padding-left: 18px; margin: 0; }
+    .usage .rules li { font-size: 14px; line-height: 1.6; margin: 6px 0; }
+
+    /* do / dont */
+    .dodont { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 720px) { .dodont { grid-template-columns: 1fr; } }
+    .dd {
+      border: var(--border-w) var(--border-style) var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      background: var(--paper);
+      box-shadow: var(--shadow-card);
+    }
+    .dd.do { border-left: 4px solid var(--good); }
+    .dd.dont { border-left: 4px solid var(--bad); }
+    .dd h4 {
+      font-family: var(--font-mono); font-size: 11px; letter-spacing: .14em;
+      text-transform: uppercase; margin: 0 0 10px;
+    }
+    .dd.do h4 { color: var(--good); }
+    .dd.dont h4 { color: var(--bad); }
+    .dd ul { padding-left: 16px; margin: 0; font-size: 13px; line-height: 1.5; color: var(--ink-2); }
+    .dd li { margin: 4px 0; }
+
+    /* download */
+    .dl-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+    @media (max-width: 720px) { .dl-grid { grid-template-columns: repeat(2, 1fr); } }
+    .dl {
+      text-decoration: none; color: inherit;
+      background: var(--paper);
+      border: var(--border-w) var(--border-style) var(--line);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+      box-shadow: var(--shadow-press);
+      transition: transform .08s, box-shadow .08s;
+    }
+    .dl:hover { transform: translate(-1px,-1px); box-shadow: var(--shadow-hard); }
+    .dl .icon {
+      width: 36px; height: 36px;
+      background: var(--accent); border: 2px solid var(--ink);
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700;
+      color: var(--ink);
+    }
+    .dl b { display: block; font-size: 13px; }
+    .dl small { font-family: var(--font-mono); font-size: 10px; color: var(--ink-3); }
+
+    /* type spec table */
+    .type-spec { display: grid; gap: 0; border: var(--border-w) var(--border-style) var(--line); border-radius: var(--radius); overflow: hidden; }
+    .type-row {
+      display: grid;
+      grid-template-columns: 220px 1fr 1fr;
+      padding: 16px 20px;
+      border-bottom: var(--border-w) var(--border-style) var(--line);
+      background: var(--paper);
+      align-items: baseline;
+      gap: 16px;
+    }
+    .type-row:last-child { border-bottom: none; }
+    .type-row .role { font-family: var(--font-mono); font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); }
+    .type-row .sample {
+      font-size: 24px; line-height: 1;
+    }
+    .type-row .meta { font-family: var(--font-mono); font-size: 11px; color: var(--ink-3); text-align: right; }
+
+    /* footer brand row */
+    .brand-foot {
+      margin-top: 80px;
+      padding: 28px 0;
+      border-top: var(--border-w) var(--border-style) var(--line);
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--ink-3);
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .brand-foot a { color: var(--ink-2); text-decoration: none; }
+    .brand-foot a:hover { color: var(--ink); }
+  </style>
+</head>
+<body data-style="paper" data-mode="light" data-density="regular">
+
+  <div class="bp">
+
+    <!-- HEADER -->
+    <div class="bp-head">
+      <div>
+        <div class="crumbs">nih · brand identity · v0.1</div>
+        <h1 style="font-family: var(--font-display); font-weight: var(--display-weight); font-size: clamp(40px,5vw,72px); line-height:1; margin:8px 0 0; letter-spacing:-.02em;">The marks of <em style="color:var(--accent);">nih.</em></h1>
+        <p class="lead" style="margin-top:14px; max-width:60ch;">"Nih" is Indonesian for <em>"here, take this."</em> The logo is the gesture: a wordmark that says it, and a dot — a coin — that's the thing being handed over. Use these marks across product, comms, and merch.</p>
+      </div>
+      <a class="back" href="landing.html">← back to landing</a>
+    </div>
+
+    <!-- 01 · PRIMARY WORDMARK -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">01 · the wordmark</div>
+        <h2>Primary lockup.</h2>
+        <p class="lead">Set in Instrument Serif. The period is a coin in Bitcoin orange — drawn, not typed. This is the canonical mark for product surfaces, docs, and most printed work.</p>
+      </div>
+
+      <div class="hero-mark">
+        <span class="corner">primary · 16:5 lockup</span>
+        <img src="assets/logo.svg" alt="Nih primary wordmark" class="logo" />
+        <span class="tag">"here, take this."</span>
+      </div>
+
+      <div class="grid cols-3" style="margin-top: 16px;">
+        <div class="item">
+          <span class="lbl">on paper</span>
+          <div class="item-disp"><img src="assets/logo.svg" class="mark-img" style="max-width: 200px;" alt="Nih on paper"/></div>
+          <div class="meta"><span>cream bg</span><code>#F4EDE0</code></div>
+        </div>
+        <div class="item dark">
+          <span class="lbl">on ink</span>
+          <div class="item-disp">
+            <svg viewBox="0 0 320 110" width="200" height="69">
+              <text x="6" y="90" font-family="Instrument Serif, Georgia, serif" font-size="120" letter-spacing="-3" fill="#F4EDE0">nih</text>
+              <circle cx="256" cy="80" r="16" fill="#F7931A" stroke="#F4EDE0" stroke-width="2.5"/>
+              <circle cx="256" cy="80" r="11" fill="none" stroke="#F4EDE0" stroke-width="1" opacity="0.5"/>
+            </svg>
+          </div>
+          <div class="meta"><span>dark bg</span><code>#1A1714</code></div>
+        </div>
+        <div class="item imgbg">
+          <span class="lbl">on imagery</span>
+          <div class="item-disp">
+            <svg viewBox="0 0 320 110" width="200" height="69">
+              <text x="6" y="90" font-family="Instrument Serif, Georgia, serif" font-size="120" letter-spacing="-3" fill="#FFFFFF" style="filter:drop-shadow(0 2px 4px rgba(0,0,0,.3))">nih</text>
+              <circle cx="256" cy="80" r="16" fill="#F7931A" stroke="#FFFFFF" stroke-width="2.5"/>
+            </svg>
+          </div>
+          <div class="meta"><span>complex bg</span><code>+white</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 · SYMBOL -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">02 · the symbol</div>
+        <h2>Standalone mark.</h2>
+        <p class="lead">For favicons, app icons, social avatars — anywhere the wordmark won't fit. A Bitcoin-orange coin with the first letter of "nih" set in Instrument Serif italic.</p>
+      </div>
+
+      <div class="grid cols-4">
+        <div class="item">
+          <span class="lbl">256px · hero</span>
+          <div class="item-disp" style="padding:24px;"><img src="assets/mark.svg" class="mark-img" style="width:200px;" alt="Nih mark 256"/></div>
+        </div>
+        <div class="item">
+          <span class="lbl">128px · button</span>
+          <div class="item-disp"><img src="assets/mark.svg" class="mark-img" style="width:110px;" alt="Nih mark 128"/></div>
+        </div>
+        <div class="item">
+          <span class="lbl">64px · social</span>
+          <div class="item-disp"><img src="assets/mark.svg" class="mark-img" style="width:64px;" alt="Nih mark 64"/></div>
+        </div>
+        <div class="item">
+          <span class="lbl">32px · favicon</span>
+          <div class="item-disp"><img src="assets/favicon.svg" class="mark-img" style="width:48px; image-rendering: crisp-edges;" alt="favicon"/></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 03 · ALTERNATE MARKS -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">03 · alternate marks</div>
+        <h2>Other voices.</h2>
+        <p class="lead">For playful or contextual moments. The comic wordmark belongs on the landing page and merch; the stamp belongs in confirmation states and stickers.</p>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="item">
+          <span class="lbl">comic lockup · landing &amp; print</span>
+          <div class="item-disp" style="padding:32px;"><img src="assets/logo-comic.svg" class="mark-img" style="width:260px;" alt="Nih comic logo"/></div>
+          <div class="meta"><span>Bangers · offset shadow</span><code>logo-comic.svg</code></div>
+        </div>
+        <div class="item">
+          <span class="lbl">stamp · ui confirmations &amp; stickers</span>
+          <div class="item-disp" style="padding:24px;"><img src="assets/stamp.svg" class="mark-img" style="width:140px;" alt="Nih stamp"/></div>
+          <div class="meta"><span>postage square · -6° tilt</span><code>stamp.svg</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 04 · CROSS-STYLE -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">04 · cross-style</div>
+        <h2>One brand, ten voices.</h2>
+        <p class="lead">The wordmark adapts to each visual style in the product — same word, same dot, different typography. The dot stays Bitcoin orange in every style. (Each style also has its own optional accent color.)</p>
+      </div>
+
+      <div class="style-row">
+        <div class="style-cell s-paper"><span class="name">paper</span><span class="mark">nih<span class="dot"></span></span><span class="meta">Instrument Serif · cream</span></div>
+        <div class="style-cell s-pos"><span class="name">pos</span><span class="mark">nih<span class="dot" style="background:#D9251E;"></span></span><span class="meta">Special Elite · airmail</span></div>
+        <div class="style-cell s-tabungan"><span class="name">tabungan</span><span class="mark">nih<span class="dot" style="background:#A8281E; border-radius:0;"></span></span><span class="meta">IBM Plex Mono · ledger</span></div>
+        <div class="style-cell s-kebun"><span class="name">kebun</span><span class="mark">nih<span class="dot" style="background:#C46A45;"></span></span><span class="meta">EB Garamond italic · sage</span></div>
+        <div class="style-cell s-warung"><span class="name">warung</span><span class="mark">nih<span class="dot" style="background:#DC2D2D; border-radius:4px;"></span></span><span class="meta">Yeseva One · awning</span></div>
+        <div class="style-cell s-komik"><span class="name">komik</span><span class="mark">nih<span class="dot" style="background:#FFD32D;"></span></span><span class="meta">Bangers · halftone</span></div>
+        <div class="style-cell s-koran"><span class="name">koran</span><span class="mark">nih<span class="dot" style="background:#A8281E;"></span></span><span class="meta">Playfair 900 · broadsheet</span></div>
+        <div class="style-cell s-brutal"><span class="name">brutal</span><span class="mark">nih<span class="dot" style="background:#FF3D7F;"></span></span><span class="meta">Archivo Black · brutal</span></div>
+        <div class="style-cell s-pixel"><span class="name">pixel</span><span class="mark">nih<span class="dot" style="background:#5CFFA1;"></span></span><span class="meta">Press Start 2P · CRT</span></div>
+        <div class="style-cell s-brutalpixel"><span class="name">brutal × pixel</span><span class="mark">nih<span class="dot" style="background:#FF6B1F;"></span></span><span class="meta">VT323 · hybrid</span></div>
+      </div>
+    </section>
+
+    <!-- 05 · COLOR -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">05 · color</div>
+        <h2>Three colors do the heavy lifting.</h2>
+        <p class="lead">Bitcoin orange is the dot. Ink is the wordmark. Cream is the page. Everything else is a palette variation for context.</p>
+      </div>
+
+      <div class="grid cols-4">
+        <div class="swatch">
+          <div class="chip" style="background:#F7931A;"></div>
+          <div class="info"><b>Bitcoin orange</b><code>#F7931A · rgb(247,147,26)</code></div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#1A1714;"></div>
+          <div class="info"><b>Ink</b><code>#1A1714 · rgb(26,23,20)</code></div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#F4EDE0; border-bottom: 1px solid rgba(0,0,0,.1);"></div>
+          <div class="info"><b>Cream</b><code>#F4EDE0 · rgb(244,237,224)</code></div>
+        </div>
+        <div class="swatch">
+          <div class="chip" style="background:#2A6F6A;"></div>
+          <div class="info"><b>Deep teal (accent)</b><code>#2A6F6A · rgb(42,111,106)</code></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 06 · TYPOGRAPHY -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">06 · typography</div>
+        <h2>Type stack.</h2>
+        <p class="lead">Three families do most of the work. Each visual style adds its own display font on top.</p>
+      </div>
+      <div class="type-spec">
+        <div class="type-row">
+          <span class="role">display · headlines</span>
+          <span class="sample" style="font-family: 'Instrument Serif', Georgia, serif; font-size: 38px;">Instrument Serif</span>
+          <span class="meta">400 · italic optional</span>
+        </div>
+        <div class="type-row">
+          <span class="role">body · ui &amp; reading</span>
+          <span class="sample" style="font-family: 'Geist', system-ui, sans-serif; font-size: 22px; font-weight: 500;">Geist Sans</span>
+          <span class="meta">300 · 400 · 500 · 600 · 700</span>
+        </div>
+        <div class="type-row">
+          <span class="role">mono · labels &amp; data</span>
+          <span class="sample" style="font-family: 'Geist Mono', monospace; font-size: 18px;">Geist Mono</span>
+          <span class="meta">400 · 500 · 600</span>
+        </div>
+        <div class="type-row">
+          <span class="role">display · alt (comic / play)</span>
+          <span class="sample" style="font-family: 'Bangers', Impact, sans-serif; font-size: 32px; letter-spacing: .04em;">BANGERS — KA-POW!</span>
+          <span class="meta">400 · comic accent</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 07 · USAGE -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">07 · usage</div>
+        <h2>Clear space &amp; minimum size.</h2>
+        <p class="lead">Give the mark room. Keep the dot a dot.</p>
+      </div>
+      <div class="usage">
+        <div class="clear-space">
+          <img src="assets/logo.svg" alt="Logo clear space"/>
+        </div>
+        <div class="rules">
+          <h3>Rules of thumb</h3>
+          <ul>
+            <li><b>Clear space</b> = the width of the dot, in every direction. Don't crowd it.</li>
+            <li><b>Minimum size</b> · wordmark 80px wide · symbol 16px tall.</li>
+            <li><b>The dot stays orange.</b> The wordmark can flex; the dot doesn't.</li>
+            <li>Use the <b>comic lockup</b> only where playfulness reads naturally — landing, stickers, merch.</li>
+            <li>Use the <b>stamp</b> for confirmation states ("tip sent", "verified", "claimed").</li>
+            <li>On photography, lock the wordmark in a paper-cream pill or use the inverted (white) variant.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 08 · DO / DONT -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">08 · do · don't</div>
+        <h2>Stay sharp.</h2>
+      </div>
+      <div class="dodont">
+        <div class="dd do">
+          <h4>do</h4>
+          <ul>
+            <li>Pair the wordmark with the dot — always together in product surfaces.</li>
+            <li>Use orange ONLY for the dot, accent, and CTAs.</li>
+            <li>Respect each style's typography. Don't mix Bangers with Paper.</li>
+            <li>Animate the dot on key moments (tip sent, claim, borrow).</li>
+            <li>Keep ink as the body color in light mode, cream in dark mode.</li>
+          </ul>
+        </div>
+        <div class="dd dont">
+          <h4>don't</h4>
+          <ul>
+            <li>Don't change the dot's color. Not even for holidays.</li>
+            <li>Don't tilt the wordmark. The stamp tilts; the wordmark doesn't.</li>
+            <li>Don't outline-stroke the wordmark unless you're in Komik or Warung context.</li>
+            <li>Don't stretch, scale-x, or skew. Use the SVG; never re-render the text.</li>
+            <li>Don't put the wordmark on rainbow gradients. Pick a single supporting color.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 09 · DOWNLOAD -->
+    <section class="sec">
+      <div class="sec-head">
+        <div class="sec-num">09 · downloads</div>
+        <h2>The files.</h2>
+        <p class="lead">All marks are SVG. Open them in any vector tool — Figma, Illustrator, browser. The wordmark relies on Instrument Serif and Bangers from Google Fonts; embed those when exporting to PDF.</p>
+      </div>
+      <div class="dl-grid">
+        <a class="dl" href="assets/logo.svg" download>
+          <span class="icon">SVG</span>
+          <span><b>logo.svg</b><small>primary wordmark · 320×110</small></span>
+        </a>
+        <a class="dl" href="assets/logo-comic.svg" download>
+          <span class="icon">SVG</span>
+          <span><b>logo-comic.svg</b><small>comic lockup · 320×130</small></span>
+        </a>
+        <a class="dl" href="assets/mark.svg" download>
+          <span class="icon">SVG</span>
+          <span><b>mark.svg</b><small>symbol mark · 100×100</small></span>
+        </a>
+        <a class="dl" href="assets/stamp.svg" download>
+          <span class="icon">SVG</span>
+          <span><b>stamp.svg</b><small>stamp variant · 120×120</small></span>
+        </a>
+        <a class="dl" href="assets/favicon.svg" download>
+          <span class="icon">SVG</span>
+          <span><b>favicon.svg</b><small>favicon · 32×32</small></span>
+        </a>
+      </div>
+    </section>
+
+    <!-- footer -->
+    <div class="brand-foot">
+      <span>nih · brand v0.1 · last updated may 2026</span>
+      <span>
+        <a href="landing.html">landing</a>
+        &nbsp;·&nbsp;
+        <a href="index.html">app</a>
+        &nbsp;·&nbsp;
+        <a href="index.html?screen=extension">extension</a>
+      </span>
+    </div>
+
+  </div>
+</body>
+</html>

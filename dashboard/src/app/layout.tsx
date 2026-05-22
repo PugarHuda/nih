@@ -10,10 +10,11 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "Nih",
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default",
   },
   icons: {
     icon: [
+      { url: "/assets/favicon.svg", type: "image/svg+xml" },
       { url: "/icon-32.png", sizes: "32x32" },
       { url: "/icon-192.png", sizes: "192x192" },
     ],
@@ -27,15 +28,29 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "hsl(22 90% 56%)",
+  themeColor: "#FBF6E8",
   width: "device-width",
   initialScale: 1,
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="dark">
-      <body className="noise min-h-screen antialiased">
+    <html
+      lang="en"
+      data-style="komik"
+      data-mode="light"
+      data-density="regular"
+      data-tone="friendly"
+    >
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <link
+          href="https://fonts.googleapis.com/css2?family=Bangers&family=Space+Grotesk:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Caveat:wght@500;700&family=Instrument+Serif:ital@0;1&display=swap"
+          rel="stylesheet"
+        />
+      </head>
+      <body className="min-h-screen antialiased">
         <Providers>{children}</Providers>
       </body>
     </html>

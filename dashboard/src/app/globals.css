@@ -2,51 +2,243 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: dark;
+/* ──────────────────────────────────────────────────────────────
+   NIH — Comic (Komik) design tokens. Light mode, regular density.
+   Imported from claude.ai/design handoff (May 2026).
+   ────────────────────────────────────────────────────────────── */
+:root,
+[data-style="komik"] {
+  --bg: #FBF6E8;
+  --bg-2: #F2E9C9;
+  --paper: #FFFEF7;
+  --ink: #0A0A0A;
+  --ink-2: #1F1F1F;
+  --ink-3: #555;
+  --line: #0A0A0A;
+  --line-2: rgba(10, 10, 10, .25);
+  --accent: #FFD32D;         /* comic yellow */
+  --accent-ink: #0A0A0A;
+  --accent-2: #E03131;       /* SFX red */
+  --accent-3: #2B7CE9;       /* hero blue */
+  --good: #1F8A3A;
+  --warn: #D97500;
+  --bad: #C2261A;
+
+  --radius: 0px;
+  --radius-sm: 0px;
+  --radius-lg: 0px;
+  --border-w: 3.5px;
+  --border-style: solid;
+  --shadow-card: 5px 5px 0 0 var(--ink);
+  --shadow-hard: 6px 6px 0 0 var(--ink);
+  --shadow-press: 2px 2px 0 0 var(--ink);
+
+  --font-display: "Bangers", "Bungee", "Archivo Black", sans-serif;
+  --font-body: "Space Grotesk", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "JetBrains Mono", monospace;
+  --display-weight: 400;
+  --body-weight: 500;
+  --tracking: .02em;
+
+  --gap-1: 6px;
+  --gap-2: 10px;
+  --gap-3: 14px;
+  --gap-4: 20px;
+  --gap-5: 28px;
+  --gap-6: 40px;
+  --pad-card: 20px;
+
+  color-scheme: light;
 }
 
-html,
+html {
+  background: var(--bg);
+  color: var(--ink);
+}
+
 body {
-  background: hsl(20 14% 5%);
-  color: hsl(30 20% 96%);
-  font-feature-settings: "rlig" 1, "calt" 1;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-weight: var(--body-weight);
+  letter-spacing: var(--tracking);
+  font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: hsl(20 10% 20%);
-  border-radius: 999px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(20 10% 30%);
-}
-
-/* Selection */
-::selection {
-  background: hsl(22 90% 56% / 0.3);
-  color: hsl(30 20% 96%);
-}
-
-/* Subtle noise texture for premium feel */
-.noise::before {
+/* Halftone dot overlay — the signature comic texture */
+body::before {
   content: "";
   position: fixed;
   inset: 0;
+  background-image: radial-gradient(rgba(10, 10, 10, .16) 1.2px, transparent 1.5px);
+  background-size: 8px 8px;
   pointer-events: none;
-  z-index: 999;
-  opacity: 0.025;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 1 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  z-index: 1;
 }
 
-/* Glow underline for brand text */
-.text-glow {
-  text-shadow: 0 0 24px hsl(22 90% 56% / 0.4);
+/* Bring app content above the halftone */
+body > * {
+  position: relative;
+  z-index: 2;
+}
+
+/* Display headings — Bangers, uppercase */
+h1, h2, h3, .h1, .h2, .h3 {
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  letter-spacing: .03em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+.h1 { font-size: clamp(48px, 6.5vw, 96px); line-height: .9; }
+.h2 { font-size: clamp(32px, 4vw, 56px); line-height: .95; }
+.h3 { font-size: clamp(20px, 2.2vw, 28px); line-height: 1; }
+
+.kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.muted { color: var(--ink-3); }
+.tabular { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--font-mono); }
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 12px; height: 12px; }
+::-webkit-scrollbar-track { background: var(--bg-2); }
+::-webkit-scrollbar-thumb {
+  background: var(--ink);
+  border: 2px solid var(--bg-2);
+}
+
+/* Friendly Tailwind colour overrides so existing components use comic palette */
+@layer base {
+  .bg-bg { background: var(--bg); }
+  .bg-surface { background: var(--paper); }
+  .bg-brand { background: var(--accent); color: var(--accent-ink); }
+  .text-bg { color: var(--ink); }
+  .text-fg { color: var(--ink); }
+  .text-muted { color: var(--ink-3); }
+  .text-brand { color: var(--accent-ink); }
+  .text-brandSoft { color: var(--accent-3); }
+  .text-accent { color: var(--accent-3); }
+  .text-danger { color: var(--bad); }
+  .border-border { border-color: var(--line); }
+}
+
+/* Comic-card primitive used by widgets */
+.comic-card {
+  background: var(--paper);
+  border: var(--border-w) var(--border-style) var(--line);
+  box-shadow: var(--shadow-card);
+  padding: var(--pad-card);
+  border-radius: var(--radius);
+  position: relative;
+}
+.comic-card.tilt { transform: rotate(-1deg); }
+.comic-card.tilt-r { transform: rotate(1deg); }
+.comic-card.accent { background: var(--accent); color: var(--accent-ink); }
+.comic-card.ink { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+
+/* Comic button */
+.comic-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: var(--paper);
+  color: var(--ink);
+  border: var(--border-w) var(--border-style) var(--line);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform .08s ease, box-shadow .08s ease;
+}
+.comic-btn:hover { transform: translate(-1px, -1px); box-shadow: 6px 6px 0 0 var(--ink); }
+.comic-btn:active { transform: translate(2px, 2px); box-shadow: var(--shadow-press); }
+.comic-btn.primary { background: var(--accent); color: var(--accent-ink); }
+.comic-btn.ink { background: var(--ink); color: var(--paper); }
+
+/* SFX badge (POW!, NIH!) — comic starburst stamp */
+.sfx {
+  display: inline-block;
+  padding: 4px 12px;
+  font-family: var(--font-display);
+  font-size: 20px;
+  letter-spacing: .04em;
+  text-transform: uppercase;
+  background: var(--accent-2);
+  color: var(--paper);
+  border: var(--border-w) var(--border-style) var(--ink);
+  transform: rotate(-3deg);
+  clip-path: polygon(
+    50% 0%, 61% 12%, 75% 5%, 79% 21%, 95% 22%, 88% 37%,
+    100% 50%, 88% 63%, 95% 78%, 79% 79%, 75% 95%, 61% 88%,
+    50% 100%, 39% 88%, 25% 95%, 21% 79%, 5% 78%, 12% 63%,
+    0% 50%, 12% 37%, 5% 22%, 21% 21%, 25% 5%, 39% 12%
+  );
+  border: none;
+  padding: 8px 16px;
+}
+
+/* Speech bubble — handwritten note */
+.note {
+  display: inline-block;
+  padding: 4px 10px;
+  font-family: "Caveat", "Comic Sans MS", cursive;
+  font-size: 16px;
+  color: var(--accent-3);
+  background: transparent;
+}
+
+/* Chip / pill */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  background: var(--bg-2);
+  border: var(--border-w) var(--border-style) var(--line);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+.chip.good { background: rgba(31, 138, 58, .15); color: var(--good); border-color: var(--good); }
+.chip.warn { background: rgba(217, 117, 0, .15); color: var(--warn); border-color: var(--warn); }
+.chip .dot {
+  width: 6px; height: 6px;
+  background: currentColor;
+  display: inline-block;
+}
+
+/* Tag */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg-2);
+  border: var(--border-w) var(--border-style) var(--line);
+  letter-spacing: .04em;
+  text-transform: uppercase;
+}
+
+/* Comic divider — a wavy black line */
+.comic-divider {
+  height: 6px;
+  background: var(--ink);
+  margin: var(--gap-5) 0;
 }

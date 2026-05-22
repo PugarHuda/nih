@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" width="120" height="120" role="img" aria-label="Nih stamp">
+  
+  <g transform="rotate(-6 60 60)">
+    <rect x="10" y="20" width="100" height="80" rx="2" fill="#FFD32D" stroke="#1A1714" stroke-width="4"></rect>
+    <rect x="14" y="24" width="92" height="72" rx="1" fill="none" stroke="#1A1714" stroke-width="1" opacity="0.4"></rect>
+    <text x="60" y="78" text-anchor="middle" font-family="Bangers, Bungee, Impact, sans-serif" font-size="46" letter-spacing="2" fill="#1A1714">NIH!</text>
+    
+    <path d="M22 36 L24 42 L30 44 L24 46 L22 52 L20 46 L14 44 L20 42 Z" fill="#F7931A" stroke="#1A1714" stroke-width="1"></path>
+    <path d="M96 84 L97.5 88.5 L102 90 L97.5 91.5 L96 96 L94.5 91.5 L90 90 L94.5 88.5 Z" fill="#F7931A" stroke="#1A1714" stroke-width="1"></path>
+  </g>
+</svg>

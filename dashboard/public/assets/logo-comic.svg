@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 130" width="320" height="130" role="img" aria-label="Nih">
+  
+  <text x="14" y="100" font-family="Bangers, Bungee, Impact, sans-serif" font-size="124" letter-spacing="3" fill="#1A1714">nih</text>
+  <text x="6" y="96" font-family="Bangers, Bungee, Impact, sans-serif" font-size="124" letter-spacing="3" fill="#F7931A" stroke="#1A1714" stroke-width="3" paint-order="stroke">nih</text>
+  
+  <g transform="translate(248, 90)">
+    <circle r="18" fill="#F7931A" stroke="#1A1714" stroke-width="3.5"></circle>
+    <circle r="12" fill="none" stroke="#1A1714" stroke-width="1.5" opacity="0.35"></circle>
+  </g>
+</svg>
