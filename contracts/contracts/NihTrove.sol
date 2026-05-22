@@ -2,103 +2,88 @@
 pragma solidity ^0.8.28;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
+import {Clones} from "@openzeppelin/contracts/proxy/Clones.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {IBorrowerOperations, ITroveManager, IPriceFeed} from "./interfaces/IMezoMUSD.sol";
+import {NihTroveProxy} from "./NihTroveProxy.sol";
 
-/// @title NihTrove — Mezo MUSD trove opened on creator's behalf, on a
-///         keeper-style relayer pattern. Caller sends BTC; NihTrove forwards
-///         it to Mezo's BorrowerOperations.openTrove(), receives the minted
-///         MUSD, and delivers it to the user. Real Mezo trove — no mock.
-/// @notice Differs from NihCredit's peer-pool: NihCredit creates an internal
-///         loan; NihTrove opens a *real* Mezo MUSD trove with 1% rate,
-///         minimum 110% CR, BTC as collateral. The user keeps BTC exposure
-///         (it's locked in the trove, not sold).
+/// @title NihTrove v2 — factory for per-user trove proxies on Mezo MUSD.
+/// @notice Each end-user gets their own NihTroveProxy clone (EIP-1167)
+///         that owns a real Mezo trove. The factory is just a registry
+///         and helper for opening/inspecting the user's clone.
+/// @dev Why a factory instead of one shared contract: Mezo's
+///      BorrowerOperations identifies a trove by msg.sender. To support
+///      multiple concurrent users we need distinct addresses. Minimal
+///      proxies cost ~5k gas each at deploy + ~700 gas per delegatecall.
 contract NihTrove is ReentrancyGuard, Ownable {
-    using SafeERC20 for IERC20;
+    using Clones for address;
 
+    address public immutable implementation;
     IBorrowerOperations public immutable borrowerOps;
     ITroveManager public immutable troveManager;
     IPriceFeed public immutable priceFeed;
     IERC20 public immutable musd;
 
-    /// @notice address(0) hints — Mezo's BorrowerOperations accepts these
-    ///         for the first trove of a new account; for production we'd
-    ///         compute hints via HintHelpers.
-    address private constant ZERO_HINT = address(0);
+    mapping(address user => address proxy) public proxyOf;
 
-    event TroveProxyOpened(address indexed user, uint256 btcCollateral, uint256 debtAmount, uint256 musdToUser);
-    event TroveProxyClosed(address indexed user, uint256 debtRepaid, uint256 collReturned);
+    event ProxyCreated(address indexed user, address proxy);
+    event TroveOpened(address indexed user, address indexed proxy, uint256 btc, uint256 debt);
+    event TroveClosed(address indexed user, address indexed proxy);
 
-    error MustSendBTC();
-    error DebtTooLow();
-    error AlreadyHasTrove();
+    error NoProxy();
 
     constructor(
-        IBorrowerOperations _borrowerOps,
-        ITroveManager _troveManager,
-        IPriceFeed _priceFeed,
+        IBorrowerOperations _ops,
+        ITroveManager _tm,
+        IPriceFeed _pf,
         IERC20 _musd
     ) Ownable(msg.sender) {
-        borrowerOps = _borrowerOps;
-        troveManager = _troveManager;
-        priceFeed = _priceFeed;
+        borrowerOps = _ops;
+        troveManager = _tm;
+        priceFeed = _pf;
         musd = _musd;
+
+        // Deploy a single implementation that all clones delegate to.
+        implementation = address(new NihTroveProxy());
     }
 
-    /// @notice Open a Mezo trove for caller via this proxy.
-    /// @param debtAmount MUSD debt to mint (≥ 1800 MUSD typical minimum)
-    /// @dev Caller sends BTC as msg.value; we forward to BorrowerOperations.
-    ///      The trove is owned by *this contract* on Mezo's side — Nih is
-    ///      the keeper. User receives the minted MUSD and can ask Nih to
-    ///      close the trove later (or top up collateral).
-    function openTroveFor(uint256 debtAmount) external payable nonReentrant {
-        if (msg.value == 0) revert MustSendBTC();
-        if (debtAmount == 0) revert DebtTooLow();
-
-        // Try to open the trove on Mezo. Reverts if our existing trove status
-        // would conflict — but Nih's trove address is the contract itself,
-        // and we only allow one borrower per Nih deployment (clean-room).
-        // To support multiple users sharing one trove, we'd need a per-user
-        // proxy clone; v1 keeps it simple: one open trove at a time.
-        if (troveManager.getTroveStatus(address(this)) == 1) revert AlreadyHasTrove();
-
-        uint256 before = musd.balanceOf(address(this));
-        borrowerOps.openTrove{value: msg.value}(debtAmount, ZERO_HINT, ZERO_HINT);
-        uint256 minted = musd.balanceOf(address(this)) - before;
-
-        musd.safeTransfer(msg.sender, minted);
-        emit TroveProxyOpened(msg.sender, msg.value, debtAmount, minted);
+    /// @notice Returns the user's proxy, deploying one on first use.
+    function ensureProxy(address user) public returns (address proxy) {
+        proxy = proxyOf[user];
+        if (proxy == address(0)) {
+            proxy = implementation.cloneDeterministic(keccak256(abi.encodePacked(user)));
+            NihTroveProxy(payable(proxy)).initialize(user, address(this), borrowerOps, troveManager, musd);
+            proxyOf[user] = proxy;
+            emit ProxyCreated(user, proxy);
+        }
     }
 
-    /// @notice Close the active trove. Caller must hold ≥ outstanding debt
-    ///         in MUSD and approve this contract to pull it; we forward it
-    ///         to BorrowerOperations.closeTrove(), receive the BTC, send back.
+    /// @notice Predict the proxy address for a user (CREATE2).
+    function predictProxy(address user) external view returns (address) {
+        return implementation.predictDeterministicAddress(keccak256(abi.encodePacked(user)));
+    }
+
+    /// @notice Open the caller's trove. BTC sent here is forwarded to the
+    ///         user's proxy clone which calls Mezo BorrowerOperations.
+    function openTroveFor(uint256 debt) external payable nonReentrant {
+        address proxy = ensureProxy(msg.sender);
+        NihTroveProxy(payable(proxy)).openTrove{value: msg.value}(debt);
+        emit TroveOpened(msg.sender, proxy, msg.value, debt);
+    }
+
+    /// @notice Close the caller's trove via their proxy.
     function closeTroveFor() external nonReentrant {
-        uint256 debt = troveManager.getTroveDebt(address(this));
-        musd.safeTransferFrom(msg.sender, address(this), debt);
-        musd.forceApprove(address(borrowerOps), debt);
-
-        // closeTrove sends the trove's collateral back to msg.sender of
-        // closeTrove (which is us). Measure the delta — that IS the refund.
-        uint256 btcBefore = address(this).balance;
-        borrowerOps.closeTrove();
-        uint256 btcReturned = address(this).balance - btcBefore;
-
-        (bool ok, ) = msg.sender.call{value: btcReturned}("");
-        require(ok, "BTC return failed");
-
-        emit TroveProxyClosed(msg.sender, debt, btcReturned);
+        address proxy = proxyOf[msg.sender];
+        if (proxy == address(0)) revert NoProxy();
+        NihTroveProxy(payable(proxy)).closeTrove();
+        emit TroveClosed(msg.sender, proxy);
     }
 
-    /// @notice Current trove stats (debt + collateral + collateralisation ratio).
-    function troveSnapshot() external view returns (uint256 debt, uint256 coll, uint256 status) {
-        debt = troveManager.getTroveDebt(address(this));
-        coll = troveManager.getTroveColl(address(this));
-        status = troveManager.getTroveStatus(address(this));
+    /// @notice Read-through helper — snapshot the caller's trove state.
+    function snapshotOf(address user) external view returns (uint256 debt, uint256 coll, uint256 status) {
+        address proxy = proxyOf[user];
+        if (proxy == address(0)) return (0, 0, 0);
+        return NihTroveProxy(payable(proxy)).snapshot();
     }
-
-    // Accept BTC when Mezo's BorrowerOperations refunds us on closeTrove.
-    receive() external payable {}
 }
