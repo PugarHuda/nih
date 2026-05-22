@@ -22,13 +22,8 @@ const nextConfig = {
       { protocol: "https", hostname: "github.com" },
     ],
   },
-  async rewrites() {
-    // Serve the comic landing.html (static, designed by the user in
-    // claude.ai/design) at "/". The React app moves to /app.
-    return [
-      { source: "/", destination: "/landing.html" },
-    ];
-  },
+  // landing.html → src/app/page.tsx (now a real React component).
+  // Old rewrite removed.
 };
 
 export default nextConfig;
