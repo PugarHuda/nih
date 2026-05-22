@@ -10,7 +10,7 @@ export default function PrivacyPage() {
     <>
       <Header />
       <main className="container max-w-2xl py-16 prose prose-invert">
-        <h1 className="text-3xl font-semibold tracking-tight mb-2">Privacy Policy</h1>
+        <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Privacy Policy</h1>
         <p className="text-muted text-sm mb-10">Last updated: May 22, 2026</p>
 
         <Section title="Data we collect">

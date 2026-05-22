@@ -49,8 +49,8 @@ export default function FaucetPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Droplet className="h-3.5 w-3.5" /> Testnet faucet
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Get test funds</h1>
-          <p className="text-muted mb-10 max-w-md">
+          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Get test funds</h1>
+          <p className="mb-8 max-w-md" style={{ color: "var(--ink-3)" }}>
             The Mock MUSD and Mock MEZO tokens on matsnet are open-mint. Grab some to try the full
             tip / claim / borrow loop.
           </p>

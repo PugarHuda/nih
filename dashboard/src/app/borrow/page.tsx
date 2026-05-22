@@ -121,19 +121,24 @@ export default function BorrowPage() {
   return (
     <>
       <Header />
-      <main className="container max-w-2xl py-16">
+      <main className="container mx-auto max-w-2xl px-6 py-12">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
+          <span
+            className="chip"
+            style={{ background: "var(--accent)", color: "var(--ink)", marginBottom: 12, display: "inline-flex" }}
+          >
             <TrendingUp className="h-3.5 w-3.5" /> Creator Credit Line
-          </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">
-            Borrow against your tips
+          </span>
+          <h1 className="h1 mt-3" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>
+            Borrow.
           </h1>
-          <p className="text-muted mb-10 max-w-md">
-            Lock claimed tips as collateral. Mint up to 60% as MUSD instantly. 1% fixed
-            rate. Repay any time to release collateral.
+          <p className="mt-3 text-base max-w-md" style={{ color: "var(--ink-3)" }}>
+            Lock claimed tips as collateral. Mint up to 60% as MUSD instantly. 1%
+            fixed rate. Repay any time to release collateral.
           </p>
         </motion.div>
+        <div className="my-8" />
+
 
         {!isConnected ? (
           <Card>
@@ -227,12 +232,21 @@ export default function BorrowPage() {
 function Box({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
     <div
-      className={`rounded-lg border p-3 ${
-        highlight ? "border-brand/40 bg-brand/5" : "border-border bg-bg/40"
-      }`}
+      style={{
+        padding: 12,
+        border: "3.5px solid var(--ink)",
+        background: highlight ? "var(--accent)" : "var(--bg-2)",
+        color: highlight ? "var(--accent-ink)" : "var(--ink)",
+        boxShadow: highlight ? "3px 3px 0 0 var(--ink)" : "none",
+      }}
     >
-      <p className="text-xs text-muted">{label}</p>
-      <p className={`text-lg font-semibold mt-0.5 ${highlight ? "text-brand" : "text-fg"}`}>{value}</p>
+      <p className="kicker">{label}</p>
+      <p
+        className="tabular mt-1"
+        style={{ fontFamily: "var(--font-display)", fontSize: 24, lineHeight: 1 }}
+      >
+        {value}
+      </p>
     </div>
   );
 }

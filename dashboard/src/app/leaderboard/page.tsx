@@ -20,7 +20,7 @@ export default async function LeaderboardPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Trophy className="h-3.5 w-3.5" /> Live leaderboard
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">
+          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>
             Top-tipped creators
           </h1>
           <p className="text-muted">

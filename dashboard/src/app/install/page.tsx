@@ -41,7 +41,7 @@ export default function InstallPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Chrome className="h-3.5 w-3.5" /> Browser extension · v0.4.0
           </div>
-          <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-2">
+          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>
             Install Nih
           </h1>
           <p className="text-muted mb-2 max-w-xl">

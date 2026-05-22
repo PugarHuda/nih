@@ -100,8 +100,8 @@ export default function StreamPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Waves className="h-3.5 w-3.5" /> Per-second streaming
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Tip stream</h1>
-          <p className="text-muted mb-10 max-w-xl">
+          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Tip stream</h1>
+          <p className="mb-8 max-w-xl" style={{ color: "var(--ink-3)" }}>
             Stream MUSD by the second instead of one-shot tips. Perfect for
             payroll, subscriptions, content unlocks, or paying contractors.
             Sender or recipient can cancel any time; unaccrued MUSD refunds.

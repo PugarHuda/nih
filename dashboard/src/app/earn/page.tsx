@@ -112,8 +112,8 @@ export default function EarnPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Sparkles className="h-3.5 w-3.5" /> Real Mezo yield
           </div>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Earn on your tips</h1>
-          <p className="text-muted mb-10 max-w-md">
+          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Earn on your tips</h1>
+          <p className="mb-8 max-w-md" style={{ color: "var(--ink-3)" }}>
             Deposit tip income directly into Mezo&apos;s MUSD Stability Pool. You earn
             BTC from every liquidation + MUSD from redemption fees. Pure pass-through —
             Nih takes no fee. Withdraw any time.

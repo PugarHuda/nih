@@ -143,8 +143,8 @@ export default function ClaimPage() {
       <Header />
       <main className="container max-w-xl py-16">
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
-          <h1 className="text-3xl font-semibold tracking-tight mb-2">Claim your tips</h1>
-          <p className="text-muted mb-10">
+          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Claim your tips</h1>
+          <p className="mb-8" style={{ color: "var(--ink-3)" }}>
             Prove you own the handle by posting a challenge text on your public profile, then claim
             on-chain.
           </p>
