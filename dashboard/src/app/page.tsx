@@ -2,8 +2,18 @@
 
 import Link from "next/link";
 import Script from "next/script";
+import dynamic from "next/dynamic";
 import { useEffect } from "react";
-import { ConnectWallet } from "@/components/connect-wallet";
+
+// ConnectWallet pulls in wagmi + RainbowKit + framer-motion. We lazy-load
+// with ssr:false so wallet-extension races (Phantom vs MetaMask fighting
+// for window.ethereum) never block the landing's first paint, and so
+// any deprecated React internals inside RainbowKit (ReactCurrentOwner)
+// don't crash the marketing page if a transitive dep is mis-versioned.
+const ConnectWallet = dynamic(
+  () => import("@/components/connect-wallet").then((m) => m.ConnectWallet),
+  { ssr: false, loading: () => null }
+);
 
 /**
  * Comic landing — ported from the Claude Design HTML handoff
