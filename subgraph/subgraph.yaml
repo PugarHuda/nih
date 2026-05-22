@@ -6,7 +6,7 @@ dataSources:
     name: NihRouter
     network: mezo-testnet
     source:
-      address: "0x68437B812419B8EEE240eC6528f43d111Dd348D3"
+      address: "0xbeb23b459819b74F60699cE2FEA35B17266F36c5"
       abi: NihRouter
       startBlock: 1
     mapping:
@@ -28,7 +28,7 @@ dataSources:
     name: NihCredit
     network: mezo-testnet
     source:
-      address: "0x913E736B1dba8a4f3bF5953800248Ac89C18ec82"
+      address: "0x9857aF25fFa558C382AbB916803Ee441502b0F8D"
       abi: NihCredit
       startBlock: 1
     mapping:
@@ -45,4 +45,28 @@ dataSources:
           handler: handleLoanOpened
         - event: LoanRepaid(indexed address,uint256,uint256)
           handler: handleLoanRepaid
+      file: ./src/mapping.ts
+  - kind: ethereum
+    name: NihStream
+    network: mezo-testnet
+    source:
+      address: "0xBcaaD11EAF61fCf239837C403169Ec380bf36A37"
+      abi: NihStream
+      startBlock: 1
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - StreamRecord
+      abis:
+        - name: NihStream
+          file: ./abis/NihStream.json
+      eventHandlers:
+        - event: StreamCreated(indexed uint256,indexed address,indexed address,uint256,uint64,uint64)
+          handler: handleStreamCreated
+        - event: StreamWithdrawn(indexed uint256,indexed address,uint256)
+          handler: handleStreamWithdrawn
+        - event: StreamCancelled(indexed uint256,uint256,uint256)
+          handler: handleStreamCancelled
       file: ./src/mapping.ts

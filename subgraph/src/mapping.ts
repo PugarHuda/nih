@@ -1,7 +1,8 @@
 import { Address, BigInt, Bytes } from "@graphprotocol/graph-ts";
 import { Tipped } from "../generated/NihRouter/NihRouter";
 import { LoanOpened, LoanRepaid } from "../generated/NihCredit/NihCredit";
-import { Tip, Account, HandleStat, Loan } from "../generated/schema";
+import { StreamCreated, StreamWithdrawn, StreamCancelled } from "../generated/NihStream/NihStream";
+import { Tip, Account, HandleStat, Loan, StreamRecord } from "../generated/schema";
 
 const ZERO_ADDRESS = Address.zero();
 
@@ -77,4 +78,44 @@ export function handleLoanRepaid(event: LoanRepaid): void {
   loan.closedAt = event.block.timestamp;
   loan.repaidAmount = event.params.repaid;
   loan.save();
+}
+
+// ──────────────────────────────────────────────────────────────────
+// Streams
+// ──────────────────────────────────────────────────────────────────
+
+function streamKey(streamId: BigInt): Bytes {
+  // BigInt → padded hex → Bytes (graph-ts needs an explicit conversion)
+  let hex = streamId.toHexString();
+  if (hex.length % 2 !== 0) hex = "0x0" + hex.slice(2);
+  return Bytes.fromHexString(hex);
+}
+
+export function handleStreamCreated(event: StreamCreated): void {
+  const rec = new StreamRecord(streamKey(event.params.streamId));
+  rec.streamId = event.params.streamId;
+  rec.sender = event.params.sender;
+  rec.recipient = event.params.recipient;
+  rec.deposit = event.params.deposit;
+  // graph-ts maps uint64 → BigInt directly; no conversion needed.
+  rec.startTime = event.params.startTime;
+  rec.stopTime = event.params.stopTime;
+  rec.withdrawn = BigInt.zero();
+  rec.cancelled = false;
+  rec.save();
+}
+
+export function handleStreamWithdrawn(event: StreamWithdrawn): void {
+  const rec = StreamRecord.load(streamKey(event.params.streamId));
+  if (!rec) return;
+  rec.withdrawn = rec.withdrawn.plus(event.params.amount);
+  rec.save();
+}
+
+export function handleStreamCancelled(event: StreamCancelled): void {
+  const rec = StreamRecord.load(streamKey(event.params.streamId));
+  if (!rec) return;
+  rec.cancelled = true;
+  rec.cancelledAt = event.block.timestamp;
+  rec.save();
 }

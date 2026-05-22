@@ -71,6 +71,36 @@ describe("NihStream", () => {
     await expect(stream.connect(alice).withdraw(0)).to.be.revertedWithCustomError(stream, "NotRecipient");
   });
 
+  it("withdraw after cancel reverts (all funds already distributed)", async () => {
+    const deposit = ethers.parseEther("1000");
+    await stream.connect(alice).create(bob.address, deposit, ONE_DAY);
+    await network.provider.send("evm_increaseTime", [ONE_DAY / 4]);
+    await network.provider.send("evm_mine");
+    await stream.connect(alice).cancel(0);
+
+    expect(await stream.withdrawable(0)).to.equal(0n);
+    await expect(stream.connect(bob).withdraw(0)).to.be.revertedWithCustomError(stream, "NothingToWithdraw");
+  });
+
+  it("rejects double-cancel", async () => {
+    const deposit = ethers.parseEther("100");
+    await stream.connect(alice).create(bob.address, deposit, ONE_DAY);
+    await stream.connect(alice).cancel(0);
+    await expect(stream.connect(alice).cancel(0)).to.be.revertedWithCustomError(stream, "AlreadyCancelled");
+  });
+
+  it("rejects creating stream to self", async () => {
+    await expect(
+      stream.connect(alice).create(alice.address, ethers.parseEther("100"), ONE_DAY)
+    ).to.be.revertedWithCustomError(stream, "InvalidRecipient");
+  });
+
+  it("rejects zero duration", async () => {
+    await expect(
+      stream.connect(alice).create(bob.address, ethers.parseEther("100"), 0)
+    ).to.be.revertedWithCustomError(stream, "InvalidDuration");
+  });
+
   it("cancel splits remaining pro-rata", async () => {
     const deposit = ethers.parseEther("1000");
     await stream.connect(alice).create(bob.address, deposit, ONE_DAY);

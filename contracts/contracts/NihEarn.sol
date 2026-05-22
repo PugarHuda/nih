@@ -80,6 +80,12 @@ contract NihEarn is ReentrancyGuard, Ownable {
     }
 
     /// @notice Withdraw a slice of the user's share back to MUSD.
+    /// @dev BTC gains accrued in the Stability Pool are paid out
+    ///      proportional to the user's share of the burn.
+    ///      Stability Pool flushes a portion of accumulated BTC on every
+    ///      withdraw; we forward that BTC to the withdrawing user.
+    ///      v1 limitation: BTC distribution is per-withdrawal (last writer
+    ///      may take more than ideal); a v2 reward-index pattern fixes it.
     function withdraw(uint256 shares) external nonReentrant {
         if (shares == 0) revert ZeroAmount();
         uint256 owned = userShares[msg.sender];
@@ -92,22 +98,17 @@ contract NihEarn is ReentrancyGuard, Ownable {
         totalShares -= shares;
         withdrawnPrincipal[msg.sender] += amount;
 
-        stabilityPool.withdrawFromSP(amount);
-        // The Stability Pool may also send BTC gains to this contract during
-        // withdrawal — we forward any received native BTC to the user.
         uint256 btcBefore = address(this).balance;
+        stabilityPool.withdrawFromSP(amount);
+        uint256 btcGained = address(this).balance - btcBefore;
 
         musd.safeTransfer(msg.sender, amount);
         emit Withdrawn(msg.sender, amount, shares);
 
-        uint256 btcAfter = address(this).balance;
-        if (btcAfter > 0) {
-            uint256 btcShare = (btcAfter * shares) / (shares + totalShares); // approximate split
-            (bool ok, ) = msg.sender.call{value: btcShare}("");
+        if (btcGained > 0) {
+            (bool ok, ) = msg.sender.call{value: btcGained}("");
             require(ok, "BTC payout failed");
-            if (btcShare > 0) emit BTCYieldHarvested(msg.sender, btcShare);
-            // The `btcBefore` is for older proportional accounting in a future upgrade.
-            btcBefore;
+            emit BTCYieldHarvested(msg.sender, btcGained);
         }
     }
 

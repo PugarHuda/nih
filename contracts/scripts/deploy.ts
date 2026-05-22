@@ -3,9 +3,19 @@ import fs from "fs";
 import path from "path";
 
 /**
- * Mezo MUSD ecosystem addresses on matsnet (verified live on-chain).
- * Source: github.com/mezo-org/musd/solidity/SCALE_TEST_ADDRESSES.md
- * Verified by eth_call returning "Mezo USD" from name() on the MUSD address.
+ * Hybrid MUSD deployment.
+ *
+ * Why two MUSD instances:
+ *  - Mezo's real MUSD (0xf9BB...0af on matsnet) has `mint()` gated by a
+ *    minter allowlist. We're not on it, so /faucet would fail and the
+ *    tip/claim/credit demo would block on test-MUSD acquisition.
+ *  - Our MockMUSD has open `mint(to, amount)` so judges can grab funds
+ *    and run the full loop in under 30 seconds.
+ *  - But NihEarn and NihTrove deeply integrate with Mezo's REAL contracts
+ *    (StabilityPool / BorrowerOperations), so they must point at real MUSD.
+ *
+ * Result: Router/Vault/Credit/Stream → MockMUSD (demo-friendly).
+ *         Earn/Trove → real Mezo MUSD (production-shape integration).
  */
 const MEZO_MATSNET = {
   MUSD: "0xf9BBcCC0F1b68EA07c86de6F88C76b3d8E2dD0af",
@@ -17,57 +27,41 @@ const MEZO_MATSNET = {
 
 async function main() {
   const [deployer] = await ethers.getSigners();
-  console.log(`Deploying Nih to ${network.name} as ${deployer.address}`);
-  console.log(`Balance: ${ethers.formatEther(await ethers.provider.getBalance(deployer.address))} BTC`);
-
-  // Real Mezo MUSD on matsnet vs Mock for local hardhat.
   const useRealMezo = network.name === "matsnet" || network.name === "matsnetSpectrum";
   const realAddrs = useRealMezo ? MEZO_MATSNET : null;
 
-  // 1) MUSD token — real on matsnet, mock locally.
-  const musdAddress = process.env.MUSD_ADDRESS ?? realAddrs?.MUSD;
-  let musd;
-  if (!musdAddress) {
-    console.log("Deploying MockMUSD…");
-    const MockMUSD = await ethers.getContractFactory("MockMUSD");
-    musd = await MockMUSD.deploy();
-    await musd.waitForDeployment();
-    console.log(`  MockMUSD → ${await musd.getAddress()}`);
-  } else {
-    musd = await ethers.getContractAt("IERC20", musdAddress);
-    console.log(`Using real Mezo MUSD at ${musdAddress}`);
-  }
+  console.log(`Deploying Nih to ${network.name} as ${deployer.address}`);
+  console.log(`Balance: ${ethers.formatEther(await ethers.provider.getBalance(deployer.address))} BTC\n`);
 
-  // 2) MEZO mock (real MEZO token not yet on matsnet).
-  const mezoAddress = process.env.MEZO_ADDRESS;
-  let mezo;
-  if (!mezoAddress) {
-    console.log("Deploying MockMEZO…");
-    const MockMEZO = await ethers.getContractFactory("MockMEZO");
-    mezo = await MockMEZO.deploy();
-    await mezo.waitForDeployment();
-    console.log(`  MockMEZO → ${await mezo.getAddress()}`);
-  } else {
-    mezo = await ethers.getContractAt("IERC20", mezoAddress);
-    console.log(`Using existing MEZO at ${mezoAddress}`);
-  }
+  // 1) Demo MUSD (open-mint) for tip/credit/stream flows.
+  console.log("Deploying MockMUSD for demo-tip flow…");
+  const MockMUSD = await ethers.getContractFactory("MockMUSD");
+  const musd = await MockMUSD.deploy();
+  await musd.waitForDeployment();
+  console.log(`  MockMUSD → ${await musd.getAddress()}`);
 
-  // 3) Nih primitives.
+  // 2) MEZO mock (real MEZO not on matsnet yet).
+  console.log("Deploying MockMEZO…");
+  const mezo = await (await ethers.getContractFactory("MockMEZO")).deploy();
+  await mezo.waitForDeployment();
+  console.log(`  MockMEZO → ${await mezo.getAddress()}`);
+
+  // 3) Nih primitives over MockMUSD.
   console.log("Deploying NihRegistry…");
-  const NihRegistry = await ethers.getContractFactory("NihRegistry");
-  const registry = await NihRegistry.deploy(deployer.address);
+  const registry = await (await ethers.getContractFactory("NihRegistry")).deploy(deployer.address);
   await registry.waitForDeployment();
   console.log(`  NihRegistry → ${await registry.getAddress()}`);
 
   console.log("Deploying NihVault…");
-  const NihVault = await ethers.getContractFactory("NihVault");
-  const vault = await NihVault.deploy(await musd.getAddress(), await registry.getAddress());
+  const vault = await (await ethers.getContractFactory("NihVault")).deploy(
+    await musd.getAddress(),
+    await registry.getAddress()
+  );
   await vault.waitForDeployment();
   console.log(`  NihVault → ${await vault.getAddress()}`);
 
   console.log("Deploying NihRouter…");
-  const NihRouter = await ethers.getContractFactory("NihRouter");
-  const router = await NihRouter.deploy(
+  const router = await (await ethers.getContractFactory("NihRouter")).deploy(
     await musd.getAddress(),
     await mezo.getAddress(),
     await registry.getAddress(),
@@ -81,30 +75,32 @@ async function main() {
   await (await vault.setRouter(await router.getAddress())).wait();
 
   console.log("Deploying NihCredit (peer pool)…");
-  const NihCredit = await ethers.getContractFactory("NihCredit");
-  const credit = await NihCredit.deploy(await musd.getAddress(), await vault.getAddress());
+  const credit = await (await ethers.getContractFactory("NihCredit")).deploy(
+    await musd.getAddress(),
+    await vault.getAddress()
+  );
   await credit.waitForDeployment();
   console.log(`  NihCredit → ${await credit.getAddress()}`);
 
   console.log("Deploying NihStream…");
-  const NihStream = await ethers.getContractFactory("NihStream");
-  const stream = await NihStream.deploy(await musd.getAddress());
+  const stream = await (await ethers.getContractFactory("NihStream")).deploy(await musd.getAddress());
   await stream.waitForDeployment();
   console.log(`  NihStream → ${await stream.getAddress()}`);
 
-  // 4) Real-Mezo wrappers — only deploy if we're on matsnet and Mezo addresses live.
+  // 4) Real-Mezo wrappers (only on matsnet).
   let earn: any;
   let trove: any;
   if (useRealMezo && realAddrs) {
-    console.log("Deploying NihEarn (wraps Mezo StabilityPool)…");
-    const NihEarn = await ethers.getContractFactory("NihEarn");
-    earn = await NihEarn.deploy(realAddrs.MUSD, realAddrs.StabilityPool);
+    console.log("Deploying NihEarn (wraps real Mezo StabilityPool)…");
+    earn = await (await ethers.getContractFactory("NihEarn")).deploy(
+      realAddrs.MUSD,
+      realAddrs.StabilityPool
+    );
     await earn.waitForDeployment();
     console.log(`  NihEarn → ${await earn.getAddress()}`);
 
-    console.log("Deploying NihTrove (wraps Mezo BorrowerOperations)…");
-    const NihTrove = await ethers.getContractFactory("NihTrove");
-    trove = await NihTrove.deploy(
+    console.log("Deploying NihTrove (wraps real Mezo BorrowerOperations)…");
+    trove = await (await ethers.getContractFactory("NihTrove")).deploy(
       realAddrs.BorrowerOperations,
       realAddrs.TroveManager,
       realAddrs.PriceFeed,
@@ -113,7 +109,7 @@ async function main() {
     await trove.waitForDeployment();
     console.log(`  NihTrove → ${await trove.getAddress()}`);
   } else {
-    console.log("Skipping NihEarn / NihTrove (real Mezo addresses unavailable on this network)");
+    console.log("Skipping NihEarn / NihTrove (not matsnet)");
   }
 
   const out = {
@@ -131,6 +127,7 @@ async function main() {
       ...(earn ? { NihEarn: await earn.getAddress() } : {}),
       ...(trove ? { NihTrove: await trove.getAddress() } : {}),
     },
+    realMezoMUSD: realAddrs?.MUSD ?? null,
     mezoPrimitives: realAddrs ?? null,
   };
   const dir = path.join(__dirname, "..", "deployments");

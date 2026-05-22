@@ -81,16 +81,14 @@ contract NihStream is ReentrancyGuard {
     }
 
     /// @notice How much the recipient can currently withdraw.
+    /// @dev After cancel, all funds were distributed at cancel-time
+    ///      (recipient paid out accrued share, sender refunded the rest),
+    ///      so nothing is withdrawable anymore.
     function withdrawable(uint256 streamId) public view returns (uint256) {
         Stream memory s = streams[streamId];
         if (s.deposit == 0) return 0;
+        if (s.cancelled) return 0;
         uint256 nowTs = block.timestamp > s.stopTime ? s.stopTime : block.timestamp;
-        if (s.cancelled) {
-            // After cancel, the recipient's full owed share was already credited
-            // into `withdrawn` accounting handled at cancel-time. We return the
-            // unfetched portion.
-            return s.deposit - s.withdrawn;
-        }
         uint256 elapsed = nowTs - s.startTime;
         uint256 streamed = (elapsed * uint256(s.ratePerSecond)) / 1e18;
         if (streamed > s.deposit) streamed = s.deposit;

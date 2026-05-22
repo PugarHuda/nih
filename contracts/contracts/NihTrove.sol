@@ -77,14 +77,14 @@ contract NihTrove is ReentrancyGuard, Ownable {
     ///         to BorrowerOperations.closeTrove(), receive the BTC, send back.
     function closeTroveFor() external nonReentrant {
         uint256 debt = troveManager.getTroveDebt(address(this));
-        uint256 coll = troveManager.getTroveColl(address(this));
-
         musd.safeTransferFrom(msg.sender, address(this), debt);
         musd.forceApprove(address(borrowerOps), debt);
 
+        // closeTrove sends the trove's collateral back to msg.sender of
+        // closeTrove (which is us). Measure the delta — that IS the refund.
         uint256 btcBefore = address(this).balance;
         borrowerOps.closeTrove();
-        uint256 btcReturned = address(this).balance - btcBefore + coll - 0; // belt-and-suspenders
+        uint256 btcReturned = address(this).balance - btcBefore;
 
         (bool ok, ) = msg.sender.call{value: btcReturned}("");
         require(ok, "BTC return failed");

@@ -1,0 +1,35 @@
+[
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "streamId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "sender", "type": "address" },
+      { "indexed": true, "internalType": "address", "name": "recipient", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "deposit", "type": "uint256" },
+      { "indexed": false, "internalType": "uint64", "name": "startTime", "type": "uint64" },
+      { "indexed": false, "internalType": "uint64", "name": "stopTime", "type": "uint64" }
+    ],
+    "name": "StreamCreated",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "streamId", "type": "uint256" },
+      { "indexed": true, "internalType": "address", "name": "recipient", "type": "address" },
+      { "indexed": false, "internalType": "uint256", "name": "amount", "type": "uint256" }
+    ],
+    "name": "StreamWithdrawn",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      { "indexed": true, "internalType": "uint256", "name": "streamId", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "recipientShare", "type": "uint256" },
+      { "indexed": false, "internalType": "uint256", "name": "senderRefund", "type": "uint256" }
+    ],
+    "name": "StreamCancelled",
+    "type": "event"
+  }
+]

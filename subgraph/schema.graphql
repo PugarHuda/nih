@@ -37,3 +37,16 @@ type Loan @entity {
   closedAt: BigInt
   repaidAmount: BigInt
 }
+
+type StreamRecord @entity {
+  id: Bytes!
+  streamId: BigInt!
+  sender: Bytes!
+  recipient: Bytes!
+  deposit: BigInt!
+  startTime: BigInt!
+  stopTime: BigInt!
+  withdrawn: BigInt!
+  cancelled: Boolean!
+  cancelledAt: BigInt
+}
