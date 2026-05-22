@@ -1,0 +1,25 @@
+{
+  "name": "Nih — Tip MUSD anywhere on the web",
+  "short_name": "Nih",
+  "description": "Bitcoin-backed tipping on Mezo. One click on every social profile.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "hsl(20 14% 5%)",
+  "theme_color": "hsl(22 90% 56%)",
+  "categories": ["finance", "social", "productivity"],
+  "icons": [
+    { "src": "/icon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "/icon-180.png", "sizes": "180x180", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Tip", "url": "/tip", "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Claim", "url": "/claim" },
+    { "name": "Borrow", "url": "/borrow" },
+    { "name": "Earn", "url": "/earn" },
+    { "name": "Stream", "url": "/stream" }
+  ]
+}

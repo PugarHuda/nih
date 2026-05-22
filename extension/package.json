@@ -39,6 +39,8 @@
       "https://www.reddit.com/*",
       "https://old.reddit.com/*",
       "https://news.ycombinator.com/*",
+      "https://www.twitch.tv/*",
+      "https://www.linkedin.com/in/*",
       "https://rpc.test.mezo.org/*",
       "https://mainnet.mezo.public.validationcloud.io/*"
     ],
