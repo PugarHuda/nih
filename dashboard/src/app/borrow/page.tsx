@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addresses, erc20Abi, creditAbi } from "@/lib/contracts";
 import { formatMUSD } from "@/lib/utils";
+import { useRequireChain } from "@/lib/use-require-chain";
 import { TrendingUp, Loader2, Banknote } from "lucide-react";
 
 export default function BorrowPage() {
@@ -18,6 +19,7 @@ export default function BorrowPage() {
   const [collateralInput, setCollateralInput] = useState("");
   const [pending, setPending] = useState<"none" | "approve" | "open" | "repay">("none");
   const { writeContractAsync } = useWriteContract();
+  const { ensure } = useRequireChain();
 
   const { data: musdBalance } = useReadContract({
     address: addresses.MUSD,
@@ -59,6 +61,7 @@ export default function BorrowPage() {
   const needsApproval = currentAllowance < collateralWei;
 
   async function handleApprove() {
+    if (!(await ensure())) return;
     setPending("approve");
     try {
       await writeContractAsync({
@@ -78,6 +81,7 @@ export default function BorrowPage() {
 
   async function handleOpen() {
     if (!collateralWei) return;
+    if (!(await ensure())) return;
     setPending("open");
     try {
       await writeContractAsync({
@@ -97,6 +101,7 @@ export default function BorrowPage() {
   }
 
   async function handleRepay() {
+    if (!(await ensure())) return;
     setPending("repay");
     try {
       await writeContractAsync({

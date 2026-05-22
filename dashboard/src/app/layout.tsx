@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { ChainGuard } from "@/components/chain-guard";
 
 export const metadata: Metadata = {
   title: "Nih — Tip MUSD anywhere on the web",
@@ -17,7 +18,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className="dark">
       <body className="noise min-h-screen antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <ChainGuard />
+          {children}
+        </Providers>
       </body>
     </html>
   );

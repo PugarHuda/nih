@@ -11,6 +11,7 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Button } from "@/components/ui/button";
 import { addresses, erc20Abi, routerAbi } from "@/lib/contracts";
 import { formatMUSD } from "@/lib/utils";
+import { useRequireChain } from "@/lib/use-require-chain";
 import { Loader2 } from "lucide-react";
 
 function TipInner() {
@@ -28,6 +29,7 @@ function TipInner() {
 
   const [pending, setPending] = useState<"none" | "approve" | "tip" | "done">("none");
   const { writeContractAsync } = useWriteContract();
+  const { ensure } = useRequireChain();
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: addresses.MUSD,
@@ -43,6 +45,7 @@ function TipInner() {
 
   async function handleSend() {
     if (!isConnected) return;
+    if (!(await ensure())) return;
     setPending(needsApproval ? "approve" : "tip");
     try {
       if (needsApproval) {

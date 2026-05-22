@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { addresses, registryAbi, vaultAbi } from "@/lib/contracts";
 import { formatMUSD } from "@/lib/utils";
+import { useRequireChain } from "@/lib/use-require-chain";
 import { CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 
 type Platform = "twitter" | "youtube" | "github" | "substack" | "medium";
@@ -21,6 +22,7 @@ export default function ClaimPage() {
   const [username, setUsername] = useState("");
   const [step, setStep] = useState<"input" | "verifying" | "registered" | "claiming" | "done">("input");
   const { writeContractAsync } = useWriteContract();
+  const { ensure } = useRequireChain();
 
   const handleIdHash = username
     ? keccak256(encodePacked(["string", "string", "string"], [platform, ":", username]))
@@ -44,6 +46,7 @@ export default function ClaimPage() {
 
   async function handleVerify() {
     if (!address || !username) return;
+    if (!(await ensure())) return;
     setStep("verifying");
     try {
       // Hit backend /api/verify to get a verifier-signed attestation
@@ -73,6 +76,7 @@ export default function ClaimPage() {
 
   async function handleClaim() {
     if (!handleIdHash) return;
+    if (!(await ensure())) return;
     setStep("claiming");
     try {
       await writeContractAsync({

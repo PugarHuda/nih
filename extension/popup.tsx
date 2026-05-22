@@ -14,6 +14,10 @@ function IndexPopup() {
   const [balance, setBalance] = useState<string>("0");
   const [defaultTip, setDefaultTip] = useState<number>(5);
   const [payInMezo, setPayInMezo] = useState<boolean>(false);
+  const [walletChainId, setWalletChainId] = useState<number | null>(null);
+
+  const targetChainId = 31611;
+  const isWrongChain = walletChainId !== null && walletChainId !== targetChainId;
 
   useEffect(() => {
     (async () => {
@@ -21,6 +25,15 @@ function IndexPopup() {
       if (saved) setDefaultTip(saved);
       const mezo = await storage.get<boolean>("payInMezo");
       if (mezo) setPayInMezo(mezo);
+
+      // Subscribe to wallet chain changes so the popup stays in sync.
+      const eth = (window as any).ethereum;
+      if (!eth) return;
+      try {
+        const cid: string = await eth.request({ method: "eth_chainId" });
+        setWalletChainId(parseInt(cid, 16));
+        eth.on?.("chainChanged", (hex: string) => setWalletChainId(parseInt(hex, 16)));
+      } catch {}
     })();
   }, []);
 
@@ -32,6 +45,12 @@ function IndexPopup() {
       const [acc] = await wallet.requestAddresses();
       setAddress(acc);
 
+      const eth = (window as any).ethereum;
+      if (eth) {
+        const cid: string = await eth.request({ method: "eth_chainId" });
+        setWalletChainId(parseInt(cid, 16));
+      }
+
       const pub = publicClient();
       const bal = await pub.readContract({
         address: ADDRESSES.MUSD,
@@ -40,6 +59,14 @@ function IndexPopup() {
         args: [acc],
       });
       setBalance(formatEther(bal as bigint));
+    } catch (err) {
+      alert((err as Error).message);
+    }
+  }
+
+  async function fixChain() {
+    try {
+      await ensureChain();
     } catch (err) {
       alert((err as Error).message);
     }
@@ -59,10 +86,28 @@ function IndexPopup() {
           N
         </div>
         <span className="font-semibold text-lg">Nih</span>
-        <span className="ml-auto text-[10px] uppercase tracking-wider text-muted">
-          matsnet
+        <span
+          className={`ml-auto text-[10px] uppercase tracking-wider ${
+            isWrongChain ? "text-red-400" : "text-muted"
+          }`}
+        >
+          {isWrongChain ? `wrong chain (${walletChainId})` : "matsnet"}
         </span>
       </div>
+
+      {isWrongChain && (
+        <div className="border-b border-border bg-red-500/10 p-3 text-xs">
+          <p className="text-red-300 mb-2">
+            Your wallet is on chain <strong>{walletChainId}</strong>. Nih needs Mezo matsnet (31611).
+          </p>
+          <button
+            onClick={fixChain}
+            className="w-full h-8 rounded-md bg-red-500 text-bg text-xs font-medium hover:opacity-90"
+          >
+            Switch to Mezo matsnet
+          </button>
+        </div>
+      )}
 
       <div className="p-4 space-y-4">
         {!address ? (
