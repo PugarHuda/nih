@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 
 // ─────────────────────────────────────────────────────────────────
 // TipDropBanner — live "tip just landed" notification (POW!)
@@ -38,45 +37,49 @@ const PLATFORM_LABEL: Record<string, string> = {
 
 export function TipDropBanner({ feed = DEFAULT_FEED }: { feed?: FeedItem[] }) {
   const [idx, setIdx] = useState(0);
+  // CSS-driven fade — avoids framer-motion AnimatePresence quirks with
+  // React 19 concurrent renders.
+  const [fadeKey, setFadeKey] = useState(0);
 
   useEffect(() => {
-    const t = setInterval(() => setIdx((i) => (i + 1) % feed.length), 6500);
+    const t = setInterval(() => {
+      setIdx((i) => (i + 1) % feed.length);
+      setFadeKey((k) => k + 1);
+    }, 6500);
     return () => clearInterval(t);
   }, [feed.length]);
 
-  const tip = feed[idx];
+  const tip = feed[idx] ?? feed[0];
+  if (!tip) return null;
 
   return (
     <div className="mb-6 overflow-hidden">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={idx}
-          initial={{ y: -16, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          exit={{ y: -16, opacity: 0 }}
-          transition={{ duration: 0.25 }}
-          className="comic-card accent flex items-center gap-4 px-5 py-3"
-        >
-          <span className="sfx flex-none">NIH!</span>
-          <Avatar name={tip.from} />
-          <div className="flex-1 min-w-0">
-            <b className="text-sm">
-              {tip.from} tipped you <span className="tabular">{tip.amount}</span> MUSD on{" "}
-              {PLATFORM_LABEL[tip.platform] ?? tip.platform}
-            </b>
-            <div className="text-xs opacity-75 truncate">&ldquo;{tip.note}&rdquo;</div>
-          </div>
-          <span className="mono text-[11px] opacity-60">just now</span>
-        </motion.div>
-      </AnimatePresence>
+      <div
+        key={fadeKey}
+        className="comic-card accent flex items-center gap-4 px-5 py-3"
+        style={{ animation: "nih-pop .35s cubic-bezier(.2,.7,.2,1)" }}
+      >
+        <span className="sfx flex-none">NIH!</span>
+        <Avatar name={tip.from} />
+        <div className="flex-1 min-w-0">
+          <b className="text-sm">
+            {tip.from} tipped you <span className="tabular">{tip.amount}</span> MUSD on{" "}
+            {PLATFORM_LABEL[tip.platform] ?? tip.platform}
+          </b>
+          <div className="text-xs opacity-75 truncate">&ldquo;{tip.note}&rdquo;</div>
+        </div>
+        <span className="mono text-[11px] opacity-60">just now</span>
+      </div>
     </div>
   );
 }
 
 function Avatar({ name }: { name: string }) {
-  const initials = (name[0] + (name[1] ?? "")).toUpperCase();
+  const safe = (name || "??").slice(0, 2);
+  const initials = (safe[0] + (safe[1] ?? "")).toUpperCase();
   const colors = ["#FFD32D", "#2B7CE9", "#E03131", "#1F8A3A"];
-  const color = colors[name.charCodeAt(0) % colors.length];
+  const code = safe.charCodeAt(0) || 0;
+  const color = colors[code % colors.length];
   return (
     <span
       style={{
