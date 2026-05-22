@@ -2,18 +2,22 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import dynamic from "next/dynamic";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { ConnectWallet } from "@/components/connect-wallet";
 
-// ConnectWallet pulls in wagmi + RainbowKit + framer-motion. We lazy-load
-// with ssr:false so wallet-extension races (Phantom vs MetaMask fighting
-// for window.ethereum) never block the landing's first paint, and so
-// any deprecated React internals inside RainbowKit (ReactCurrentOwner)
-// don't crash the marketing page if a transitive dep is mis-versioned.
-const ConnectWallet = dynamic(
-  () => import("@/components/connect-wallet").then((m) => m.ConnectWallet),
-  { ssr: false, loading: () => null }
-);
+/**
+ * Client-only ConnectWallet slot. Keeps the rest of the landing rendering
+ * server-side (no BAILOUT_TO_CLIENT_SIDE_RENDERING) while still deferring
+ * wagmi/RainbowKit's window-touching init until after first paint, so
+ * wallet-extension races (Phantom vs MetaMask) can't block the marketing
+ * page or crash React 19 with stale internal access.
+ */
+function ConnectSlot() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+  return <ConnectWallet />;
+}
 
 /**
  * Comic landing — ported from the Claude Design HTML handoff
@@ -42,7 +46,7 @@ export default function LandingPage() {
           <nav>
             <Link href="/dashboard">Dashboard</Link>
             <Link href="/logo.html">Brand</Link>
-            <ConnectWallet />
+            <ConnectSlot />
           </nav>
         </header>
     {/* ANIMATED COMIC BACKGROUND */}
