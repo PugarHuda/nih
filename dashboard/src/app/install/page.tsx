@@ -17,7 +17,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const ZIP_URL = "https://github.com/PugarHuda/nih/releases/download/v0.3.0/nih-extension-v0.3.0.zip";
+const ZIP_URL = "https://github.com/PugarHuda/nih/releases/download/v0.4.0/nih-extension-v0.4.0.zip";
 const WEB_STORE_URL: string | null = null; // set after Chrome Web Store listing is live
 
 export default function InstallPage() {
@@ -39,7 +39,7 @@ export default function InstallPage() {
 
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
-            <Chrome className="h-3.5 w-3.5" /> Browser extension · v0.3.0
+            <Chrome className="h-3.5 w-3.5" /> Browser extension · v0.4.0
           </div>
           <h1 className="text-3xl md:text-4xl font-semibold tracking-tight mb-2">
             Install Nih
@@ -61,7 +61,7 @@ export default function InstallPage() {
             <div className="flex-1">
               <CardHeader className="pb-2">
                 <CardTitle className="text-2xl">Download & install</CardTitle>
-                <CardDescription>1.7 MB · MV3 · open source · seven platforms</CardDescription>
+                <CardDescription>2.1 MB · MV3 · open source · nine platforms</CardDescription>
               </CardHeader>
             </div>
             <Button size="lg" onClick={handleDownload} className="text-base">
@@ -112,7 +112,7 @@ export default function InstallPage() {
             title="Unzip the download, then drag the folder into Chrome"
             body={
               <p className="text-sm text-muted">
-                Unzip <code className="text-fg">nih-extension-v0.3.0.zip</code> on your
+                Unzip <code className="text-fg">nih-extension-v0.4.0.zip</code> on your
                 desktop, then literally drag the unzipped folder onto the extensions page.
                 Chrome installs it instantly. (Or click{" "}
                 <strong className="text-fg">Load unpacked</strong> and pick the folder.)
