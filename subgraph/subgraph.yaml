@@ -4,9 +4,9 @@ schema:
 dataSources:
   - kind: ethereum
     name: NihRouter
-    network: mezo-matsnet
+    network: mezo-testnet
     source:
-      address: "0x0000000000000000000000000000000000000000"
+      address: "0x68437B812419B8EEE240eC6528f43d111Dd348D3"
       abi: NihRouter
       startBlock: 1
     mapping:
@@ -26,9 +26,9 @@ dataSources:
       file: ./src/mapping.ts
   - kind: ethereum
     name: NihCredit
-    network: mezo-matsnet
+    network: mezo-testnet
     source:
-      address: "0x0000000000000000000000000000000000000000"
+      address: "0x913E736B1dba8a4f3bF5953800248Ac89C18ec82"
       abi: NihCredit
       startBlock: 1
     mapping:
