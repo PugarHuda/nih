@@ -1,0 +1,13 @@
+{
+  "chainId": 31611,
+  "network": "matsnet",
+  "deployedAt": "2026-05-22T05:51:12.373Z",
+  "contracts": {
+    "MUSD": "0x77Bb4E31FFb4a0d2fF8cDd50958ACE20b275caa5",
+    "MEZO": "0x67Beea65318fa87390eb9f809a5a77708BCad698",
+    "NihRegistry": "0x91A841E29bD86e921A269d7360632dDc6175B9c5",
+    "NihVault": "0x7e02327D9e6097DA2a30C588A9BA62C923ad8AD6",
+    "NihRouter": "0x68437B812419B8EEE240eC6528f43d111Dd348D3",
+    "NihCredit": "0x913E736B1dba8a4f3bF5953800248Ac89C18ec82"
+  }
+}

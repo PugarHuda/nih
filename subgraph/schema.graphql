@@ -1,0 +1,39 @@
+type Tip @entity(immutable: true) {
+  id: Bytes!
+  sender: Account!
+  recipient: Account
+  handleId: Bytes!
+  amount: BigInt!
+  fee: BigInt!
+  paidInMezo: Boolean!
+  context: Bytes!
+  txHash: Bytes!
+  blockNumber: BigInt!
+  timestamp: BigInt!
+}
+
+type Account @entity {
+  id: Bytes!
+  address: Bytes!
+  totalSent: BigInt!
+  totalReceived: BigInt!
+  tipCount: BigInt!
+  loans: [Loan!]! @derivedFrom(field: "borrower")
+}
+
+type HandleStat @entity {
+  id: Bytes!
+  handleId: Bytes!
+  totalReceived: BigInt!
+  tipCount: BigInt!
+}
+
+type Loan @entity {
+  id: Bytes!
+  borrower: Account!
+  collateral: BigInt!
+  principal: BigInt!
+  openedAt: BigInt!
+  closedAt: BigInt
+  repaidAmount: BigInt
+}
