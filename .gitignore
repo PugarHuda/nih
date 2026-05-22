@@ -20,3 +20,5 @@ deployments/localhost/
 .claude/
 .vercel/
 
+
+.vercel

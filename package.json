@@ -4,12 +4,15 @@
   "private": true,
   "description": "Tip MUSD anywhere on the web. Bitcoin-backed tipping on Mezo.",
   "scripts": {
-    "build": "pnpm -r build",
+    "build": "pnpm --filter dashboard build",
     "dev:dashboard": "pnpm --filter dashboard dev",
     "dev:extension": "pnpm --filter extension dev",
     "compile": "pnpm --filter contracts compile",
     "test": "pnpm --filter contracts test",
     "deploy:matsnet": "pnpm --filter contracts deploy:matsnet"
+  },
+  "devDependencies": {
+    "next": "^15.0.3"
   },
   "engines": {
     "node": ">=20"
