@@ -5,7 +5,8 @@ import Link from "next/link";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { ArrowRight, Chrome, Coins, Banknote, Sparkles, ShieldCheck, Zap } from "lucide-react";
+import { ArrowRight, Chrome, Coins, Banknote, Sparkles, ShieldCheck, Zap, Activity } from "lucide-react";
+import { ActivityFeed } from "@/components/activity-feed";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 16 },
@@ -168,6 +169,25 @@ export default function Home() {
               </div>
             </Card>
           </div>
+        </section>
+
+        {/* Live activity */}
+        <section className="mb-32">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h2 className="text-2xl md:text-3xl font-semibold tracking-tight mb-1">
+                Live activity
+              </h2>
+              <p className="text-muted text-sm">
+                Tips landing right now. Indexed by Goldsky from Mezo matsnet.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/5 px-3 py-1.5 text-xs text-accent">
+              <Activity className="h-3.5 w-3.5" />
+              real-time
+            </span>
+          </div>
+          <ActivityFeed limit={6} />
         </section>
 
         {/* Install CTA */}

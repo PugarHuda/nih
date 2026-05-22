@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { parseEther, maxUint256, keccak256, toBytes } from "viem";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { addresses, erc20Abi, routerAbi } from "@/lib/contracts";
 import { formatMUSD } from "@/lib/utils";
 import { useRequireChain } from "@/lib/use-require-chain";
-import { Loader2 } from "lucide-react";
+import { Loader2, Sparkles } from "lucide-react";
 
 function TipInner() {
   const params = useSearchParams();
@@ -28,8 +28,29 @@ function TipInner() {
   const context = params.get("context") ?? "";
 
   const [pending, setPending] = useState<"none" | "approve" | "tip" | "done">("none");
+  const [suggestion, setSuggestion] = useState<{ amount: number; reasoning: string; source: string } | null>(null);
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
+
+  // Fetch a tip-amount suggestion when the page loads.
+  useEffect(() => {
+    if (!username) return;
+    fetch("/api/suggest", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        platform,
+        authorHandle: username,
+        senderAddress: address,
+        postText: context,
+      }),
+    })
+      .then((r) => r.json())
+      .then((data) => {
+        if (data?.amount) setSuggestion(data);
+      })
+      .catch(() => {});
+  }, [platform, username, context, address]);
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: addresses.MUSD,
@@ -95,6 +116,36 @@ function TipInner() {
                 ≈ ${formatMUSD(amountWei, 2)} • 0.5% protocol fee
               </p>
             </div>
+
+            <AnimatePresence>
+              {suggestion && suggestion.amount !== amount && (
+                <motion.div
+                  initial={{ opacity: 0, y: -4 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0 }}
+                  className="rounded-lg border border-accent/30 bg-accent/5 p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="rounded-md bg-accent/15 p-1.5 text-accent">
+                      <Sparkles className="h-3.5 w-3.5" />
+                    </span>
+                    <div className="flex-1 text-sm">
+                      <p className="text-fg mb-1">
+                        {suggestion.source === "claude+boar" ? "Claude suggests" : "Heuristic suggests"}{" "}
+                        <strong className="text-accent">{suggestion.amount} MUSD</strong>
+                      </p>
+                      <p className="text-muted text-xs leading-relaxed">{suggestion.reasoning}</p>
+                    </div>
+                    <a
+                      href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=${suggestion.amount}`}
+                      className="text-xs text-brand hover:underline whitespace-nowrap mt-0.5"
+                    >
+                      Use →
+                    </a>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
             {pending === "done" ? (
               <div className="rounded-lg bg-accent/10 border border-accent/30 p-4 text-center text-accent text-sm">

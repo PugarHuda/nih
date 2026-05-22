@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createPublicClient, http } from "viem";
 import { matsnet } from "@/lib/chain";
 import { addresses, routerAbi } from "@/lib/contracts";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 /**
  * AI tip-amount suggestion.
@@ -128,6 +129,16 @@ ${Object.entries(ctx).map(([k, v]) => `- ${k}: ${v}`).join("\n") || "- no prior 
 }
 
 export async function POST(req: NextRequest) {
+  const ip = clientIp(req);
+  // LLM calls cost real money — keep tight quota per IP.
+  const rl = rateLimit(`suggest:${ip}`, { limit: 30, windowMs: 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests", retryAfter: rl.retryAfter },
+      { status: 429, headers: { "retry-after": String(rl.retryAfter) } }
+    );
+  }
+
   const payload = (await req.json()) as SuggestPayload;
   const ctx = await loadContext(payload);
   const ai = await llmSuggest(payload, ctx);

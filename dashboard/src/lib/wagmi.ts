@@ -1,31 +1,49 @@
-import { createConfig, fallback, http } from "wagmi";
-import { injected } from "wagmi/connectors";
+import { fallback, http } from "wagmi";
+import { getConfig } from "@mezo-org/passport";
 import { matsnet } from "./chain";
 
 /**
- * Transport priority — matsnet:
- *   1. NEXT_PUBLIC_SPECTRUM_RPC (if set) — bonus prize integration
- *   2. NEXT_PUBLIC_RPC_URL (default Mezo public)
- *   3. Hardcoded fallback to public
+ * Wagmi config powered by @mezo-org/passport.
  *
- * The wagmi `fallback` transport rotates through these on failure, so a
- * Spectrum hiccup doesn't break the dashboard.
+ * Passport bundles Mezo-specific connectors out of the box:
+ *  - MetaMask (default injected)
+ *  - Xverse (Bitcoin-native wallet)
+ *  - Unisat (Bitcoin-native wallet)
+ *  - OKX (Bitcoin + EVM)
+ *  - WalletConnect (mobile fallback)
+ *
+ * The crucial differentiator: Xverse and Unisat let BTC-maximalist users
+ * connect with the wallets they already use for native Bitcoin — they don't
+ * have to install MetaMask just to tip.
+ *
+ * Transport priority — matsnet:
+ *   1. NEXT_PUBLIC_SPECTRUM_RPC if set (bonus prize integration)
+ *   2. NEXT_PUBLIC_RPC_URL (Mezo public default)
+ *   3. Hardcoded public fallback
  */
 const spectrum = process.env.NEXT_PUBLIC_SPECTRUM_RPC;
 const primary = process.env.NEXT_PUBLIC_RPC_URL ?? "https://rpc.test.mezo.org";
+const walletConnectProjectId = process.env.NEXT_PUBLIC_WALLETCONNECT_ID ?? "00000000000000000000000000000000";
 
-export const wagmiConfig = createConfig({
+export const wagmiConfig = getConfig({
+  appName: "Nih",
+  appDescription: "Tip MUSD anywhere on the web.",
+  appUrl: "https://nih-seven.vercel.app",
+  appIcon: "https://nih-seven.vercel.app/icon.png",
+  mezoNetwork: "testnet",
+  walletConnectProjectId,
   chains: [matsnet],
-  connectors: [injected()],
-  transports: {
-    [matsnet.id]: fallback(
-      [
-        ...(spectrum ? [http(spectrum)] : []),
-        http(primary),
-        http("https://rpc.test.mezo.org"),
-      ],
-      { rank: false }
-    ),
-  },
   ssr: true,
+  transports: {
+    transports: {
+      [matsnet.id]: fallback(
+        [
+          ...(spectrum ? [http(spectrum)] : []),
+          http(primary),
+          http("https://rpc.test.mezo.org"),
+        ],
+        { rank: false }
+      ),
+    },
+  },
 });

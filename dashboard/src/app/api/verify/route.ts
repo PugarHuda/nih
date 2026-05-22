@@ -3,6 +3,7 @@ import { keccak256, encodePacked, isAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { Hex } from "viem";
 import { verify, challengeFor, type Platform } from "@/lib/verifiers";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 const PLATFORMS = new Set<Platform>(["twitter", "youtube", "github", "substack", "medium"]);
 
@@ -20,6 +21,16 @@ const PLATFORMS = new Set<Platform>(["twitter", "youtube", "github", "substack",
  * DAO multisig signer or a TEE-attested signer.
  */
 export async function POST(req: NextRequest) {
+  // Rate limit — verifying public profiles is expensive (5 external fetches each call).
+  const ip = clientIp(req);
+  const rl = rateLimit(`verify:${ip}`, { limit: 10, windowMs: 60_000 });
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: "Too many requests", retryAfter: rl.retryAfter },
+      { status: 429, headers: { "retry-after": String(rl.retryAfter) } }
+    );
+  }
+
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   const { platform, username, wallet } = body as { platform?: string; username?: string; wallet?: string };

@@ -36,6 +36,9 @@
       "https://medium.com/*",
       "https://*.medium.com/*",
       "https://github.com/*",
+      "https://www.reddit.com/*",
+      "https://old.reddit.com/*",
+      "https://news.ycombinator.com/*",
       "https://rpc.test.mezo.org/*",
       "https://mainnet.mezo.public.validationcloud.io/*"
     ],
