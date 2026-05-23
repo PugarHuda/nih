@@ -6,7 +6,7 @@ dataSources:
     name: NihRouter
     network: mezo-testnet
     source:
-      address: "0x42245cEef96D432c8DA3918dc66D3663E36bFE72"
+      address: "0x67Fb6f01C35D4793b952C9BFE606c0B7Cb1F7c15"
       abi: NihRouter
       startBlock: 1
     mapping:
@@ -28,7 +28,7 @@ dataSources:
     name: NihCredit
     network: mezo-testnet
     source:
-      address: "0xE481399d3D8627bC077F4CC752c7033B58De94f4"
+      address: "0x256f577DAf3354156f39a77606B6e4eDc8Fd762c"
       abi: NihCredit
       startBlock: 1
     mapping:
@@ -50,7 +50,7 @@ dataSources:
     name: NihStream
     network: mezo-testnet
     source:
-      address: "0x2964a12B697B9468f102BF4fF3Ada5DEE7E847AC"
+      address: "0x28364eF04EF75e77B28553Df47845cf7dB6fD32d"
       abi: NihStream
       startBlock: 1
     mapping:

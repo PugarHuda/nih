@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useAccount, useWriteContract } from "wagmi";
 import { parseEther } from "viem";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { addresses, erc20Abi } from "@/lib/contracts";
+import { addresses } from "@/lib/contracts";
 import { useRequireChain } from "@/lib/use-require-chain";
 import { Droplet, Loader2, ExternalLink } from "lucide-react";
 
@@ -17,22 +18,25 @@ export default function FaucetPage() {
   const { address, isConnected } = useAccount();
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
-  const [pending, setPending] = useState<"none" | "musd" | "mezo">("none");
+  const [pending, setPending] = useState<"none" | "mezo">("none");
 
-  async function mint(token: "musd" | "mezo") {
+  // MUSD is now Mezo's REAL primitive — no open mint. MEZO is still a mock
+  // (real MEZO not on matsnet yet) so the faucet only hands out test MEZO
+  // for fee-discount practice. Real MUSD comes from a Mezo trove.
+  async function mintMezo() {
     if (!address) return;
     if (!(await ensure())) return;
-    setPending(token);
+    setPending("mezo");
     try {
       await writeContractAsync({
-        address: token === "musd" ? addresses.MUSD : addresses.MEZO,
+        address: addresses.MEZO,
         abi: [
           { type: "function", name: "mint", stateMutability: "nonpayable", inputs: [{ type: "address" }, { type: "uint256" }], outputs: [] },
         ],
         functionName: "mint",
         args: [address, MINT_AMOUNT],
       });
-      toast.success(`Minted 100 ${token.toUpperCase()}`);
+      toast.success(`Minted 100 MEZO`);
     } catch (err) {
       toast.error((err as Error).message);
     } finally {
@@ -50,8 +54,10 @@ export default function FaucetPage() {
           </div>
           <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Get test funds</h1>
           <p className="mb-8 max-w-md" style={{ color: "var(--ink-3)" }}>
-            The Mock MUSD and Mock MEZO tokens on matsnet are open-mint. Grab some to try the full
-            tip / claim / borrow loop.
+            Nih now uses Mezo&apos;s <b>real MUSD</b> for the entire tip economy.
+            To get real MUSD on matsnet, open a Mezo trove (deposit BTC,
+            mint MUSD). Test MEZO is still mockable here for the fee-discount
+            flow.
           </p>
         </div>
 
@@ -66,18 +72,21 @@ export default function FaucetPage() {
           <div className="grid sm:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
-                <CardTitle>100 MUSD</CardTitle>
-                <CardDescription>The stablecoin used for every tip.</CardDescription>
+                <CardTitle>Real MUSD</CardTitle>
+                <CardDescription>
+                  Open a Mezo trove with test BTC to mint real MUSD.
+                </CardDescription>
               </CardHeader>
-              <Button onClick={() => mint("musd")} disabled={pending !== "none"} className="w-full">
-                {pending === "musd" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Minting…
-                  </>
-                ) : (
-                  "Mint 100 MUSD"
-                )}
-              </Button>
+              <a
+                href="https://app.test.mezo.org"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <Button className="w-full">
+                  Open Mezo trove <ExternalLink className="h-4 w-4" />
+                </Button>
+              </a>
             </Card>
 
             <Card>
@@ -85,7 +94,7 @@ export default function FaucetPage() {
                 <CardTitle>100 MEZO</CardTitle>
                 <CardDescription>Pay protocol fees at a 50% discount.</CardDescription>
               </CardHeader>
-              <Button onClick={() => mint("mezo")} disabled={pending !== "none"} className="w-full" variant="secondary">
+              <Button onClick={mintMezo} disabled={pending !== "none"} className="w-full" variant="secondary">
                 {pending === "mezo" ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" /> Minting…

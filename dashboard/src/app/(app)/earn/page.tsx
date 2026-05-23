@@ -22,10 +22,10 @@ export default function EarnPage() {
   const { ensure } = useRequireChain();
 
   // NihEarn wraps Mezo's REAL StabilityPool — deposits MUST be in real
-  // Mezo MUSD (`addresses.RealMUSD`). Showing Mock MUSD balance here
+  // Mezo MUSD (`addresses.MUSD`). Showing Mock MUSD balance here
   // would mislead the user into approving the wrong token.
   const { data: musdBalance } = useReadContract({
-    address: addresses.RealMUSD,
+    address: addresses.MUSD,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
@@ -58,7 +58,7 @@ export default function EarnPage() {
     query: { enabled: !!address },
   });
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    address: addresses.RealMUSD,
+    address: addresses.MUSD,
     abi: erc20Abi,
     functionName: "allowance",
     args: address ? [address, addresses.Earn] : undefined,
@@ -76,7 +76,7 @@ export default function EarnPage() {
         setPending("approve");
         // Approve REAL Mezo MUSD — NihEarn forwards into the real
         // StabilityPool which only accepts the real MUSD token.
-        await writeContractAsync({ address: addresses.RealMUSD, abi: erc20Abi, functionName: "approve", args: [addresses.Earn, maxUint256] });
+        await writeContractAsync({ address: addresses.MUSD, abi: erc20Abi, functionName: "approve", args: [addresses.Earn, maxUint256] });
         await refetchAllowance();
       }
       setPending("deposit");

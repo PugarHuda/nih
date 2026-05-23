@@ -29,16 +29,29 @@ async function main() {
   const [deployer] = await ethers.getSigners();
   const useRealMezo = network.name === "matsnet" || network.name === "matsnetSpectrum";
   const realAddrs = useRealMezo ? MEZO_MATSNET : null;
+  // FULL_REAL=1 → tip economy uses real Mezo MUSD too (Router/Vault/Credit/Stream
+  // all point at realAddrs.MUSD instead of MockMUSD). Default off so the demo
+  // can keep the open-mint /faucet flow.
+  const fullReal = useRealMezo && process.env.FULL_REAL === "1";
 
   console.log(`Deploying Nih to ${network.name} as ${deployer.address}`);
-  console.log(`Balance: ${ethers.formatEther(await ethers.provider.getBalance(deployer.address))} BTC\n`);
+  console.log(`Balance: ${ethers.formatEther(await ethers.provider.getBalance(deployer.address))} BTC`);
+  console.log(`Mode: ${fullReal ? "FULL_REAL (all contracts use real Mezo MUSD)" : "hybrid (Router/Vault/Credit/Stream → MockMUSD; Earn/Trove → real MUSD)"}\n`);
 
-  // 1) Demo MUSD (open-mint) for tip/credit/stream flows.
-  console.log("Deploying MockMUSD for demo-tip flow…");
-  const MockMUSD = await ethers.getContractFactory("MockMUSD");
-  const musd = await MockMUSD.deploy();
-  await musd.waitForDeployment();
-  console.log(`  MockMUSD → ${await musd.getAddress()}`);
+  // 1) MockMUSD for demo tip flow — skipped in FULL_REAL.
+  let musd: any = null;
+  let musdAddr: string;
+  if (!fullReal) {
+    console.log("Deploying MockMUSD for demo-tip flow…");
+    const MockMUSD = await ethers.getContractFactory("MockMUSD");
+    musd = await MockMUSD.deploy();
+    await musd.waitForDeployment();
+    musdAddr = await musd.getAddress();
+    console.log(`  MockMUSD → ${musdAddr}`);
+  } else {
+    musdAddr = realAddrs!.MUSD;
+    console.log(`Using real Mezo MUSD for ALL tip flows → ${musdAddr}`);
+  }
 
   // 2) MEZO mock (real MEZO not on matsnet yet).
   console.log("Deploying MockMEZO…");
@@ -46,7 +59,7 @@ async function main() {
   await mezo.waitForDeployment();
   console.log(`  MockMEZO → ${await mezo.getAddress()}`);
 
-  // 3) Nih primitives over MockMUSD.
+  // 3) Nih primitives. `musdAddr` is mock or real depending on FULL_REAL.
   console.log("Deploying NihRegistry…");
   const registry = await (await ethers.getContractFactory("NihRegistry")).deploy(deployer.address);
   await registry.waitForDeployment();
@@ -54,7 +67,7 @@ async function main() {
 
   console.log("Deploying NihVault…");
   const vault = await (await ethers.getContractFactory("NihVault")).deploy(
-    await musd.getAddress(),
+    musdAddr,
     await registry.getAddress()
   );
   await vault.waitForDeployment();
@@ -62,7 +75,7 @@ async function main() {
 
   console.log("Deploying NihRouter…");
   const router = await (await ethers.getContractFactory("NihRouter")).deploy(
-    await musd.getAddress(),
+    musdAddr,
     await mezo.getAddress(),
     await registry.getAddress(),
     await vault.getAddress(),
@@ -76,14 +89,14 @@ async function main() {
 
   console.log("Deploying NihCredit (peer pool)…");
   const credit = await (await ethers.getContractFactory("NihCredit")).deploy(
-    await musd.getAddress(),
+    musdAddr,
     await vault.getAddress()
   );
   await credit.waitForDeployment();
   console.log(`  NihCredit → ${await credit.getAddress()}`);
 
   console.log("Deploying NihStream…");
-  const stream = await (await ethers.getContractFactory("NihStream")).deploy(await musd.getAddress());
+  const stream = await (await ethers.getContractFactory("NihStream")).deploy(musdAddr);
   await stream.waitForDeployment();
   console.log(`  NihStream → ${await stream.getAddress()}`);
 
@@ -117,7 +130,7 @@ async function main() {
     network: network.name,
     deployedAt: new Date().toISOString(),
     contracts: {
-      MUSD: await musd.getAddress(),
+      MUSD: musdAddr,
       MEZO: await mezo.getAddress(),
       NihRegistry: await registry.getAddress(),
       NihVault: await vault.getAddress(),
