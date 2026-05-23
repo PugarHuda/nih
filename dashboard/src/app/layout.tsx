@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
 import "./globals.css";
+import { GlobalNavSuppress } from "@/components/global-nav-suppress";
 
 export const metadata: Metadata = {
   title: "Nih — Tip MUSD anywhere on the web",
@@ -49,7 +51,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen antialiased">{children}</body>
+      <body
+        className="min-h-screen antialiased"
+        data-style="komik"
+        data-mode="light"
+      >
+        <Suspense fallback={null}>
+          <GlobalNavSuppress />
+        </Suspense>
+        {children}
+      </body>
     </html>
   );
 }

@@ -4,12 +4,13 @@ pragma solidity ^0.8.28;
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {NihRegistry} from "./NihRegistry.sol";
 
 /// @title NihVault — escrow holding tips for unregistered handles, plus credit-line collateral.
 /// @notice Tips to unknown handles park here until recipient registers & claims.
 /// @dev After TTL, anyone can refund to sender minus keeper bounty.
-contract NihVault is ReentrancyGuard {
+contract NihVault is ReentrancyGuard, Ownable {
     using SafeERC20 for IERC20;
 
     struct PendingTip {
@@ -57,12 +58,14 @@ contract NihVault is ReentrancyGuard {
         _;
     }
 
-    constructor(IERC20 _musd, NihRegistry _registry) {
+    constructor(IERC20 _musd, NihRegistry _registry) Ownable(msg.sender) {
         musd = _musd;
         registry = _registry;
     }
 
-    function setRouter(address _router) external {
+    /// @notice One-shot router wiring. `onlyOwner` so a mempool watcher
+    /// cannot frontrun the deploy-script tx and hijack the escrow.
+    function setRouter(address _router) external onlyOwner {
         require(router == address(0), "Router set");
         router = _router;
         emit RouterSet(_router);

@@ -249,17 +249,20 @@ function UnlockableArticle({ asset }: { asset: Asset }) {
         functionName: "tip",
         args: [asset.platform, asset.username, priceWei, false, context],
       });
-      txSuccess({
+      // Gate the unlock reveal on the actual on-chain receipt — broadcast
+      // alone is not proof of payment.
+      await txSuccess({
         message: `Unlocked: ${asset.title}`,
         description: `Paid ${asset.priceMUSD} MUSD to @${asset.username}`,
         txHash,
+        onConfirmed: () => {
+          if (typeof window !== "undefined" && address) {
+            window.localStorage.setItem(unlockKey(address, asset.id), txHash);
+          }
+          setUnlocked(true);
+          setRefreshKey((k) => k + 1);
+        },
       });
-      // Persist so a refresh doesn't ask the user to pay again.
-      if (typeof window !== "undefined" && address) {
-        window.localStorage.setItem(unlockKey(address, asset.id), txHash);
-      }
-      setUnlocked(true);
-      setRefreshKey((k) => k + 1);
     } catch (err) {
       txError(err);
     } finally {
