@@ -2,22 +2,32 @@ import "~style.css";
 
 import { useState, useEffect } from "react";
 import { Storage } from "@plasmohq/storage";
-import { walletClient, publicClient, ensureChain } from "~lib/client";
+import { publicClient } from "~lib/client";
 import { erc20Abi } from "~lib/abi";
 import { ADDRESSES, DASHBOARD_URL, TIP_PRESETS } from "~lib/config";
 import { formatEther } from "viem";
 
 const storage = new Storage();
 
+/**
+ * Popup wallet flow.
+ *
+ * MetaMask / Xverse / Unisat do NOT inject `window.ethereum` into the
+ * extension popup window (browser security model — extension contexts
+ * are isolated from the wallet's content-script provider). So the
+ * popup cannot connect a wallet directly.
+ *
+ * Workaround: tell the user to connect on the dashboard, then we read
+ * the address back from `chrome.storage` (the dashboard writes it
+ * there when it sees `?from=extension`). The popup polls storage every
+ * 1.5s while waiting, then loads the balance via the public Mezo RPC.
+ */
 function IndexPopup() {
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState<string>("0");
   const [defaultTip, setDefaultTip] = useState<number>(5);
   const [payInMezo, setPayInMezo] = useState<boolean>(false);
-  const [walletChainId, setWalletChainId] = useState<number | null>(null);
-
-  const targetChainId = 31611;
-  const isWrongChain = walletChainId !== null && walletChainId !== targetChainId;
+  const [waitingForConnect, setWaitingForConnect] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -25,51 +35,55 @@ function IndexPopup() {
       if (saved) setDefaultTip(saved);
       const mezo = await storage.get<boolean>("payInMezo");
       if (mezo) setPayInMezo(mezo);
-
-      // Subscribe to wallet chain changes so the popup stays in sync.
-      const eth = (window as any).ethereum;
-      if (!eth) return;
-      try {
-        const cid: string = await eth.request({ method: "eth_chainId" });
-        setWalletChainId(parseInt(cid, 16));
-        eth.on?.("chainChanged", (hex: string) => setWalletChainId(parseInt(hex, 16)));
-      } catch {}
+      const persistedAddr = await storage.get<string>("walletAddress");
+      if (persistedAddr) {
+        setAddress(persistedAddr);
+        loadBalance(persistedAddr);
+      }
     })();
+
+    // Watch storage for the dashboard writing the address back after the
+    // user connects from the "?from=extension" tab we opened.
+    const onChange: Parameters<typeof storage.watch>[0] = {
+      walletAddress: (c) => {
+        const v = c.newValue as string | undefined;
+        if (v) {
+          setAddress(v);
+          setWaitingForConnect(false);
+          loadBalance(v);
+        }
+      },
+    };
+    storage.watch(onChange);
+    return () => storage.unwatch(onChange);
   }, []);
 
-  async function connect() {
+  async function loadBalance(addr: string) {
     try {
-      await ensureChain();
-      const wallet = walletClient();
-      if (!wallet) throw new Error("No wallet detected — install MetaMask/Xverse");
-      const [acc] = await wallet.requestAddresses();
-      setAddress(acc);
-
-      const eth = (window as any).ethereum;
-      if (eth) {
-        const cid: string = await eth.request({ method: "eth_chainId" });
-        setWalletChainId(parseInt(cid, 16));
-      }
-
       const pub = publicClient();
       const bal = await pub.readContract({
         address: ADDRESSES.MUSD,
         abi: erc20Abi,
         functionName: "balanceOf",
-        args: [acc],
+        args: [addr as `0x${string}`],
       });
       setBalance(formatEther(bal as bigint));
-    } catch (err) {
-      alert((err as Error).message);
+    } catch {
+      // Network hiccup — leave balance at last value.
     }
   }
 
-  async function fixChain() {
-    try {
-      await ensureChain();
-    } catch (err) {
-      alert((err as Error).message);
-    }
+  function connectViaDashboard() {
+    setWaitingForConnect(true);
+    // Open dashboard with a hint so it auto-prompts the wallet and writes
+    // the resolved address to chrome.storage.
+    chrome.tabs.create({ url: `${DASHBOARD_URL}/dashboard?from=extension` });
+  }
+
+  async function disconnect() {
+    setAddress(null);
+    setBalance("0");
+    await storage.remove("walletAddress");
   }
 
   async function saveSettings(value: number, mezo: boolean) {
@@ -86,28 +100,8 @@ function IndexPopup() {
           N
         </div>
         <span className="font-semibold text-lg">Nih</span>
-        <span
-          className={`ml-auto text-[10px] uppercase tracking-wider ${
-            isWrongChain ? "text-red-400" : "text-muted"
-          }`}
-        >
-          {isWrongChain ? `wrong chain (${walletChainId})` : "matsnet"}
-        </span>
+        <span className="ml-auto text-[10px] uppercase tracking-wider text-muted">matsnet</span>
       </div>
-
-      {isWrongChain && (
-        <div className="border-b border-border bg-red-500/10 p-3 text-xs">
-          <p className="text-red-300 mb-2">
-            Your wallet is on chain <strong>{walletChainId}</strong>. Nih needs Mezo matsnet (31611).
-          </p>
-          <button
-            onClick={fixChain}
-            className="w-full h-8 rounded-md bg-red-500 text-bg text-xs font-medium hover:opacity-90"
-          >
-            Switch to Mezo matsnet
-          </button>
-        </div>
-      )}
 
       <div className="p-4 space-y-4">
         {!address ? (
@@ -116,20 +110,43 @@ function IndexPopup() {
               Tip MUSD on any social profile. Bitcoin-backed, self-custodial, 1-click.
             </p>
             <button
-              onClick={connect}
+              onClick={connectViaDashboard}
               className="w-full h-10 rounded-lg bg-brand text-bg font-medium hover:opacity-90"
             >
-              Connect wallet
+              {waitingForConnect ? "Waiting for dashboard…" : "Connect via dashboard"}
             </button>
+            <p className="text-[11px] text-muted leading-snug">
+              Wallet extensions like MetaMask don't inject into popups. Click the
+              button above, connect on the dashboard, and the popup will pick up
+              your address automatically.
+            </p>
+            {waitingForConnect && (
+              <button
+                onClick={() => setWaitingForConnect(false)}
+                className="w-full h-8 rounded-md text-xs text-muted hover:text-fg"
+              >
+                Cancel
+              </button>
+            )}
           </>
         ) : (
           <>
             <div className="rounded-lg border border-border bg-surface p-3">
-              <p className="text-[10px] uppercase tracking-wider text-muted">Balance</p>
-              <p className="text-2xl font-semibold mt-0.5">{Number(balance).toFixed(2)} MUSD</p>
-              <p className="text-xs text-muted mt-1 font-mono">
-                {address.slice(0, 6)}…{address.slice(-4)}
-              </p>
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-muted">Balance</p>
+                  <p className="text-2xl font-semibold mt-0.5">{Number(balance).toFixed(2)} MUSD</p>
+                  <p className="text-xs text-muted mt-1 font-mono">
+                    {address.slice(0, 6)}…{address.slice(-4)}
+                  </p>
+                </div>
+                <button
+                  onClick={disconnect}
+                  className="text-[10px] text-muted hover:text-fg uppercase tracking-wider"
+                >
+                  unlink
+                </button>
+              </div>
             </div>
 
             <div>

@@ -4,6 +4,7 @@ import { Suspense, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Providers } from "../providers-wrapper";
 import { Tour } from "@/components/tour";
+import { ExtensionBridge } from "@/components/extension-bridge";
 
 /**
  * App-section layout — wraps wagmi / RainbowKit / Mezo Passport.
@@ -59,6 +60,9 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           requires to be in a Suspense boundary for the prerender pass. */}
       <Suspense fallback={null}>
         <Tour />
+      </Suspense>
+      <Suspense fallback={null}>
+        <ExtensionBridge />
       </Suspense>
       {children}
     </Providers>
