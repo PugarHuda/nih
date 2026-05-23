@@ -29,7 +29,6 @@ export default function LandingPage() {
           </Link>
           <nav>
             <Link href="/dashboard">Dashboard</Link>
-            <Link href="/logo.html">Brand</Link>
             <Link
               href="/dashboard"
               className="comic-btn primary"
