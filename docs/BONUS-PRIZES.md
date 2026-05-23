@@ -29,30 +29,38 @@ https://api.goldsky.com/api/public/project_cmo5pukv64upu01y48tefank9/subgraphs/n
   loads with non-empty state. Goldsky has them all indexed
   (`_meta.hasIndexingErrors = false`).
 
-## 2. Spectrum Nodes — Testnet RPC — ✅ INTEGRATED
+## 2. Spectrum Nodes — Testnet data reads — ✅ INTEGRATED (3 endpoints)
 
-`dashboard/src/lib/wagmi.ts` uses `NEXT_PUBLIC_SPECTRUM_RPC` as the **primary**
-RPC for matsnet when set, falling back to `NEXT_PUBLIC_RPC_URL` and finally
-the public `rpc.test.mezo.org`. The transport list runs through wagmi's
-`fallback(...)` so failures roll over automatically.
+We hold 3 Spectrum Nodes (Simply Staking) endpoints — `blockchainapi`,
+`poolsapi`, and `spectrumapi`. All three are GraphQL, not raw JSON-RPC,
+so they're wired as **data-read** endpoints (which satisfies the
+Spectrum prize criterion: "Use Spectrum RPC for at least one of the
+following: real-time position queries, transaction broadcasting,
+collateral or yield tracking, or on-chain data reads").
 
-```ts
-transports: {
-  [matsnet.id]: fallback(
-    [
-      ...(spectrum ? [http(spectrum)] : []),
-      http(primary),
-      http("https://rpc.test.mezo.org"),
-    ],
-    { rank: false },
-  ),
-}
+**Where the code lives**
+- `dashboard/src/lib/spectrum.ts` — thin GraphQL client + typed helpers
+  (`spectrumBlockHeight`, `spectrumPoolDetails`).
+- `dashboard/src/app/api/spectrum-stats/route.ts` — Next.js route that
+  queries Spectrum's `getBlockHeights` and returns the result. Hit it at
+  `/api/spectrum-stats` to verify the wire works end-to-end.
+
+**Env vars** (set in Vercel for prod):
+```
+NEXT_PUBLIC_SPECTRUM_RPC=https://spectrum-01.simplystaking.xyz/.../blockchainapi/
+NEXT_PUBLIC_SPECTRUM_POOLS=https://spectrum-03.simplystaking.xyz/.../poolsapi/
+NEXT_PUBLIC_SPECTRUM_API=https://spectrum-03.simplystaking.xyz/.../spectrumapi/
 ```
 
-Plus `contracts/hardhat.config.ts` has a `matsnetSpectrum` network entry so
-deploys can be routed through Spectrum directly.
-
-**To activate**: set `NEXT_PUBLIC_SPECTRUM_RPC` in Vercel env. No code change.
+**Current state**: Mezo (`mezo-testnet` / `mezo-mainnet`) isn't
+provisioned on our trial endpoint yet — `getBlockHeights` returns
+`error: "unsupported"`. The integration flips on the moment Spectrum
+adds the chain. Code path verified against the live GraphQL schema
+(introspected: `getBlockHeights`, `getBlockByNumber`,
+`getAddressBalance`, `getTransactionByHash`, `getBlockFee`,
+`getMethodInfo` on blockchainapi; `getProtocolPoolDetails`,
+`getProtocolPoolUserBalance`, `getProtocolPoolPrice`,
+`pendleImpliedApy` on poolsapi).
 
 ## 3. Validation Cloud — Mainnet RPC — ✅ DOCUMENTED IN MAINNET PLAN
 
@@ -68,23 +76,25 @@ Public endpoint: `https://mainnet.mezo.public.validationcloud.io`
 API-key endpoint will be wired post-hackathon when we move past free tier
 limits (10 req/s). Same wagmi `fallback` pattern as Spectrum will apply.
 
-## 4. Boar Network — RPC for AI tip suggestions — ✅ WIRED
+## 4. Boar Network — Mezo mainnet RPC for AI agent — ✅ WIRED
 
-`dashboard/src/app/api/suggest/route.ts` is the AI tip-amount endpoint
-the extension popup + dashboard call before submitting. It uses
-**Boar's Mezo RPC** (via `BOAR_RPC_URL` env, falls back to public
-matsnet endpoint) as the data source for on-chain context — recipient's
-lifetime tips received, sender's lifetime sent — then feeds that to
-Claude Haiku 4.5 for a personalised suggestion.
+`dashboard/src/app/api/suggest/route.ts` (the AI tip-amount endpoint
+the extension popup + dashboard call before submitting) reads
+**Boar's Mezo mainnet RPC** to enrich the LLM context with the
+sender's on-chain mainnet activity (BTC balance, future read targets).
+The model — gpt-oss-20b free tier via OpenRouter — then suggests a
+tip amount with one-line reasoning grounded in that context.
 
-If `ANTHROPIC_API_KEY` is missing the route falls back to a deterministic
-heuristic over post text (length, code blocks, links) so the UX never
-blocks. Boar's RPC is hit on every call regardless — that satisfies the
-"integrate Boar's RPC in an AI agentic application" criterion.
+The Boar read is best-effort: when Boar is cold or the wallet is
+testnet-only, the LLM call still runs with the testnet context. This
+satisfies the Boar criterion "use Boar's RPC in an AI agentic
+application."
 
-**To activate**:
-- `BOAR_RPC_URL` — Boar Mezo testnet RPC endpoint (from Boar dashboard)
-- `ANTHROPIC_API_KEY` — for the LLM path (optional; heuristic works without)
+**Env vars**:
+- `BOAR_RPC_URL=https://mezo-mainnet.boar.network/<your-key>` — set
+- `OPENROUTER_API_KEY=sk-or-v1-...` — set; LLM aggregator
+- `OPENROUTER_MODEL=openai/gpt-oss-20b:free` — set; pick any free model
+  on OpenRouter from the rankings page
 
 Setup for local Claude MCP integration (used during development):
 ```bash
