@@ -176,27 +176,119 @@ export default function BorrowPage() {
             </CardHeader>
           </Card>
         ) : hasActiveLoan ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Active credit line</CardTitle>
-              <CardDescription>Repay anytime to release your collateral.</CardDescription>
-            </CardHeader>
-            <div className="space-y-4 pt-2">
-              <div className="grid grid-cols-2 gap-4">
-                <Box label="Collateral locked" value={`${formatMUSD(loanTuple![1])} MUSD`} />
-                <Box label="Owed (incl. interest)" value={`${formatMUSD((owed as bigint) ?? 0n)} MUSD`} />
-              </div>
-              <Button onClick={handleRepay} disabled={pending === "repay"} className="w-full">
-                {pending === "repay" ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" /> Repaying…
-                  </>
-                ) : (
-                  "Repay & close"
-                )}
-              </Button>
-            </div>
-          </Card>
+          (() => {
+            const principal = loanTuple![0];
+            const collateral = loanTuple![1];
+            const openedAt = loanTuple![2]; // seconds (uint64)
+            const debt = (owed as bigint | undefined) ?? principal;
+            const interestAccrued = debt > principal ? debt - principal : 0n;
+            // LTV % = debt / collateral × 100. Both 18-decimal.
+            const ltv =
+              collateral > 0n
+                ? Number((debt * 10000n) / collateral) / 100
+                : 0;
+            const liquidationLtv = 80;
+            const daysOpen = Math.max(
+              0,
+              Math.floor((Date.now() / 1000 - Number(openedAt)) / 86400),
+            );
+            return (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Active credit line</CardTitle>
+                  <CardDescription>
+                    Day {daysOpen} since open · interest accrues at 1% APR ·
+                    repay anytime to release collateral.
+                  </CardDescription>
+                </CardHeader>
+                <div className="space-y-4 pt-2">
+                  {/* Headline numbers */}
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <Box label="Collateral locked" value={`${formatMUSD(collateral)} MUSD`} />
+                    <Box label="Principal borrowed" value={`${formatMUSD(principal)} MUSD`} />
+                    <Box
+                      label="Interest accrued"
+                      value={`${formatMUSD(interestAccrued)} MUSD`}
+                    />
+                    <Box
+                      label="Total owed"
+                      value={`${formatMUSD(debt)} MUSD`}
+                      highlight
+                    />
+                  </div>
+
+                  {/* LTV bar */}
+                  <div
+                    className="comic-card px-4 py-3"
+                    style={{ background: "var(--paper)" }}
+                  >
+                    <div className="flex items-baseline justify-between mb-2">
+                      <span className="kicker">loan-to-value</span>
+                      <b className="tabular text-sm">
+                        {ltv.toFixed(2)}% / {liquidationLtv}% liquidation
+                      </b>
+                    </div>
+                    <div
+                      style={{
+                        height: 10,
+                        background: "var(--bg-2)",
+                        border: "2px solid var(--line)",
+                        position: "relative",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: `${Math.min(100, (ltv / liquidationLtv) * 100)}%`,
+                          height: "100%",
+                          background:
+                            ltv >= liquidationLtv
+                              ? "var(--bad)"
+                              : ltv >= liquidationLtv * 0.85
+                                ? "var(--accent-2)"
+                                : "var(--good)",
+                          transition: "width .5s ease-out",
+                        }}
+                      />
+                    </div>
+                    <p className="text-[11px] mt-1.5" style={{ color: "var(--ink-3)" }}>
+                      {ltv < liquidationLtv * 0.5
+                        ? "Healthy position — well below liquidation."
+                        : ltv < liquidationLtv * 0.85
+                          ? "Moderate. Consider repaying to free collateral."
+                          : ltv < liquidationLtv
+                            ? "Warning — close to liquidation threshold."
+                            : "At or past liquidation. Repay now."}
+                    </p>
+                  </div>
+
+                  {/* Repay */}
+                  <div className="grid sm:grid-cols-[1fr_auto] gap-3 items-stretch">
+                    <Button
+                      onClick={handleRepay}
+                      disabled={pending === "repay"}
+                      className="w-full"
+                      size="lg"
+                    >
+                      {pending === "repay" ? (
+                        <>
+                          <Loader2 className="h-4 w-4 animate-spin" /> Repaying…
+                        </>
+                      ) : (
+                        <>Repay {formatMUSD(debt)} MUSD & close</>
+                      )}
+                    </Button>
+                  </div>
+                  <p className="text-[11px]" style={{ color: "var(--ink-3)" }}>
+                    Repay deducts {formatMUSD(debt)} MUSD from your wallet
+                    and unlocks {formatMUSD(collateral)} MUSD of collateral in
+                    the same tx. Partial repays aren't supported on the
+                    current contract — close the position then re-open if you
+                    want a smaller loan.
+                  </p>
+                </div>
+              </Card>
+            );
+          })()
         ) : (
           <Card>
             <CardHeader>

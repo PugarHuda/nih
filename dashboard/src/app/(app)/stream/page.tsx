@@ -131,7 +131,7 @@ export default function StreamPage() {
         </div>
 
         {/* How it works — keep the mental model close to the form. */}
-        <div className="comic-card mb-8 px-5 py-4">
+        <div className="comic-card mb-6 px-5 py-4">
           <span className="kicker">how it works</span>
           <ol
             className="mt-2 grid sm:grid-cols-4 gap-3 text-[12px] leading-snug"
@@ -154,6 +154,37 @@ export default function StreamPage() {
               the recipient, the rest refunds to the sender.
             </li>
           </ol>
+        </div>
+
+        {/* Worked example with concrete numbers — most people understand
+            streams faster from a story than from spec language. */}
+        <div className="comic-card accent mb-8 px-5 py-4">
+          <span className="kicker" style={{ opacity: 0.7 }}>worked example · 5 MUSD / month</span>
+          <p className="text-[13px] leading-snug mt-1.5">
+            You start a <b>5 MUSD / month</b> subscription to @creator on day 0.
+          </p>
+          <ul
+            className="mt-2 grid sm:grid-cols-3 gap-3 text-[12px] leading-snug"
+            style={{ color: "rgba(0,0,0,.78)" }}
+          >
+            <li>
+              <b>Day 0 →</b> 5 MUSD locked in NihStream. Your wallet is down
+              5 MUSD. @creator can withdraw <b>0 MUSD</b>.
+            </li>
+            <li>
+              <b>Day 15 →</b> halfway. @creator can withdraw <b>2.50 MUSD</b>.
+              If they don't, it keeps accruing.
+            </li>
+            <li>
+              <b>Day 30 →</b> full month elapsed. @creator can withdraw the
+              full <b>5 MUSD</b>. Stream ends naturally.
+            </li>
+          </ul>
+          <p className="text-[12px] mt-2.5" style={{ color: "rgba(0,0,0,.78)" }}>
+            <b>Cancel on day 10?</b> @creator keeps the ~1.67 MUSD that
+            accrued; the remaining ~3.33 MUSD refunds to your wallet
+            instantly in the same tx.
+          </p>
         </div>
 
         {!isConnected ? (

@@ -284,77 +284,12 @@
     }
   }
 
-  /* ──────────────── 5. Mini tweaks panel ──────────────── */
-  function wireTweaks() {
-    const btn = document.createElement('button');
-    btn.className = 'twk-mini-toggle';
-    btn.innerHTML = '<span>style</span> <b id="twkCurStyle"></b>';
-    btn.setAttribute('aria-label', 'Open style switcher');
-    document.body.appendChild(btn);
-
-    const panel = document.createElement('div');
-    panel.className = 'twk-mini';
-    panel.innerHTML = `
-      <div class="twk-mini-hd">
-        <b>Style swap</b>
-        <button class="twk-mini-x" aria-label="Close">✕</button>
-      </div>
-      <div class="twk-mini-section">visual style</div>
-      <div class="twk-mini-styles">
-        ${STYLES.map(s => `<button class="twk-mini-style" data-style="${s.id}">${s.label}</button>`).join('')}
-      </div>
-      <div class="twk-mini-section">palette</div>
-      <div class="twk-mini-palettes">
-        ${Object.entries(PALETTES).map(([k, p]) => `
-          <button class="twk-mini-palette" data-palette="${k}" title="${k}">
-            ${p ? p.slice(0, 5).map(c => `<i style="background:${c}"></i>`).join('') : '<i class="auto">auto</i>'}
-          </button>
-        `).join('')}
-      </div>
-      <a class="twk-mini-cta" href="/dashboard">Open the app with this style →</a>
-    `;
-    document.body.appendChild(panel);
-
-    const sync = () => {
-      const cur = localStorage.getItem(LS.style) || document.body.getAttribute('data-style');
-      document.getElementById('twkCurStyle').textContent = (STYLES.find(s => s.id === cur) || {label: cur}).label;
-      panel.querySelectorAll('.twk-mini-style').forEach(b => b.classList.toggle('on', b.dataset.style === cur));
-      const palRaw = localStorage.getItem(LS.palette);
-      let cp = 'auto';
-      try {
-        const pal = palRaw ? JSON.parse(palRaw) : null;
-        if (Array.isArray(pal) && pal[0] && pal[0].startsWith('#')) {
-          cp = Object.entries(PALETTES).find(([k, p]) => p && JSON.stringify(p) === JSON.stringify(pal))?.[0] || 'auto';
-        }
-      } catch {}
-      panel.querySelectorAll('.twk-mini-palette').forEach(b => b.classList.toggle('on', b.dataset.palette === cp));
-    };
-
-    btn.addEventListener('click', () => panel.classList.toggle('open'));
-    panel.querySelector('.twk-mini-x').addEventListener('click', () => panel.classList.remove('open'));
-
-    panel.querySelectorAll('.twk-mini-style').forEach(b => {
-      b.addEventListener('click', () => {
-        const s = b.dataset.style;
-        persist(LS.style, s);
-        persist(LS.accent, STYLE_ACCENT[s]);
-        applyStyle();
-        sync();
-      });
-    });
-    panel.querySelectorAll('.twk-mini-palette').forEach(b => {
-      b.addEventListener('click', () => {
-        const k = b.dataset.palette;
-        const p = PALETTES[k];
-        if (p) persist(LS.palette, p);
-        else localStorage.removeItem(LS.palette);
-        applyStyle();
-        sync();
-      });
-    });
-
-    sync();
-  }
+  /* (Removed: 5. Mini tweaks panel)
+     The Style swap floating panel (style picker + palette switcher) was
+     removed at the user's request. The landing is locked to data-style=
+     "komik" / data-mode="light"; no runtime style toggling is exposed.
+     STYLES / PALETTES / STYLE_ACCENT constants are kept above purely so
+     applyStyle() can resolve persisted user prefs from prior visits. */
 
   /* ──────────────── 6. Live tip ticker ──────────────── */
   function wireTicker() {
@@ -413,7 +348,6 @@
     wireMarquee();
     wireCursor();
     wireDrift();
-    wireTweaks();
     wireTicker();
     wireStoryReveal();
   }

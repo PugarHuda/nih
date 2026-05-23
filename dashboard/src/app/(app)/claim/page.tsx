@@ -242,14 +242,14 @@ export default function ClaimPage() {
                   <CardDescription>{hint.where.replace("{username}", username)}</CardDescription>
                 </CardHeader>
                 <div className="space-y-3 pt-2">
-                  <div className="rounded-lg border border-border bg-bg/50 p-3 font-mono text-sm break-all relative group">
+                  <div className="rounded-lg border border-border bg-bg/50 p-3 font-mono text-sm break-all relative">
                     {challenge || "Connecting…"}
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(challenge);
                         toast.success("Challenge text copied");
                       }}
-                      className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition p-1.5 rounded bg-surface border border-border hover:bg-bg"
+                      className="absolute top-2 right-2 p-1.5 rounded bg-surface border border-border hover:bg-bg"
                       aria-label="Copy"
                     >
                       <Copy className="h-3.5 w-3.5" />
@@ -258,11 +258,54 @@ export default function ClaimPage() {
                   <p className="text-xs text-muted">
                     Wallet-bound — only you can post this exact text from the account you control.
                   </p>
-                  {hint.cta && hint.ctaUrl && (
-                    <Button variant="outline" size="sm" asChild>
-                      <a href={hint.ctaUrl(username)} target="_blank" rel="noopener noreferrer">
-                        {hint.cta} <ExternalLink className="h-3.5 w-3.5" />
-                      </a>
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => {
+                        navigator.clipboard.writeText(challenge);
+                        toast.success("Copied — now paste on your profile");
+                      }}
+                    >
+                      <Copy className="h-3.5 w-3.5" /> Copy challenge
+                    </Button>
+                    {hint.cta && hint.ctaUrl && challenge && (
+                      <Button variant="outline" size="sm" asChild>
+                        <a
+                          href={
+                            platform === "twitter"
+                              ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(challenge)}`
+                              : hint.ctaUrl(username)
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {hint.cta} <ExternalLink className="h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                  <details
+                    className="text-xs mt-2"
+                    style={{ color: "var(--ink-3)" }}
+                  >
+                    <summary className="cursor-pointer hover:text-fg">
+                      Why don't you just use OAuth login?
+                    </summary>
+                    <p className="mt-2 leading-snug">
+                      OAuth proves you're logged into Twitter/GitHub — to{" "}
+                      <em>Twitter/GitHub</em>. The on-chain registry doesn't
+                      trust them. A challenge text you post yourself is
+                      cryptographic-grade proof: anyone can fetch your public
+                      profile and verify it, no centralized auth provider in
+                      the loop. We do plan to add OAuth as a faster Tier 2
+                      path (still attestation-signed by our verifier, just
+                      with the OAuth step replacing the public-post step) —
+                      but only as a convenience, never as the only path.
+                    </p>
+                  </details>
+                  {hint.cta && !challenge && (
+                    <Button variant="outline" size="sm" disabled>
+                      {hint.cta} <ExternalLink className="h-3.5 w-3.5" />
                     </Button>
                   )}
                   {verifyError && (

@@ -21,8 +21,11 @@ export default function EarnPage() {
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
 
+  // NihEarn wraps Mezo's REAL StabilityPool — deposits MUST be in real
+  // Mezo MUSD (`addresses.RealMUSD`). Showing Mock MUSD balance here
+  // would mislead the user into approving the wrong token.
   const { data: musdBalance } = useReadContract({
-    address: addresses.MUSD,
+    address: addresses.RealMUSD,
     abi: erc20Abi,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
@@ -55,7 +58,7 @@ export default function EarnPage() {
     query: { enabled: !!address },
   });
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    address: addresses.MUSD,
+    address: addresses.RealMUSD,
     abi: erc20Abi,
     functionName: "allowance",
     args: address ? [address, addresses.Earn] : undefined,
@@ -71,7 +74,9 @@ export default function EarnPage() {
     try {
       if (needsApproval) {
         setPending("approve");
-        await writeContractAsync({ address: addresses.MUSD, abi: erc20Abi, functionName: "approve", args: [addresses.Earn, maxUint256] });
+        // Approve REAL Mezo MUSD — NihEarn forwards into the real
+        // StabilityPool which only accepts the real MUSD token.
+        await writeContractAsync({ address: addresses.RealMUSD, abi: erc20Abi, functionName: "approve", args: [addresses.Earn, maxUint256] });
         await refetchAllowance();
       }
       setPending("deposit");
@@ -152,9 +157,43 @@ export default function EarnPage() {
         ) : (
           <Card>
             <CardHeader>
-              <CardTitle>Deposit MUSD</CardTitle>
-              <CardDescription>You hold {formatMUSD((musdBalance as bigint | undefined) ?? 0n)} MUSD.</CardDescription>
+              <CardTitle>Deposit real MUSD</CardTitle>
+              <CardDescription>
+                You hold {formatMUSD((musdBalance as bigint | undefined) ?? 0n)} real Mezo MUSD.
+              </CardDescription>
             </CardHeader>
+
+            {/* Real-MUSD heads-up — the most common confusion on this page is
+                "I have 1M MUSD why can't I deposit". Mock MUSD (from /faucet)
+                won't work; only real MUSD from BorrowerOperations does. */}
+            {((musdBalance as bigint | undefined) ?? 0n) === 0n && (
+              <div
+                className="mt-3 mb-1 p-3"
+                style={{
+                  background: "var(--accent)",
+                  color: "var(--ink)",
+                  border: "3.5px solid var(--ink)",
+                  boxShadow: "3px 3px 0 0 var(--ink)",
+                }}
+              >
+                <p className="text-[13px] leading-snug">
+                  <b>Heads up:</b> NihEarn wraps Mezo's <em>real</em>{" "}
+                  StabilityPool. The Mock MUSD from /faucet won't deposit
+                  here. To get real MUSD on matsnet, open a Mezo trove (deposit
+                  BTC, mint MUSD) via{" "}
+                  <a
+                    href="https://app.test.mezo.org"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline font-semibold"
+                  >
+                    app.test.mezo.org
+                  </a>
+                  .
+                </p>
+              </div>
+            )}
+
             <div className="space-y-4 pt-2">
               <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="100" />
               <div className="grid grid-cols-2 gap-3">

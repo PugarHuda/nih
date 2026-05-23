@@ -2,6 +2,11 @@ import { Address } from "viem";
 
 export const addresses = {
   MUSD: (process.env.NEXT_PUBLIC_MUSD_ADDRESS ?? "0x0000000000000000000000000000000000000000") as Address,
+  // RealMUSD is Mezo's actual on-chain MUSD primitive. NihEarn + NihTrove
+  // are wired to it (they wrap real Mezo BorrowerOperations / StabilityPool),
+  // so any approve/balance call against those wrappers must use RealMUSD,
+  // not Mock MUSD (which is only good for tip flows).
+  RealMUSD: (process.env.NEXT_PUBLIC_REAL_MUSD_ADDRESS ?? "0x0000000000000000000000000000000000000000") as Address,
   MEZO: (process.env.NEXT_PUBLIC_MEZO_ADDRESS ?? "0x0000000000000000000000000000000000000000") as Address,
   Registry: (process.env.NEXT_PUBLIC_REGISTRY_ADDRESS ?? "0x0000000000000000000000000000000000000000") as Address,
   Vault: (process.env.NEXT_PUBLIC_VAULT_ADDRESS ?? "0x0000000000000000000000000000000000000000") as Address,

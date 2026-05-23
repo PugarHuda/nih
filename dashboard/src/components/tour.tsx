@@ -150,7 +150,10 @@ export function Tour() {
     router.push(`${nextStep.path}?tour=1&step=${clamped}`);
   }
   function end() {
-    router.push(pathname);
+    // After finishing the tour, drop the user on the dashboard regardless
+    // of which page the last step lived on. Exit on the current page if
+    // they're already there.
+    router.push(pathname === "/dashboard" ? "/dashboard" : "/dashboard");
   }
 
   // Layout the card. Default top-right of the target; clamp to viewport.
@@ -179,6 +182,35 @@ export function Tour() {
     }
   }
 
+  // Pointer arrow geometry — origin at the tooltip card edge nearest the
+  // target, tip at the closest edge of the target's bounding rect.
+  const PAD_ARROW = 16;
+  let arrow: { x1: number; y1: number; x2: number; y2: number } | null = null;
+  if (rect) {
+    const cardCenterX = left + CARD_W / 2;
+    const cardCenterY = top + 80;
+    const targetCenterX = rect.left + rect.width / 2;
+    const targetCenterY = rect.top + rect.height / 2;
+    // Tip of the arrow sits just outside the target rect, on the side
+    // closest to the card.
+    arrow = {
+      x1: cardCenterX,
+      y1: cardCenterY,
+      x2:
+        targetCenterX > cardCenterX
+          ? rect.left - PAD_ARROW
+          : targetCenterX < cardCenterX
+            ? rect.right + PAD_ARROW
+            : targetCenterX,
+      y2:
+        targetCenterY > cardCenterY
+          ? rect.top - PAD_ARROW
+          : targetCenterY < cardCenterY
+            ? rect.bottom + PAD_ARROW
+            : targetCenterY,
+    };
+  }
+
   return (
     <>
       {/* Dim overlay with a cutout so the spotlighted section stays bright. */}
@@ -190,11 +222,68 @@ export function Tour() {
           zIndex: 60,
           pointerEvents: "auto",
           background: rect
-            ? `radial-gradient(circle at ${rect.left + rect.width / 2}px ${rect.top + rect.height / 2}px, transparent ${Math.max(rect.width, rect.height) * 0.65}px, rgba(0,0,0,.55) ${Math.max(rect.width, rect.height) * 0.95}px)`
-            : "rgba(0,0,0,.55)",
+            ? `radial-gradient(circle at ${rect.left + rect.width / 2}px ${rect.top + rect.height / 2}px, transparent ${Math.max(rect.width, rect.height) * 0.65}px, rgba(0,0,0,.65) ${Math.max(rect.width, rect.height) * 0.95}px)`
+            : "rgba(0,0,0,.65)",
           transition: "background .25s ease-out",
         }}
       />
+
+      {/* Bright outline + corner brackets on the target so the user can't
+          miss which section the popup is referring to. */}
+      {rect && (
+        <div
+          style={{
+            position: "fixed",
+            left: rect.left - 8,
+            top: rect.top - 8,
+            width: rect.width + 16,
+            height: rect.height + 16,
+            zIndex: 60,
+            border: "3.5px solid var(--accent)",
+            boxShadow: "0 0 0 3px var(--ink), 0 0 24px rgba(255,211,45,.65)",
+            pointerEvents: "none",
+            transition: "all .25s ease-out",
+          }}
+        />
+      )}
+
+      {/* Arrow from the card to the target — drawn in a full-viewport
+          SVG so it works at any position without per-step config. */}
+      {arrow && (
+        <svg
+          width="100%"
+          height="100%"
+          style={{
+            position: "fixed",
+            inset: 0,
+            zIndex: 60,
+            pointerEvents: "none",
+          }}
+        >
+          <defs>
+            <marker
+              id="tour-arrowhead"
+              markerWidth="12"
+              markerHeight="12"
+              refX="6"
+              refY="6"
+              orient="auto"
+            >
+              <path d="M0,0 L12,6 L0,12 L3,6 Z" fill="var(--accent)" stroke="var(--ink)" strokeWidth="1" />
+            </marker>
+          </defs>
+          <line
+            x1={arrow.x1}
+            y1={arrow.y1}
+            x2={arrow.x2}
+            y2={arrow.y2}
+            stroke="var(--accent)"
+            strokeWidth="3"
+            strokeDasharray="6 4"
+            markerEnd="url(#tour-arrowhead)"
+          />
+        </svg>
+      )}
 
       {/* Tooltip card */}
       <div
