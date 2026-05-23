@@ -9,7 +9,7 @@ export const config: PlasmoCSConfig = {
   run_at: "document_idle",
 };
 
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 
 /**
  * Inject a Nih button into every tweet's action bar.

@@ -94,7 +94,10 @@ export function Tour() {
   const pathname = usePathname();
   const params = useSearchParams();
   const active = params.get("tour") === "1";
-  const stepIndex = Math.max(0, Math.min(STEPS.length - 1, Number(params.get("step") ?? "0")));
+  const rawStep = Number(params.get("step") ?? "0");
+  const stepIndex = Number.isFinite(rawStep)
+    ? Math.max(0, Math.min(STEPS.length - 1, Math.floor(rawStep)))
+    : 0;
   const step = STEPS[stepIndex];
 
   const [rect, setRect] = useState<DOMRect | null>(null);

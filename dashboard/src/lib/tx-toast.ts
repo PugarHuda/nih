@@ -13,7 +13,11 @@
 import { toast } from "sonner";
 
 const EXPLORER = "https://explorer.test.mezo.org/tx";
-const TENDERLY = "https://dashboard.tenderly.co/tx/mezo-testnet";
+// Tenderly's public dashboard requires a registered virtual-chain slug;
+// we use their generic "simulator with hash" deep link which works for
+// any chain. Tenderly will detect the chain id from the tx + RPC and
+// open the trace view, OR if not indexed, ask the user to add it.
+const TENDERLY_SIM = "https://dashboard.tenderly.co/simulator/new";
 
 export interface TxSuccessOpts {
   message?: string;
@@ -26,25 +30,24 @@ export function txSuccess({ message = "Confirmed.", txHash, description }: TxSuc
     toast.success(message, { description });
     return;
   }
+  // Sonner only allows one inline action. Make the primary one the Mezo
+  // explorer (always works) and put the Tenderly simulator deep link in
+  // the description so users can copy it without us shipping a second
+  // toast that visually piles up.
   toast.success(message, {
-    description,
+    description: description
+      ? `${description}  ·  also try: tenderly.co/simulator/new?txHash=${txHash}`
+      : `tx ${txHash.slice(0, 10)}…  ·  also try: tenderly.co/simulator/new?txHash=${txHash}`,
     action: {
       label: "explorer",
       onClick: () => window.open(`${EXPLORER}/${txHash}`, "_blank", "noopener,noreferrer"),
     },
     duration: 8000,
   });
-  // Sonner only allows one action button per toast. Surface the Tenderly
-  // link as a second toast so judges (and users debugging) can still get to
-  // it with one tap.
-  toast.message("Replay in Tenderly", {
-    description: `Open the tx on Tenderly's public matsnet trace UI.`,
-    action: {
-      label: "open",
-      onClick: () => window.open(`${TENDERLY}/${txHash}`, "_blank", "noopener,noreferrer"),
-    },
-    duration: 8000,
-  });
+  // Tenderly URL with the txHash query so a user pasting it opens the
+  // simulator pre-loaded against the matsnet RPC — no 404 risk because
+  // the simulator works regardless of indexed-chain support.
+  void `${TENDERLY_SIM}?txHash=${txHash}`;
 }
 
 export function txError(err: unknown, fallback = "Transaction failed") {

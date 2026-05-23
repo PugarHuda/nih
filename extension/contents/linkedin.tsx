@@ -9,7 +9,7 @@ export const config: PlasmoCSConfig = {
   run_at: "document_idle",
 };
 
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 
 /**
  * LinkedIn injection. LinkedIn aggressively rewrites the DOM, so the

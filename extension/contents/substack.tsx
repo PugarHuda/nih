@@ -9,7 +9,7 @@ export const config: PlasmoCSConfig = {
   run_at: "document_idle",
 };
 
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 
 export const getInlineAnchor: PlasmoGetInlineAnchor = async () => {
   // Substack post page: subscribe prompt sits at top of `.post-content`

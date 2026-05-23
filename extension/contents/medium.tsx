@@ -9,7 +9,7 @@ export const config: PlasmoCSConfig = {
   run_at: "document_idle",
 };
 
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 
 export const getInlineAnchor: PlasmoGetInlineAnchor = async () => {
   // Medium article page: footer with "Follow" button sits under `article footer`

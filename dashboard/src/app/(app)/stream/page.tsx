@@ -226,7 +226,13 @@ export default function StreamPage() {
 
                 {ratePerSec > 0n && (
                   <div className="rounded-lg border border-accent/30 bg-accent/5 p-3 text-xs text-accent">
-                    Rate ≈ {Number(formatMUSD(ratePerSec * 3600n))} MUSD / hour ({Number(formatMUSD(ratePerSec * 86400n))} / day)
+                    {/* For monthly subscriptions the per-hour value rounds
+                        to 0.00 — show day + month rates which are above
+                        cent precision. formatMUSD already returns the
+                        formatted string; do NOT round-trip through Number()
+                        because comma separators turn into NaN. */}
+                    Rate ≈ {formatMUSD(ratePerSec * 86400n)} MUSD / day ·{" "}
+                    {formatMUSD(ratePerSec * 2592000n)} / month
                   </div>
                 )}
 

@@ -7,7 +7,7 @@ import { erc20Abi } from "~lib/abi";
 import { ADDRESSES, DASHBOARD_URL, TIP_PRESETS } from "~lib/config";
 import { formatEther } from "viem";
 
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 
 /**
  * Popup wallet flow.

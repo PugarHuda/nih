@@ -9,7 +9,7 @@ export const config: PlasmoCSConfig = {
   run_at: "document_idle",
 };
 
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 
 /**
  * Reddit injection — works for both new (shreddit) and old reddit.

@@ -9,7 +9,7 @@ export const config: PlasmoCSConfig = {
   run_at: "document_idle",
 };
 
-const storage = new Storage();
+const storage = new Storage({ area: "local" });
 
 export const getInlineAnchor: PlasmoGetInlineAnchor = async () => {
   // Profile pages have a section[itemtype*="Person"] container; anchor under the user actions

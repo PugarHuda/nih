@@ -6,12 +6,15 @@ import { keccak256, maxUint256, parseEther, toBytes } from "viem";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ConnectWallet } from "@/components/connect-wallet";
 import { addresses, erc20Abi, routerAbi } from "@/lib/contracts";
-import { formatMUSD } from "@/lib/utils";
 import { useRequireChain } from "@/lib/use-require-chain";
 import { txSuccess, txError } from "@/lib/tx-toast";
-import { fetchRecentTips } from "@/lib/goldsky";
 import { Loader2, Lock, Unlock, Sparkles } from "lucide-react";
+
+function unlockKey(address: string, assetId: string) {
+  return `nih:unlocked:${address.toLowerCase()}:${assetId}`;
+}
 
 /**
  * /unlock — pay-to-access content demo.
@@ -171,7 +174,9 @@ export default function UnlockPage() {
           </div>
         </div>
 
-        <UnlockableArticle asset={asset} />
+        {/* key={asset.id} forces a fresh component on asset switch so
+            `unlocked` state from the previous asset doesn't leak. */}
+        <UnlockableArticle key={asset.id} asset={asset} />
 
         <p className="text-xs mt-6 mono" style={{ color: "var(--ink-3)" }}>
           built on NihRouter.tip(platform, username, amount, payFeeInMezo, context) ·
@@ -208,31 +213,18 @@ function UnlockableArticle({ asset }: { asset: Asset }) {
   });
   const needsApproval = ((allowance as bigint | undefined) ?? 0n) < priceWei;
 
-  // Look for an existing unlock — if this wallet already paid for this
-  // asset's context, render unlocked immediately.
+  // Restore unlocked state across refreshes. The subgraph doesn't index
+  // the `context` field, so we can't query "did this wallet pay for THIS
+  // asset?" directly. Cheapest reliable signal: a localStorage receipt
+  // we write on a successful pay below.
   useEffect(() => {
+    if (typeof window === "undefined") return;
     if (!address) {
       setUnlocked(false);
       return;
     }
-    let cancelled = false;
-    fetchRecentTips(50).then((tips) => {
-      if (cancelled) return;
-      const match = tips.some(
-        (t) =>
-          t.sender.address.toLowerCase() === address.toLowerCase() &&
-          // The subgraph doesn't index context yet, so for the demo we use a
-          // post-tx local flag. Re-checks for indexed tips just to be safe.
-          t.handleId, // dummy field reference
-      );
-      // We can't reliably check context from the subgraph (not indexed),
-      // so this is a soft check — server polled tips only restore the
-      // unlocked state if the local flag was already set.
-      void match;
-    });
-    return () => {
-      cancelled = true;
-    };
+    const flag = window.localStorage.getItem(unlockKey(address, asset.id));
+    if (flag) setUnlocked(true);
   }, [address, asset.id, refreshKey]);
 
   async function unlock() {
@@ -262,6 +254,10 @@ function UnlockableArticle({ asset }: { asset: Asset }) {
         description: `Paid ${asset.priceMUSD} MUSD to @${asset.username}`,
         txHash,
       });
+      // Persist so a refresh doesn't ask the user to pay again.
+      if (typeof window !== "undefined" && address) {
+        window.localStorage.setItem(unlockKey(address, asset.id), txHash);
+      }
       setUnlocked(true);
       setRefreshKey((k) => k + 1);
     } catch (err) {
@@ -320,22 +316,28 @@ function UnlockableArticle({ asset }: { asset: Asset }) {
             <p className="text-sm mb-4" style={{ color: "var(--ink-2)" }}>
               The rest of this piece is paywalled at {asset.priceMUSD} MUSD.
             </p>
-            <Button
-              size="lg"
-              onClick={unlock}
-              disabled={!isConnected || pending !== "none"}
-              className="min-w-[260px]"
-            >
-              {pending === "approve" ? (
-                <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Approving MUSD…</>
-              ) : pending === "pay" ? (
-                <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Unlocking…</>
-              ) : (
-                <><Sparkles className="h-4 w-4 mr-1.5" /> Pay {asset.priceMUSD} MUSD to unlock</>
-              )}
-            </Button>
-            {!isConnected && (
-              <p className="text-xs mt-2 muted">connect wallet to unlock</p>
+            {!isConnected ? (
+              <div className="flex flex-col items-center gap-3">
+                <p className="text-sm" style={{ color: "var(--ink-2)" }}>
+                  Connect a wallet to pay {asset.priceMUSD} MUSD and unlock.
+                </p>
+                <ConnectWallet />
+              </div>
+            ) : (
+              <Button
+                size="lg"
+                onClick={unlock}
+                disabled={pending !== "none"}
+                className="min-w-[260px]"
+              >
+                {pending === "approve" ? (
+                  <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Approving MUSD…</>
+                ) : pending === "pay" ? (
+                  <><Loader2 className="h-4 w-4 animate-spin mr-1.5" /> Unlocking…</>
+                ) : (
+                  <><Sparkles className="h-4 w-4 mr-1.5" /> Pay {asset.priceMUSD} MUSD to unlock</>
+                )}
+              </Button>
             )}
             <p className="text-[10px] mt-3 mono opacity-60">
               receipt context: {context.slice(0, 18)}…

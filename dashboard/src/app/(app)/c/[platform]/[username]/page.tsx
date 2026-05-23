@@ -53,21 +53,33 @@ export default async function ProfilePage({ params }: PageProps) {
 
   const id = handleIdOf(platform, username);
 
-  // Read on-chain state in parallel.
-  const [resolved, pending] = await Promise.all([
+  // Read on-chain state independently so a transient failure on one
+  // doesn't blank both. Logs the underlying error to the server console
+  // so we can spot RPC blips instead of silently rendering a fake
+  // "unregistered" profile for a known-verified handle.
+  const ZERO = "0x0000000000000000000000000000000000000000" as `0x${string}`;
+  const resolved = await (
     client.readContract({
       address: addresses.Registry,
       abi: registryAbi,
       functionName: "resolveById",
       args: [id],
-    }) as Promise<readonly [`0x${string}`, number]>,
+    }) as Promise<readonly [`0x${string}`, number]>
+  ).catch((err) => {
+    console.error("[profile] resolveById failed", { id, err });
+    return [ZERO, 0] as const;
+  });
+  const pending = await (
     client.readContract({
       address: addresses.Vault,
       abi: vaultAbi,
       functionName: "pendingFor",
       args: [id],
-    }) as Promise<bigint>,
-  ]).catch(() => [["0x0000000000000000000000000000000000000000" as `0x${string}`, 0], 0n] as const);
+    }) as Promise<bigint>
+  ).catch((err) => {
+    console.error("[profile] pendingFor failed", { id, err });
+    return 0n;
+  });
 
   const [wallet, tier] = resolved;
   const isRegistered = wallet !== "0x0000000000000000000000000000000000000000";
