@@ -171,24 +171,54 @@ export default async function ProfilePage({ params }: PageProps) {
             </div>
           )}
 
-          {/* CTAs */}
-          <div className="flex flex-wrap gap-3 mt-6">
-            <Button asChild size="lg">
-              <Link href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=5`}>
-                Tip 5 MUSD <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=10`}>
-                10 MUSD
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=25`}>
-                25 MUSD
-              </Link>
-            </Button>
+          {/* One-shot tip CTAs */}
+          <div className="mt-6">
+            <p className="text-xs uppercase tracking-widest text-muted mb-2">Tip once</p>
+            <div className="flex flex-wrap gap-3">
+              <Button asChild size="lg">
+                <Link href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=5`}>
+                  Tip 5 MUSD <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=10`}>
+                  10 MUSD
+                </Link>
+              </Button>
+              <Button asChild variant="outline" size="lg">
+                <Link href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=25`}>
+                  25 MUSD
+                </Link>
+              </Button>
+            </div>
           </div>
+
+          {/* Recurring subscription CTAs — only shown when we know the
+              recipient wallet (registered handle). Routes to /stream
+              prefilled with amount + 1 month duration. */}
+          {isRegistered && wallet && (
+            <div className="mt-5">
+              <p className="text-xs uppercase tracking-widest text-muted mb-2">
+                Subscribe monthly
+              </p>
+              <div className="flex flex-wrap gap-3">
+                {[5, 10, 25].map((m) => (
+                  <Button asChild key={m} variant="outline" size="lg">
+                    <Link
+                      href={`/stream?to=${wallet}&amount=${m}&duration=2592000`}
+                      title={`Start a 1-month streaming subscription of ${m} MUSD to @${username}`}
+                    >
+                      {m} MUSD / mo
+                    </Link>
+                  </Button>
+                ))}
+              </div>
+              <p className="text-[11px] text-muted mt-2">
+                Routes via NihStream — locks the month up front, recipient
+                accrues per second, cancel any time.
+              </p>
+            </div>
+          )}
 
           {!isRegistered && (
             <div className="mt-5 rounded-lg border border-brand/30 bg-brand/5 p-4 text-sm">

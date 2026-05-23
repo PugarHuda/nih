@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { parseEther, formatEther, maxUint256 } from "viem";
 import { toast } from "sonner";
+import { txSuccess, txError } from "@/lib/tx-toast";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -74,12 +75,12 @@ export default function EarnPage() {
         await refetchAllowance();
       }
       setPending("deposit");
-      await writeContractAsync({ address: addresses.Earn, abi: earnAbi, functionName: "deposit", args: [amountWei] });
-      toast.success(`Deposited ${amount} MUSD into Mezo Stability Pool`);
+      const txHash = await writeContractAsync({ address: addresses.Earn, abi: earnAbi, functionName: "deposit", args: [amountWei] });
+      txSuccess({ message: `Deposited ${amount} MUSD into Mezo Stability Pool`, txHash });
       setAmount("");
       await Promise.all([refetchEarn(), refetchShares()]);
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setPending("none");
     }
@@ -91,11 +92,11 @@ export default function EarnPage() {
     if (shares === 0n) return;
     setPending("withdraw");
     try {
-      await writeContractAsync({ address: addresses.Earn, abi: earnAbi, functionName: "withdraw", args: [shares] });
-      toast.success("Withdrawn from Stability Pool");
+      const txHash = await writeContractAsync({ address: addresses.Earn, abi: earnAbi, functionName: "withdraw", args: [shares] });
+      txSuccess({ message: "Withdrawn from Stability Pool", txHash });
       await Promise.all([refetchEarn(), refetchShares()]);
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setPending("none");
     }

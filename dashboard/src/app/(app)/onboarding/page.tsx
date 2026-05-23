@@ -9,19 +9,23 @@ import { ConnectWallet } from "@/components/connect-wallet";
 import { addresses, erc20Abi } from "@/lib/contracts";
 import { formatMUSD } from "@/lib/utils";
 import { fetchHandleStats, fetchRecentTips, lookupHandle } from "@/lib/goldsky";
-import { ArrowRight, Check, Loader2 } from "lucide-react";
+import { ArrowRight, Check, PlayCircle } from "lucide-react";
 
 /**
- * /onboarding — interactive 3-minute walkthrough.
+ * /onboarding — the launchpad for the interactive product tour.
  *
- * Six panels, each with a status the user can see flip from
- * "not yet" to "done" as they actually act on it. Every state read is
- * live on-chain or from the Goldsky subgraph; no fake step completion.
+ * The hero card is the call to action: a single "Start the tour" button
+ * that bounces the user into the live dashboard with `?tour=1` set, and
+ * the in-app Tour component (mounted in (app)/layout) takes over —
+ * highlighting real sections on real pages with popover cards.
+ *
+ * The status panels below are a fallback / secondary overview for users
+ * who'd rather read than click through the tour. Each one checks a live
+ * piece of on-chain or subgraph state so nothing is faked.
  */
 export default function OnboardingPage() {
   const { address, isConnected } = useAccount();
 
-  // Step 2: faucet MUSD balance check.
   const { data: musdBal } = useReadContract({
     address: addresses.MUSD,
     abi: erc20Abi,
@@ -31,7 +35,6 @@ export default function OnboardingPage() {
   });
   const hasMusd = (musdBal as bigint | undefined) ?? 0n;
 
-  // Step 4: has the network ever seen a tip?
   const [hasGlobalTips, setHasGlobalTips] = useState<boolean | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -43,7 +46,6 @@ export default function OnboardingPage() {
     };
   }, []);
 
-  // Step 5: has the connected wallet ever received a tip?
   const [myHandleStats, setMyHandleStats] = useState<{ total: bigint; count: number } | null>(null);
   useEffect(() => {
     if (!address) {
@@ -54,10 +56,7 @@ export default function OnboardingPage() {
     fetchHandleStats(50).then((stats) => {
       if (cancelled) return;
       const mine = stats
-        .filter((s) => {
-          const meta = lookupHandle(s.handleId);
-          return !!meta;
-        })
+        .filter((s) => !!lookupHandle(s.handleId))
         .reduce(
           (acc, s) => ({
             total: acc.total + BigInt(s.totalReceived),
@@ -76,19 +75,27 @@ export default function OnboardingPage() {
     {
       n: 1,
       title: "Plug into Mezo",
-      copy: "Connect a wallet on matsnet. Xverse / Unisat for Bitcoin-native, MetaMask if you already have it. Gas is paid in BTC.",
+      copy:
+        "Connect a wallet on matsnet. Xverse / Unisat for Bitcoin-native, " +
+        "MetaMask if you already have it. Gas is paid in BTC.",
       cta: <ConnectWallet />,
       done: isConnected,
     },
     {
       n: 2,
       title: "Grab test funds",
-      copy: "Mock MUSD and Mock MEZO on matsnet are open-mint. Visit the faucet and pull 100 of each. Need test BTC for gas? Use the Mezo faucet too.",
+      copy:
+        "Mock MUSD and Mock MEZO on matsnet are open-mint. Visit the faucet and " +
+        "pull 100 of each. Need test BTC for gas? Use the Mezo faucet too.",
       cta: (
         <div className="flex gap-2">
-          <Link href="/faucet"><Button size="sm">Open faucet</Button></Link>
+          <Link href="/faucet">
+            <Button size="sm">Open faucet</Button>
+          </Link>
           <a href="https://faucet.test.mezo.org" target="_blank" rel="noopener noreferrer">
-            <Button size="sm" variant="ghost">BTC faucet ↗</Button>
+            <Button size="sm" variant="ghost">
+              BTC faucet ↗
+            </Button>
           </a>
         </div>
       ),
@@ -97,17 +104,15 @@ export default function OnboardingPage() {
     },
     {
       n: 3,
-      title: "Install the browser extension",
-      copy: "Load the Plasmo build (chrome-mv3-prod folder). After installing you'll see an N Tip MUSD button under every Twitter / GitHub / Substack profile.",
-      cta: <Link href="/install"><Button size="sm">Install guide</Button></Link>,
-      done: false, // we have no way to detect extension install from the web app
-      doneLabel: "can't auto-verify · install manually",
-    },
-    {
-      n: 4,
       title: "Send a real tip",
-      copy: "Pick any creator and send them 5–100 MUSD. The router routes the funds and the indexed Tipped event hits the dashboard in ~15s.",
-      cta: <Link href="/tip"><Button size="sm">Send a tip</Button></Link>,
+      copy:
+        "Pick any creator and send them 5–100 MUSD. The router routes the funds " +
+        "and the indexed Tipped event hits the dashboard in ~15s.",
+      cta: (
+        <Link href="/tip">
+          <Button size="sm">Send a tip</Button>
+        </Link>
+      ),
       done: hasGlobalTips === true,
       doneLabel:
         hasGlobalTips === null
@@ -117,13 +122,21 @@ export default function OnboardingPage() {
             : undefined,
     },
     {
-      n: 5,
-      title: "Claim or watch tips land",
-      copy: "Already a creator? Verify your handle and pull your accumulated tips. New here? Watch the activity heatmap fill in.",
+      n: 4,
+      title: "Subscribe or watch tips land",
+      copy:
+        "Profile pages have monthly subscribe buttons that route through NihStream " +
+        "(per-second MUSD accrual). Or watch the live dashboard heatmap fill in.",
       cta: (
         <div className="flex gap-2">
-          <Link href="/dashboard"><Button size="sm">My dashboard</Button></Link>
-          <Link href="/claim"><Button size="sm" variant="ghost">Claim a handle</Button></Link>
+          <Link href="/dashboard">
+            <Button size="sm">My dashboard</Button>
+          </Link>
+          <Link href="/c/twitter/hajislamet">
+            <Button size="sm" variant="ghost">
+              Demo profile
+            </Button>
+          </Link>
         </div>
       ),
       done: !!myHandleStats && myHandleStats.total > 0n,
@@ -135,10 +148,16 @@ export default function OnboardingPage() {
             : undefined,
     },
     {
-      n: 6,
+      n: 5,
       title: "Borrow against the stack",
-      copy: "Once you've earned, lock the MUSD into NihTrove (backed by the real Mezo MUSD primitive) and open a credit line. Pay it back later — never sell your Bitcoin.",
-      cta: <Link href="/borrow"><Button size="sm">Open credit line</Button></Link>,
+      copy:
+        "Once you've earned, lock the MUSD into NihTrove (backed by Mezo's real " +
+        "MUSD primitive) and open a credit line. Pay it back later — never sell your Bitcoin.",
+      cta: (
+        <Link href="/borrow">
+          <Button size="sm">Open credit line</Button>
+        </Link>
+      ),
       done: false,
       doneLabel: "requires open trove + minted MUSD line",
     },
@@ -151,13 +170,33 @@ export default function OnboardingPage() {
         <div className="fade-up">
           <span className="kicker">walk-through · 3 minutes</span>
           <h1 className="h1 mt-2 mb-2">From zero to first tip in six panels.</h1>
-          <p className="text-base mb-10" style={{ color: "var(--ink-3)" }}>
-            Each step checks live on-chain / subgraph state. Real txs, no
-            scripted UI — when you actually do the thing, the panel flips
-            from <em>not yet</em> to <em>done</em>.
+          <p className="text-base mb-6" style={{ color: "var(--ink-3)" }}>
+            We have two flavours: a guided tour that highlights real sections on
+            the live app, or read the panels below if you prefer to skim.
           </p>
         </div>
 
+        {/* Tour launcher — the primary CTA on this page. */}
+        <div className="comic-card accent mb-10 p-6 flex flex-col sm:flex-row gap-4 sm:items-center sm:justify-between">
+          <div className="flex-1 min-w-0">
+            <h2 className="h2 mb-1">Start the live tour</h2>
+            <p className="text-sm opacity-80">
+              Six pop-ups across the dashboard, tip flow, stream, and borrow
+              sections. Roughly 90 seconds. You stay on the real app — every
+              section the tour spotlights is the one you'd actually use.
+            </p>
+          </div>
+          <Link href="/dashboard?tour=1&step=0">
+            <Button size="lg" className="whitespace-nowrap">
+              <PlayCircle className="mr-1.5 h-5 w-5" />
+              Start the tour
+            </Button>
+          </Link>
+        </div>
+
+        <div className="mb-3">
+          <span className="kicker">or skim the steps</span>
+        </div>
         <ol className="flex flex-col gap-5">
           {steps.map((s) => (
             <li key={s.n}>
@@ -167,7 +206,7 @@ export default function OnboardingPage() {
         </ol>
 
         <div className="mt-12 flex items-center justify-between text-sm" style={{ color: "var(--ink-3)" }}>
-          <p>Done with the tour?</p>
+          <p>Done reading?</p>
           <Link href="/dashboard">
             <Button>
               Open the dashboard <ArrowRight className="ml-1 h-4 w-4" />
@@ -224,7 +263,6 @@ function StepCard({ n, title, copy, cta, done, doneLabel }: Step) {
         </p>
         {doneLabel && (
           <p className="text-xs mt-2 mono" style={{ color: "var(--ink-3)" }}>
-            <Loader2 className="inline h-3 w-3 mr-1 opacity-60" />
             {doneLabel}
           </p>
         )}

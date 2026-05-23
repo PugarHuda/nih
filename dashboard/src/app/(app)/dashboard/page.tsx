@@ -61,10 +61,12 @@ export default function DashboardPage() {
         </div>
 
         {/* Live tip-drop banner — POW! comic notification */}
-        <TipDropBanner />
+        <div data-tour="tip-banner">
+          <TipDropBanner />
+        </div>
 
         {/* Big stat row — wallet balance + lifetime + handles */}
-        <div className="grid sm:grid-cols-3 gap-4 mb-6">
+        <div className="grid sm:grid-cols-3 gap-4 mb-6" data-tour="stats-row">
           <ComicStat label="Wallet balance" value={`${balance} MUSD`} note={isConnected ? undefined : "connect wallet"} highlight />
           <ComicStat label="Lifetime tips received" value={`${received} MUSD`} note={`since you joined Nih`} />
           <ComicStat label="Linked handles" value={`${handleCount}`} note={`of 9 supported platforms`} />
@@ -104,7 +106,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent action grid */}
-            <div className="comic-card">
+            <div className="comic-card" data-tour="things-to-do">
               <span className="kicker">things to do</span>
               <h3 className="h3 mt-1.5 mb-4">Make your tips work.</h3>
               <div className="grid sm:grid-cols-2 gap-3">

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { parseEther, formatEther } from "viem";
 import { toast } from "sonner";
+import { txSuccess, txError } from "@/lib/tx-toast";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -63,16 +64,16 @@ export default function BorrowPage() {
     if (!(await ensure())) return;
     setPending("approve");
     try {
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.MUSD,
         abi: erc20Abi,
         functionName: "approve",
         args: [addresses.Credit, parseEther("1000000")],
       });
-      toast.success("Approved");
+      txSuccess({ message: "Approved", txHash });
       await refetchAllowance();
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setPending("none");
     }
@@ -83,17 +84,17 @@ export default function BorrowPage() {
     if (!(await ensure())) return;
     setPending("open");
     try {
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.Credit,
         abi: creditAbi,
         functionName: "open",
         args: [collateralWei],
       });
-      toast.success(`Borrowed ${formatMUSD(borrowable)} MUSD`);
+      txSuccess({ message: `Borrowed ${formatMUSD(borrowable)} MUSD`, txHash });
       setCollateralInput("");
       await refetchLoan();
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setPending("none");
     }
@@ -103,15 +104,15 @@ export default function BorrowPage() {
     if (!(await ensure())) return;
     setPending("repay");
     try {
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.Credit,
         abi: creditAbi,
         functionName: "repay",
       });
-      toast.success("Loan repaid; collateral released");
+      txSuccess({ message: "Loan repaid; collateral released", txHash });
       await refetchLoan();
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setPending("none");
     }
@@ -139,7 +140,7 @@ export default function BorrowPage() {
 
         {/* How it works — explain the mechanics + monitoring up front so
             the form below doesn't feel like a black box. */}
-        <div className="comic-card my-8 px-5 py-4">
+        <div className="comic-card my-8 px-5 py-4" data-tour="borrow-howto">
           <span className="kicker">how it works</span>
           <ol
             className="mt-2 grid sm:grid-cols-4 gap-3 text-[12px] leading-snug"

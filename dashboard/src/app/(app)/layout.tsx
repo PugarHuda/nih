@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { Providers } from "../providers-wrapper";
+import { Tour } from "@/components/tour";
 
 /**
  * App-section layout — wraps wagmi / RainbowKit / Mezo Passport.
@@ -54,6 +55,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <Providers>
       <StyleSwapPurge />
       <NavAnimSuppress />
+      {/* Tour reads `?tour=1&step=N` from useSearchParams which Next.js
+          requires to be in a Suspense boundary for the prerender pass. */}
+      <Suspense fallback={null}>
+        <Tour />
+      </Suspense>
       {children}
     </Providers>
   );

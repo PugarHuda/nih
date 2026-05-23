@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { parseEther, maxUint256, keccak256, toBytes } from "viem";
 import { toast } from "sonner";
+import { txSuccess, txError } from "@/lib/tx-toast";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -79,23 +80,27 @@ function TipInner() {
       }
       const ctx = context ? keccak256(toBytes(context)) : ("0x" + "0".repeat(64) as `0x${string}`);
       setPending("tip");
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.Router,
         abi: routerAbi,
         functionName: "tip",
         args: [platform, username, amountWei, false, ctx],
       });
-      toast.success(`Tipped ${amount} MUSD to @${username}`);
+      txSuccess({
+        message: `Tipped ${amount} MUSD to @${username}`,
+        txHash,
+        description: "Indexed by Goldsky in ~15s · trace links below",
+      });
       setPending("done");
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
       setPending("none");
     }
   }
 
   return (
     <main className="container max-w-lg py-16">
-      <div className="fade-up">
+      <div className="fade-up" data-tour="tip-form">
         <Card>
           <CardHeader>
             <CardTitle>Confirm your tip</CardTitle>

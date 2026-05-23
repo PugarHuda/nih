@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { isAddress, parseEther, maxUint256 } from "viem";
 import { toast } from "sonner";
+import { txSuccess, txError } from "@/lib/tx-toast";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,11 +22,29 @@ const DURATIONS = [
   { label: "1 month", seconds: 2592000 },
 ];
 
+// Monthly subscription presets — the Supernormal Social/Creator focus.
+// Selecting one fills the form with `amount = preset` and `duration = 1 month`.
+const SUB_PRESETS = [5, 10, 25];
+
 export default function StreamPage() {
   const { address, isConnected } = useAccount();
+  const params = useSearchParams();
   const [recipient, setRecipient] = useState("");
   const [amount, setAmount] = useState("");
-  const [duration, setDuration] = useState(DURATIONS[1].seconds);
+  const [duration, setDuration] = useState(DURATIONS[3].seconds); // default 1 month — subscription bias
+
+  // Pre-fill from query params (used by /c/profile Subscribe buttons).
+  useEffect(() => {
+    const to = params.get("to");
+    const amt = params.get("amount");
+    const dur = params.get("duration");
+    if (to) setRecipient(to);
+    if (amt) setAmount(amt);
+    if (dur) {
+      const seconds = Number(dur);
+      if (!Number.isNaN(seconds) && seconds > 0) setDuration(seconds);
+    }
+  }, [params]);
   const [pending, setPending] = useState<"none" | "approve" | "create">("none");
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
@@ -74,18 +94,18 @@ export default function StreamPage() {
         await refetchAllowance();
       }
       setPending("create");
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.Stream,
         abi: streamAbi,
         functionName: "create",
         args: [recipient as `0x${string}`, amountWei, BigInt(duration)],
       });
-      toast.success("Stream started");
+      txSuccess({ message: "Stream started", txHash });
       setRecipient("");
       setAmount("");
       await Promise.all([refetchOutgoing(), refetchIncoming()]);
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setPending("none");
     }
@@ -99,11 +119,14 @@ export default function StreamPage() {
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Waves className="h-3.5 w-3.5" /> Per-second streaming
           </div>
-          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Tip stream</h1>
+          <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>
+            Subscribe to creators.
+          </h1>
           <p className="mb-6 max-w-xl" style={{ color: "var(--ink-3)" }}>
-            Stream MUSD by the second instead of one-shot tips. Perfect for
-            payroll, subscriptions, content unlocks, or paying contractors.
-            Sender or recipient can cancel any time; unaccrued MUSD refunds.
+            Pay creators MUSD by the second instead of one-shot tips. Works as a
+            Patreon-style subscription, a payroll stream, or per-second access
+            payments. Sender or recipient can cancel any time; unaccrued MUSD
+            refunds.
           </p>
         </div>
 
@@ -147,7 +170,31 @@ export default function StreamPage() {
                 <CardTitle>New stream</CardTitle>
                 <CardDescription>Lock total amount, recipient withdraws as time passes.</CardDescription>
               </CardHeader>
-              <div className="space-y-4 pt-2">
+
+              {/* Monthly subscription presets — one-tap for the Patreon flow. */}
+              <div className="mt-3 mb-1" data-tour="sub-presets">
+                <label className="text-xs uppercase tracking-wider text-muted mb-2 block">
+                  Quick subscription
+                </label>
+                <div className="flex flex-wrap gap-2">
+                  {SUB_PRESETS.map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => {
+                        setAmount(String(m));
+                        setDuration(2592000);
+                      }}
+                      className="h-10 px-4 rounded-md text-xs font-medium border bg-surface text-fg border-border hover:border-brand/50 transition"
+                      style={{ fontFamily: "var(--font-display)" }}
+                    >
+                      {m} MUSD / month
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-4">
                 <div>
                   <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Recipient address</label>
                   <Input value={recipient} onChange={(e) => setRecipient(e.target.value.trim())} placeholder="0x…" />
@@ -257,11 +304,11 @@ function StreamRow({ streamId, role, refresh }: { streamId: bigint; role: "sende
     if (!(await ensure())) return;
     setBusy("withdraw");
     try {
-      await writeContractAsync({ address: addresses.Stream, abi: streamAbi, functionName: "withdraw", args: [streamId] });
-      toast.success("Withdrawn");
+      const txHash = await writeContractAsync({ address: addresses.Stream, abi: streamAbi, functionName: "withdraw", args: [streamId] });
+      txSuccess({ message: "Withdrawn", txHash });
       await Promise.all([refetchW(), refresh()]);
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setBusy("none");
     }
@@ -270,11 +317,11 @@ function StreamRow({ streamId, role, refresh }: { streamId: bigint; role: "sende
     if (!(await ensure())) return;
     setBusy("cancel");
     try {
-      await writeContractAsync({ address: addresses.Stream, abi: streamAbi, functionName: "cancel", args: [streamId] });
-      toast.success("Stream cancelled");
+      const txHash = await writeContractAsync({ address: addresses.Stream, abi: streamAbi, functionName: "cancel", args: [streamId] });
+      txSuccess({ message: "Stream cancelled", txHash });
       await refresh();
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setBusy("none");
     }
