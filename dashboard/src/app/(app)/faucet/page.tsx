@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useAccount, useWriteContract } from "wagmi";
 import { parseEther } from "viem";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -45,7 +44,7 @@ export default function FaucetPage() {
     <>
       <Header />
       <main className="container max-w-2xl py-16">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="fade-up">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Droplet className="h-3.5 w-3.5" /> Testnet faucet
           </div>
@@ -54,7 +53,7 @@ export default function FaucetPage() {
             The Mock MUSD and Mock MEZO tokens on matsnet are open-mint. Grab some to try the full
             tip / claim / borrow loop.
           </p>
-        </motion.div>
+        </div>
 
         {!isConnected ? (
           <Card>

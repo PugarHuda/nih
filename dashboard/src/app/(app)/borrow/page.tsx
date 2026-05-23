@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { parseEther, formatEther } from "viem";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -122,7 +121,7 @@ export default function BorrowPage() {
     <>
       <Header />
       <main className="container mx-auto max-w-2xl px-6 py-12">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="fade-up">
           <span
             className="chip"
             style={{ background: "var(--accent)", color: "var(--ink)", marginBottom: 12, display: "inline-flex" }}
@@ -136,7 +135,7 @@ export default function BorrowPage() {
             Lock claimed tips as collateral. Mint up to 60% as MUSD instantly. 1%
             fixed rate. Repay any time to release collateral.
           </p>
-        </motion.div>
+        </div>
         <div className="my-8" />
 
 

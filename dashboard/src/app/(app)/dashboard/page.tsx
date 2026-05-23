@@ -1,7 +1,6 @@
 "use client";
 
 import { useAccount, useReadContract } from "wagmi";
-import { motion } from "framer-motion";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
@@ -51,7 +50,7 @@ export default function DashboardPage() {
     <>
       <Header />
       <main className="container mx-auto px-6 py-12 max-w-6xl">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="fade-up">
           <span className="kicker">creator dashboard</span>
           <h1 className="h1 mt-2 mb-2">
             {isConnected ? "Welcome back." : "Sign in to see your tips."}
@@ -59,7 +58,7 @@ export default function DashboardPage() {
           <p className="text-base mb-8" style={{ color: "var(--ink-3)" }}>
             Receive tips, borrow against them, and never sell your Bitcoin.
           </p>
-        </motion.div>
+        </div>
 
         {/* Live tip-drop banner — POW! comic notification */}
         <TipDropBanner />

@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
-import { Providers } from "./providers-wrapper";
 
 export const metadata: Metadata = {
   title: "Nih — Tip MUSD anywhere on the web",
@@ -50,9 +49,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body className="min-h-screen antialiased">
-        <Providers>{children}</Providers>
-      </body>
+      <body className="min-h-screen antialiased">{children}</body>
     </html>
   );
 }

@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { parseEther, formatEther, maxUint256 } from "viem";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -108,7 +107,7 @@ export default function EarnPage() {
     <>
       <Header />
       <main className="container max-w-2xl py-12">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="fade-up">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Sparkles className="h-3.5 w-3.5" /> Real Mezo yield
           </div>
@@ -118,7 +117,7 @@ export default function EarnPage() {
             BTC from every liquidation + MUSD from redemption fees. Pure pass-through —
             Nih takes no fee. Withdraw any time.
           </p>
-        </motion.div>
+        </div>
 
         <Card className="mb-6">
           <CardHeader>

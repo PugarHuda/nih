@@ -4,7 +4,6 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { parseEther, maxUint256, keccak256, toBytes } from "viem";
-import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -96,7 +95,7 @@ function TipInner() {
 
   return (
     <main className="container max-w-lg py-16">
-      <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+      <div className="fade-up">
         <Card>
           <CardHeader>
             <CardTitle>Confirm your tip</CardTitle>
@@ -117,14 +116,9 @@ function TipInner() {
               </p>
             </div>
 
-            <AnimatePresence>
+            <>
               {suggestion && suggestion.amount !== amount && (
-                <motion.div
-                  initial={{ opacity: 0, y: -4 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0 }}
-                  className="rounded-lg border border-accent/30 bg-accent/5 p-4"
-                >
+                <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 fade-up">
                   <div className="flex items-start gap-3">
                     <span className="rounded-md bg-accent/15 p-1.5 text-accent">
                       <Sparkles className="h-3.5 w-3.5" />
@@ -143,9 +137,9 @@ function TipInner() {
                       Use →
                     </a>
                   </div>
-                </motion.div>
+                </div>
               )}
-            </AnimatePresence>
+            </>
 
             {pending === "done" ? (
               <div className="rounded-lg bg-accent/10 border border-accent/30 p-4 text-center text-accent text-sm">
@@ -175,7 +169,7 @@ function TipInner() {
             )}
           </div>
         </Card>
-      </motion.div>
+      </div>
     </main>
   );
 }

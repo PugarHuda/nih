@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { isAddress, parseEther, maxUint256 } from "viem";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -96,7 +95,7 @@ export default function StreamPage() {
     <>
       <Header />
       <main className="container max-w-3xl py-12">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="fade-up">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Waves className="h-3.5 w-3.5" /> Per-second streaming
           </div>
@@ -106,7 +105,7 @@ export default function StreamPage() {
             payroll, subscriptions, content unlocks, or paying contractors.
             Sender or recipient can cancel any time; unaccrued MUSD refunds.
           </p>
-        </motion.div>
+        </div>
 
         {!isConnected ? (
           <Card>

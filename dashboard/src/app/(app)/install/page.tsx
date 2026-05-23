@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -37,7 +36,7 @@ export default function InstallPage() {
         {/* Hidden anchor for programmatic download */}
         <a ref={downloadRef} href={ZIP_URL} download className="hidden" aria-hidden="true" />
 
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+        <div className="fade-up">
           <div className="inline-flex items-center gap-2 rounded-full border border-brand/30 bg-brand/5 px-3 py-1.5 text-xs text-brand mb-4">
             <Chrome className="h-3.5 w-3.5" /> Browser extension · v0.4.0
           </div>
@@ -53,7 +52,7 @@ export default function InstallPage() {
               Same code, same signing key, just no &quot;Add to Chrome&quot; button yet.
             </p>
           )}
-        </motion.div>
+        </div>
 
         {/* Big primary CTA */}
         <Card className="mb-8 border-brand/40 bg-gradient-to-br from-brand/5 to-transparent">
@@ -233,11 +232,8 @@ function StepRow({
   isLast?: boolean;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0.4 }}
-      animate={{ opacity: active ? 1 : 0.5 }}
-      transition={{ duration: 0.25 }}
-      className={`rounded-xl border p-5 ${
+    <div
+      className={`fade-up rounded-xl border p-5 ${
         active ? "border-brand/40 bg-surface" : "border-border bg-bg/40"
       }`}
     >
@@ -251,26 +247,19 @@ function StepRow({
         </div>
         <div className="flex-1">
           <h3 className="font-semibold mb-2">{title}</h3>
-          <AnimatePresence>
-            {active && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: "auto" }}
-                exit={{ opacity: 0, height: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {body}
-                <Button size="sm" variant="default" onClick={onComplete} className="mt-3">
-                  <CheckCircle2 className="h-4 w-4" />
-                  {cta}
-                  {!isLast && <ArrowRight className="h-3.5 w-3.5" />}
-                </Button>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {active && (
+            <div className="fade-up">
+              {body}
+              <Button size="sm" variant="default" onClick={onComplete} className="mt-3">
+                <CheckCircle2 className="h-4 w-4" />
+                {cta}
+                {!isLast && <ArrowRight className="h-3.5 w-3.5" />}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

@@ -2,30 +2,14 @@
 
 import Link from "next/link";
 import Script from "next/script";
-import { useEffect, useState } from "react";
-import { ConnectWallet } from "@/components/connect-wallet";
-
-/**
- * Client-only ConnectWallet slot. Keeps the rest of the landing rendering
- * server-side (no BAILOUT_TO_CLIENT_SIDE_RENDERING) while still deferring
- * wagmi/RainbowKit's window-touching init until after first paint, so
- * wallet-extension races (Phantom vs MetaMask) can't block the marketing
- * page or crash React 19 with stale internal access.
- */
-function ConnectSlot() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  if (!mounted) return null;
-  return <ConnectWallet />;
-}
+import { useEffect } from "react";
 
 /**
  * Comic landing — ported from the Claude Design HTML handoff
- * (public/landing.html). Now a real Next.js Client Component:
- *   - <ConnectWallet/> injected into the top nav
- *   - landing.css linked here (the design's external stylesheet)
- *   - landing.js loaded via next/script (sparkles, marquee, drift, ticker)
- *   - data-style locked to "komik" on mount (no style swap UI)
+ * (public/landing.html). Pure marketing page outside the (app) route
+ * group, so it never imports wagmi/RainbowKit. The wallet flow opens
+ * via the "Open the app →" link to /dashboard, which sits behind the
+ * Providers context.
  */
 export default function LandingPage() {
   useEffect(() => {
@@ -46,7 +30,13 @@ export default function LandingPage() {
           <nav>
             <Link href="/dashboard">Dashboard</Link>
             <Link href="/logo.html">Brand</Link>
-            <ConnectSlot />
+            <Link
+              href="/dashboard"
+              className="comic-btn primary"
+              style={{ fontSize: 14, padding: "6px 14px" }}
+            >
+              Open the app →
+            </Link>
           </nav>
         </header>
     {/* ANIMATED COMIC BACKGROUND */}

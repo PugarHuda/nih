@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { keccak256, encodePacked } from "viem";
-import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -142,13 +141,13 @@ export default function ClaimPage() {
     <>
       <Header />
       <main className="container max-w-xl py-16">
-        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}>
+        <div className="fade-up">
           <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Claim your tips</h1>
           <p className="mb-8" style={{ color: "var(--ink-3)" }}>
             Prove you own the handle by posting a challenge text on your public profile, then claim
             on-chain.
           </p>
-        </motion.div>
+        </div>
 
         {!isConnected ? (
           <Card>
@@ -195,11 +194,7 @@ export default function ClaimPage() {
                 </div>
 
                 {username && (
-                  <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="rounded-lg border border-border bg-bg/50 p-4 flex items-center justify-between"
-                  >
+                  <div className="rounded-lg border border-border bg-bg/50 p-4 flex items-center justify-between fade-up">
                     <div>
                       <p className="text-xs text-muted">Pending in vault</p>
                       <p className="text-2xl font-semibold mt-1">{formatMUSD(pendingAmount)} MUSD</p>
@@ -209,7 +204,7 @@ export default function ClaimPage() {
                     ) : (
                       <AlertCircle className="h-6 w-6 text-muted" />
                     )}
-                  </motion.div>
+                  </div>
                 )}
               </div>
             </Card>
