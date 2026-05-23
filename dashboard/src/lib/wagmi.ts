@@ -1,5 +1,8 @@
 import { fallback, http } from "wagmi";
-import { getConfig } from "@mezo-org/passport";
+// Deep-import skips Passport's index barrel which would otherwise pull
+// in @mezo-org/mezo-clay (React-18-only UI bundle that crashes React 19).
+// config.js itself only depends on rainbowkit + wagmi + wallet helpers.
+import { getConfig } from "@mezo-org/passport/dist/src/config";
 import { matsnet } from "./chain";
 
 /**

@@ -35,12 +35,19 @@ const nextConfig = {
   // public API as a no-op so passport's imports resolve fine.
   webpack: (config) => {
     const shim = path.resolve(__dirname, "src/lib/framer-motion-shim.tsx");
+    const clayStub = path.resolve(__dirname, "src/lib/mezo-clay-stub.ts");
     config.resolve.alias = {
       ...(config.resolve.alias ?? {}),
       "framer-motion$": shim,
       "framer-motion/dist/es/index.mjs": shim,
       "motion/react$": shim,
       "motion/react/dist/es/index.mjs": shim,
+      // Passport's UI bundle ships a React-18-only jsx-runtime that crashes
+      // on React 19. We don't render any of those components, so neutralize
+      // the entire package.
+      "@mezo-org/mezo-clay$": clayStub,
+      "@mezo-org/mezo-clay/dist/mezo-clay.es.js": clayStub,
+      "@mezo-org/mezo-clay/dist/mezo-clay.umd.js": clayStub,
     };
     return config;
   },
