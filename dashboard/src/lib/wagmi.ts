@@ -1,4 +1,4 @@
-import { fallback, http } from "wagmi";
+import { fallback, http, type Transport } from "wagmi";
 // Deep-import skips Passport's index barrel which would otherwise pull
 // in @mezo-org/mezo-clay (React-18-only UI bundle that crashes React 19).
 // config.js itself only depends on rainbowkit + wagmi + wallet helpers.
@@ -37,16 +37,19 @@ export const wagmiConfig = getConfig({
   walletConnectProjectId,
   chains: [matsnet],
   ssr: true,
+  // Passport's TS type wraps transports in `{ transports: {...} }`
+  // (likely a bug in their config typing), but at runtime they spread our
+  // params into rainbowkit's `getDefaultConfig` which expects the flat
+  // shape `{ [chainId]: transport }`. We pass the runtime-correct flat
+  // shape and cast to satisfy their (broken) type.
   transports: {
-    transports: {
-      [matsnet.id]: fallback(
-        [
-          ...(spectrum ? [http(spectrum)] : []),
-          http(primary),
-          http("https://rpc.test.mezo.org"),
-        ],
-        { rank: false }
-      ),
-    },
-  },
+    [matsnet.id]: fallback(
+      [
+        ...(spectrum ? [http(spectrum)] : []),
+        http(primary),
+        http("https://rpc.test.mezo.org"),
+      ],
+      { rank: false }
+    ),
+  } as unknown as { transports: Record<number, Transport> },
 });
