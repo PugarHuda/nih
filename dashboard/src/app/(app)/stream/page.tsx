@@ -100,11 +100,37 @@ export default function StreamPage() {
             <Waves className="h-3.5 w-3.5" /> Per-second streaming
           </div>
           <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Tip stream</h1>
-          <p className="mb-8 max-w-xl" style={{ color: "var(--ink-3)" }}>
+          <p className="mb-6 max-w-xl" style={{ color: "var(--ink-3)" }}>
             Stream MUSD by the second instead of one-shot tips. Perfect for
             payroll, subscriptions, content unlocks, or paying contractors.
             Sender or recipient can cancel any time; unaccrued MUSD refunds.
           </p>
+        </div>
+
+        {/* How it works — keep the mental model close to the form. */}
+        <div className="comic-card mb-8 px-5 py-4">
+          <span className="kicker">how it works</span>
+          <ol
+            className="mt-2 grid sm:grid-cols-4 gap-3 text-[12px] leading-snug"
+            style={{ color: "var(--ink-2)" }}
+          >
+            <li>
+              <b>1. Lock</b> the full MUSD amount up front. The contract escrows it
+              for the recipient.
+            </li>
+            <li>
+              <b>2. Accrue</b> per second — the recipient's claimable balance grows
+              continuously, no per-tx gas.
+            </li>
+            <li>
+              <b>3. Withdraw</b> any portion that's accrued. Recipient pulls when
+              they want; contract refuses to overpay.
+            </li>
+            <li>
+              <b>4. Cancel</b> any time, either side. Streamed amount stays with
+              the recipient, the rest refunds to the sender.
+            </li>
+          </ol>
         </div>
 
         {!isConnected ? (

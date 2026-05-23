@@ -1,22 +1,60 @@
-import { Providers } from "../providers-wrapper";
+"use client";
 
-// wagmi/RainbowKit/motion need the browser. Skip static prerender for
-// every page in this route group — they render on demand at request time.
-export const dynamic = "force-dynamic";
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { Providers } from "../providers-wrapper";
 
 /**
  * App-section layout — wraps wagmi / RainbowKit / Mezo Passport.
  *
- * Why a route group: the marketing landing at `/` doesn't need a wallet
- * context, and importing those libraries on it caused (a) the Phantom vs
- * MetaMask `window.ethereum` race to crash the page and (b) framer-motion's
- * stale ReactCurrentOwner access to break /_not-found prerender.
+ * The marketing landing at `/` ships a vanilla landing.js that appends
+ * DOM (tweaks toggle, SFX overlays) directly to `document.body`. If a
+ * user navigates `/` → `/dashboard` while those nodes were still being
+ * appended, cleanup on the landing component sometimes loses the race.
+ * We sweep defensively here on every app-route mount.
  *
- * With this split:
- *   src/app/page.tsx          → static landing (no Providers)
- *   src/app/(app)/*           → dashboard, claim, borrow, etc. (Providers)
- *   src/app/_not-found.tsx    → handled by root layout (no Providers)
+ * Why a route group at all: the landing doesn't need wallet context,
+ * and importing wagmi / RainbowKit / Passport on it triggers
+ * (a) MetaMask vs Phantom window.ethereum collisions, and
+ * (b) framer-motion / clay React-18 jsx-runtime crashes on React 19.
  */
+function StyleSwapPurge() {
+  useEffect(() => {
+    const purge = () =>
+      document.body
+        .querySelectorAll(
+          ".twk-mini-toggle, .twk-mini, .pow, .spark, .drift-layer, .panel-modal",
+        )
+        .forEach((el) => el.remove());
+    purge();
+    const t = window.setTimeout(purge, 200);
+    return () => window.clearTimeout(t);
+  }, []);
+  return null;
+}
+
+/**
+ * Suppress the `fade-up` entrance animation right after a client-side
+ * navigation so we don't see every page slide up 6px on arrival. The
+ * first mount of the session still animates (no prior pathname); only
+ * subsequent navigations short-circuit.
+ */
+function NavAnimSuppress() {
+  const pathname = usePathname();
+  useEffect(() => {
+    document.body.classList.add("no-anim");
+    const t = window.setTimeout(() => document.body.classList.remove("no-anim"), 400);
+    return () => window.clearTimeout(t);
+  }, [pathname]);
+  return null;
+}
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <Providers>{children}</Providers>;
+  return (
+    <Providers>
+      <StyleSwapPurge />
+      <NavAnimSuppress />
+      {children}
+    </Providers>
+  );
 }

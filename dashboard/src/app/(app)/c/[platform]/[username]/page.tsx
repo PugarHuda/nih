@@ -12,7 +12,9 @@ import { formatMUSD, truncateAddress } from "@/lib/utils";
 import { ExternalLink, ArrowRight, ShieldCheck } from "lucide-react";
 
 const PLATFORMS = new Set<Platform>(["twitter", "youtube", "github", "substack", "medium"]);
-const TIER_LABELS = ["Unverified", "Signature", "OAuth", "Manual / DAO"];
+// Tier 0 = no record. Tiers 1-3 are different attestation routes, but
+// from a tipper's perspective they all mean "ownership proven".
+const TIER_LABELS = ["Unverified", "Verified", "Verified", "Verified"];
 
 const client = createPublicClient({
   chain: matsnet,
@@ -146,7 +148,11 @@ export default async function ProfilePage({ params }: PageProps) {
             <Stat
               label="Pending in vault"
               value={`${formatMUSD(pending)} MUSD`}
-              hint={isRegistered ? "Already claimed" : "Waiting for ownership proof"}
+              hint={
+                isRegistered
+                  ? "Tips flow straight to wallet — no parking needed"
+                  : "Waiting for ownership proof"
+              }
             />
           </div>
 

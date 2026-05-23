@@ -143,10 +143,36 @@ export default function ClaimPage() {
       <main className="container max-w-xl py-16">
         <div className="fade-up">
           <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Claim your tips</h1>
-          <p className="mb-8" style={{ color: "var(--ink-3)" }}>
+          <p className="mb-6" style={{ color: "var(--ink-3)" }}>
             Prove you own the handle by posting a challenge text on your public profile, then claim
             on-chain.
           </p>
+        </div>
+
+        {/* How verification works — answers the most common question
+            ("do I just connect my wallet?"). The answer: no, ownership
+            of the *social handle* needs a separate proof. */}
+        <div className="comic-card mb-8 px-5 py-4">
+          <span className="kicker">how verification works</span>
+          <ol
+            className="mt-2 grid sm:grid-cols-3 gap-3 text-[12px] leading-snug"
+            style={{ color: "var(--ink-2)" }}
+          >
+            <li>
+              <b>1. Pick your handle</b> — e.g. <code>twitter:hajislamet</code>. Your wallet
+              is already connected; this proves which <em>social</em> account is yours.
+            </li>
+            <li>
+              <b>2. Post the challenge</b> — copy the one-line text the dashboard generates
+              and paste it on your public profile (tweet, channel description, README).
+              Our verifier reads it directly from the platform.
+            </li>
+            <li>
+              <b>3. Sign the attestation</b> — the verifier returns a signature; you submit
+              it to NihRegistry on-chain. From then on, tips routed to your handle land
+              straight in your wallet — no more vault parking.
+            </li>
+          </ol>
         </div>
 
         {!isConnected ? (

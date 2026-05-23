@@ -140,13 +140,28 @@ export default function InstallPage() {
           />
         </div>
 
-        {/* Visual cheat sheet */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-lg">Visual cheat sheet</CardTitle>
-            <CardDescription>What chrome://extensions looks like with dev mode on.</CardDescription>
-          </CardHeader>
-          <pre className="text-[11px] leading-relaxed text-muted overflow-x-auto font-mono mt-2 p-4 rounded-lg border border-border bg-bg/50">
+        {/* Visual cheat sheet — own section so it doesn't blend with the
+            install steps above. Bumped contrast + size for legibility. */}
+        <div className="mt-12 mb-8">
+          <div className="mb-4">
+            <span className="kicker">visual cheat sheet</span>
+            <h2 className="h2 mt-1.5">What you should see</h2>
+            <p className="text-sm mt-1" style={{ color: "var(--ink-3)" }}>
+              The Chrome extensions page with developer mode on, after the unpacked Nih
+              folder has been loaded.
+            </p>
+          </div>
+          <pre
+            className="overflow-x-auto p-5 mono"
+            style={{
+              fontSize: 13,
+              lineHeight: 1.5,
+              color: "var(--ink)",
+              background: "var(--paper)",
+              border: "3.5px solid var(--ink)",
+              boxShadow: "4px 4px 0 0 var(--ink)",
+            }}
+          >
 {`┌─────────────────────────────────────────────────────────────────────┐
 │  Extensions                                       🔘 Developer mode │
 │                                                                     │
@@ -159,7 +174,7 @@ export default function InstallPage() {
 │  ╰─────────────────────────────────────────────────────────╯       │
 └─────────────────────────────────────────────────────────────────────┘`}
           </pre>
-        </Card>
+        </div>
 
         {/* Troubleshooting */}
         <Card className="mb-8">

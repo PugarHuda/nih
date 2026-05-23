@@ -38,24 +38,27 @@ export type FeedEvent =
   | { type: "tip"; data: RecentTip }
   | { type: "stream"; data: RecentStream };
 
+/**
+ * Top tip receivers.
+ *
+ * NOTE: we used to query the `accounts` entity here, but the subgraph
+ * mapping has a stale-reference bug when sender == recipient (self-tip
+ * for handles you own): sender.save() overwrites the recipient's
+ * totalReceived update because both hold separate AssemblyScript copies
+ * of the same entity. Until the subgraph is republished, derive top
+ * recipients from `handleStats` (always correct) and resolve owner
+ * addresses via the on-chain registry on the client.
+ */
 export async function fetchTopRecipients(limit = 10): Promise<TopRecipient[]> {
   if (!ENDPOINT) return [];
-  const query = `{
-    accounts(first: ${limit}, orderBy: totalReceived, orderDirection: desc, where: {totalReceived_gt: "0"}) {
-      address
-      totalReceived
-      tipCount
-    }
-  }`;
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    headers: { "content-type": "application/json" },
-    body: JSON.stringify({ query }),
-    next: { revalidate: 60 },
-  });
-  if (!res.ok) return [];
-  const json = await res.json();
-  return json.data?.accounts ?? [];
+  const stats = await fetchHandleStats(limit);
+  // The pseudo-address shown in the UI is the handle owner if known
+  // (KNOWN_HANDLES contains demo handles), otherwise the handleId itself.
+  return stats.map((s) => ({
+    address: s.handleId,
+    totalReceived: s.totalReceived,
+    tipCount: s.tipCount,
+  }));
 }
 
 export async function fetchRecentStreams(limit = 10): Promise<RecentStream[]> {

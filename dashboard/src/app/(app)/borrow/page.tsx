@@ -136,7 +136,35 @@ export default function BorrowPage() {
             fixed rate. Repay any time to release collateral.
           </p>
         </div>
-        <div className="my-8" />
+
+        {/* How it works — explain the mechanics + monitoring up front so
+            the form below doesn't feel like a black box. */}
+        <div className="comic-card my-8 px-5 py-4">
+          <span className="kicker">how it works</span>
+          <ol
+            className="mt-2 grid sm:grid-cols-4 gap-3 text-[12px] leading-snug"
+            style={{ color: "var(--ink-2)" }}
+          >
+            <li>
+              <b>1. Collateral</b> — pick how much of your claimed tip MUSD to
+              escrow in NihCredit. You keep ownership; you just can't spend it
+              until the loan closes.
+            </li>
+            <li>
+              <b>2. Borrow</b> — receive 60% of that amount as freshly-minted
+              MUSD. 1% fixed APR accrues from the open block.
+            </li>
+            <li>
+              <b>3. Monitor</b> — your live row below shows: principal, debt
+              (principal + interest), and the LTV ratio. Anything over 80% LTV
+              is liquidation territory.
+            </li>
+            <li>
+              <b>4. Repay</b> — pay back any portion; collateral unlocks
+              proportionally. Repay in full to close the position.
+            </li>
+          </ol>
+        </div>
 
 
         {!isConnected ? (

@@ -1,6 +1,6 @@
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { fetchTopRecipients, fetchRecentTips } from "@/lib/goldsky";
+import { fetchTopRecipients, fetchRecentTips, lookupHandle, KNOWN_HANDLES } from "@/lib/goldsky";
 import { formatMUSD, truncateAddress } from "@/lib/utils";
 import { Trophy, Coins } from "lucide-react";
 
@@ -46,18 +46,27 @@ export default async function LeaderboardPage() {
                 Top recipients
               </h2>
               <ol className="space-y-2">
-                {recipients.map((r, i) => (
-                  <li
-                    key={r.address}
-                    className="flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3"
-                  >
-                    <span className="text-xl font-semibold text-muted w-7">{i + 1}</span>
-                    <code className="font-mono text-sm flex-1">{truncateAddress(r.address)}</code>
-                    <span className="text-sm font-semibold text-brand">
-                      {formatMUSD(BigInt(r.totalReceived))} MUSD
-                    </span>
-                  </li>
-                ))}
+                {recipients.map((r, i) => {
+                  // After the goldsky.ts switch, `address` is a handleId.
+                  // Resolve to a friendly @handle when we know it.
+                  const meta = lookupHandle(r.address);
+                  const label = meta
+                    ? `@${meta.username} · ${meta.platform}`
+                    : `${r.address.slice(0, 10)}…`;
+                  return (
+                    <li
+                      key={r.address}
+                      className="flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3"
+                    >
+                      <span className="text-xl font-semibold text-muted w-7">{i + 1}</span>
+                      <span className="font-mono text-sm flex-1 truncate">{label}</span>
+                      <span className="text-sm font-semibold text-brand">
+                        {formatMUSD(BigInt(r.totalReceived))} MUSD
+                      </span>
+                      <span className="text-[10px] text-muted mono">{r.tipCount} tip{Number(r.tipCount) === 1 ? "" : "s"}</span>
+                    </li>
+                  );
+                })}
               </ol>
             </div>
 
