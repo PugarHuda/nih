@@ -159,7 +159,7 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex flex-col gap-5">
-            <MilestoneCard current={Math.min(68, Number(received) || 22)} target={100} />
+            <MilestoneCard target={100} />
             <TopTippersCard />
             <PlatformDonut />
           </div>

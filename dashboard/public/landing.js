@@ -11,6 +11,15 @@
    ============================================================ */
 
 (() => {
+  // Hard gate: this script only owns the marketing landing at "/".
+  // The dashboard and app routes share the same document instance
+  // during client-side navigation, so re-running landing.js there
+  // appends sticky DOM (tweaks toggle, SFX overlays) into the app UI.
+  // Bail out early if we're anywhere except the root path.
+  if (typeof window !== 'undefined' && window.location && window.location.pathname !== '/') {
+    return;
+  }
+
   const LS = {
     style:   'nih.style',
     mode:    'nih.mode',

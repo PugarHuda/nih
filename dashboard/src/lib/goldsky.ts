@@ -101,6 +101,52 @@ export async function fetchActivityFeed(limit = 8): Promise<FeedEvent[]> {
   return events.slice(0, limit);
 }
 
+export interface HandleStat {
+  handleId: string;
+  totalReceived: string;
+  tipCount: string;
+}
+
+/**
+ * Known handleId → (platform, username) reverse map.
+ *
+ * The subgraph stores handleId as bytes32 (keccak256("platform:username")).
+ * That hash isn't invertible on-chain, so we keep a small client-side map
+ * of the handles we registered manually during deploy. Unknown handleIds
+ * fall back to a short hex preview in the UI.
+ */
+export const KNOWN_HANDLES: Record<string, { platform: string; username: string }> = {
+  "0x876ed16774c41851a77836c6b7c8a73d1c4b8235505742837e791346d9640d75": { platform: "twitter", username: "hajislamet" },
+  "0xe42fad11825c4bb4bc805f9ad53dbde50e93baf1431d09934ba95fe91bf60d91": { platform: "twitter", username: "pugarhuda" },
+  "0xc0a8544bd367c1f9e4bad8de180be3c96f97d663c4168d837e04c5628c64e77e": { platform: "github", username: "PugarHuda" },
+  "0x6773975048115fba630eae27d130fa00457470464b1f3b7cbc48b2720e319a51": { platform: "twitter", username: "MezoNetwork" },
+  "0x3c5b565e32b3a7f627794117bdd3a0292f1e4d225316f4b5b2bae3d08a6ca151": { platform: "twitter", username: "EncodeClub" },
+};
+
+export function lookupHandle(handleId: string): { platform: string; username: string } | null {
+  return KNOWN_HANDLES[handleId.toLowerCase()] ?? null;
+}
+
+export async function fetchHandleStats(limit = 10): Promise<HandleStat[]> {
+  if (!ENDPOINT) return [];
+  const query = `{
+    handleStats(first: ${limit}, orderBy: totalReceived, orderDirection: desc) {
+      handleId
+      totalReceived
+      tipCount
+    }
+  }`;
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query }),
+    next: { revalidate: 30 },
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.handleStats ?? [];
+}
+
 export async function fetchRecentTips(limit = 20): Promise<RecentTip[]> {
   if (!ENDPOINT) return [];
   const query = `{

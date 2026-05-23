@@ -15,6 +15,14 @@ export default function LandingPage() {
   useEffect(() => {
     document.body.setAttribute("data-style", "komik");
     document.body.setAttribute("data-mode", "light");
+    // landing.js append-only DOM (tweaks toggle, SFX overlays, parallax)
+    // survives client-side navigation away from "/". Sweep them on unmount
+    // so /dashboard and friends stay clean.
+    return () => {
+      document.body
+        .querySelectorAll(".twk-mini-toggle, .twk-mini, .pow, .spark, .drift-layer, .panel-modal")
+        .forEach((el) => el.remove());
+    };
   }, []);
 
   return (
@@ -501,9 +509,9 @@ export default function LandingPage() {
           Enter the app
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
         </a>
-        <a className="lp-cta" href="/dashboard">
+        <a className="lp-cta" href="/onboarding">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
-          Watch the 3-minute story
+          Walk through it (3 min)
         </a>
       </div>
     </main>
