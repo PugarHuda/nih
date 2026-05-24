@@ -216,9 +216,29 @@ export default function EarnPage() {
 
 function Stat({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
   return (
-    <div className={`rounded-lg border p-3 ${highlight ? "border-brand/40 bg-brand/5" : "border-border bg-bg/40"}`}>
-      <p className="text-xs text-muted">{label}</p>
-      <p className={`text-lg font-semibold mt-0.5 ${highlight ? "text-brand" : "text-fg"}`}>{value}</p>
+    <div
+      style={{
+        padding: 12,
+        background: highlight ? "var(--accent)" : "var(--paper)",
+        color: highlight ? "var(--accent-ink)" : "var(--ink)",
+        border: "3px solid var(--ink)",
+        boxShadow: highlight ? "3px 3px 0 0 var(--ink)" : "2px 2px 0 0 var(--ink)",
+      }}
+    >
+      <p className="kicker" style={{ color: highlight ? "rgba(0,0,0,0.7)" : "var(--ink-3)" }}>
+        {label}
+      </p>
+      <p
+        className="tabular mt-1"
+        style={{
+          fontFamily: "var(--font-display)",
+          fontSize: 22,
+          lineHeight: 1,
+          color: "inherit",
+        }}
+      >
+        {value}
+      </p>
     </div>
   );
 }

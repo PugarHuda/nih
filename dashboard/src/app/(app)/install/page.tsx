@@ -57,7 +57,15 @@ export default function InstallPage() {
         </div>
 
         {/* Big primary CTA */}
-        <Card className="mb-8 border-brand/40 bg-gradient-to-br from-brand/5 to-transparent">
+        <Card
+          className="mb-8"
+          style={{
+            background: "var(--accent)",
+            color: "var(--ink)",
+            border: "3.5px solid var(--ink)",
+            boxShadow: "4px 4px 0 0 var(--ink)",
+          }}
+        >
           <div className="flex flex-col md:flex-row items-start md:items-center gap-5">
             <div className="flex-1">
               <CardHeader className="pb-2">

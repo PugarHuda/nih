@@ -192,6 +192,50 @@ export default function ClaimPage() {
           </Card>
         ) : (
           <div className="space-y-4">
+            {/* OAuth fast-path (Tier 2) — affordance only for now.
+                Backend NextAuth providers ship next milestone; for the
+                hackathon we keep the deterministic challenge-text path. */}
+            <div
+              className="comic-card accent p-4"
+              style={{ background: "var(--accent)" }}
+            >
+              <span className="kicker" style={{ opacity: 0.85 }}>
+                fast path · coming next milestone
+              </span>
+              <h3 className="h3 mt-1 mb-2">Sign in with the platform.</h3>
+              <p className="text-[13px] leading-snug" style={{ color: "rgba(0,0,0,0.78)" }}>
+                One click via OAuth → instant Tier-2 attestation, no profile
+                editing. We wire this up via NextAuth providers
+                post-hackathon — for the demo, use the challenge-text path
+                below (more robust + zero trust on OAuth providers).
+              </p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                {([
+                  { p: "twitter",  label: "Sign in with X" },
+                  { p: "github",   label: "Sign in with GitHub" },
+                  { p: "youtube",  label: "Sign in with YouTube" },
+                  { p: "linkedin", label: "Sign in with LinkedIn" },
+                ] as const).map((b) => (
+                  <button
+                    key={b.p}
+                    disabled
+                    title="OAuth Tier-2 path — wired up post-hackathon"
+                    className="comic-btn"
+                    style={{
+                      fontSize: 12,
+                      padding: "5px 12px",
+                      opacity: 0.55,
+                      cursor: "not-allowed",
+                      background: "var(--paper)",
+                      color: "var(--ink)",
+                    }}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <Card>
               <CardHeader>
                 <CardTitle>1. Pick your handle</CardTitle>

@@ -191,6 +191,33 @@ h1, h2, h3, .h1, .h2, .h3 {
   color: var(--ink-2) !important;
 }
 
+/* Final-line-of-defence — any CardDescription / .text-muted that
+   ends up on a light card should NEVER fall below #444 (~50% lightness).
+   Stops the "white text on cream" reports the user keeps filing. */
+.comic-card:not(.ink):not(.accent) .text-muted,
+.comic-card:not(.ink):not(.accent) .muted,
+.comic-card:not(.ink):not(.accent) p,
+.comic-card:not(.ink):not(.accent) span,
+.comic-card:not(.ink):not(.accent) li {
+  color: var(--ink-2);
+}
+.comic-card:not(.ink):not(.accent) h1,
+.comic-card:not(.ink):not(.accent) h2,
+.comic-card:not(.ink):not(.accent) h3,
+.comic-card:not(.ink):not(.accent) .h1,
+.comic-card:not(.ink):not(.accent) .h2,
+.comic-card:not(.ink):not(.accent) .h3,
+.comic-card:not(.ink):not(.accent) b,
+.comic-card:not(.ink):not(.accent) strong { color: var(--ink); }
+
+/* Same for Tailwind utility cards (`text-fg`, `text-brand` on bg-bg/X) */
+.bg-bg\/40 .text-fg, .bg-bg\/50 .text-fg, .bg-bg\/60 .text-fg,
+.bg-surface\/40 .text-fg, .bg-surface\/50 .text-fg, .bg-surface\/60 .text-fg,
+.bg-paper .text-fg {
+  color: var(--ink) !important;
+}
+.text-brand { color: var(--accent-2) !important; }
+
 /* Comic button */
 .comic-btn {
   display: inline-flex;

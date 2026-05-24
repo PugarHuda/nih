@@ -108,11 +108,12 @@ export const earnAbi = [
 ] as const;
 
 export const troveAbi = [
-  { type: "function", name: "openTroveFor", stateMutability: "payable", inputs: [{ name: "debtAmount", type: "uint256" }], outputs: [] },
+  { type: "function", name: "openTroveFor", stateMutability: "payable", inputs: [{ name: "debt", type: "uint256" }], outputs: [] },
   { type: "function", name: "closeTroveFor", stateMutability: "nonpayable", inputs: [], outputs: [] },
-  { type: "function", name: "troveSnapshot", stateMutability: "view", inputs: [], outputs: [
+  { type: "function", name: "snapshotOf", stateMutability: "view", inputs: [{ name: "user", type: "address" }], outputs: [
     { name: "debt", type: "uint256" },
     { name: "coll", type: "uint256" },
     { name: "status", type: "uint256" },
   ] },
+  { type: "function", name: "proxyOf", stateMutability: "view", inputs: [{ name: "user", type: "address" }], outputs: [{ type: "address" }] },
 ] as const;

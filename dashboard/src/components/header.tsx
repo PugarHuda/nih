@@ -12,6 +12,7 @@ const NAV_LINKS = [
   { href: "/stream", label: "Stream" },
   { href: "/earn", label: "Earn" },
   { href: "/borrow", label: "Borrow" },
+  { href: "/trove", label: "Trove" },
   { href: "/claim", label: "Claim" },
   { href: "/leaderboard", label: "Top" },
   { href: "/install", label: "Install" },

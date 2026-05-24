@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
+import { fetchRecentTips, fetchHandleStats } from "@/lib/goldsky";
+import { formatMUSD } from "@/lib/utils";
 
 /**
  * /slides — 5-slide hackathon pitch deck.
@@ -12,8 +14,58 @@ import { ArrowLeft, ArrowRight, ExternalLink } from "lucide-react";
  * URL: `?n=2` jumps to a slide; persists when navigating between slides
  * so deep-linking to a specific slide works for screenshots.
  */
+interface LiveStats {
+  totalTips: number;
+  totalVolume: bigint;
+  avgTip: bigint;
+  topHandles: { label: string; total: bigint; tips: number }[];
+  loaded: boolean;
+}
+
 export default function SlidesPage() {
   const [idx, setIdx] = useState(0);
+  const [live, setLive] = useState<LiveStats>({
+    totalTips: 0,
+    totalVolume: 0n,
+    avgTip: 0n,
+    topHandles: [],
+    loaded: false,
+  });
+
+  // Pull live numbers from Goldsky once per slide-mount; refresh every
+  // 30s. Used by the Demo + Numbers slides.
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      const [tips, stats] = await Promise.all([
+        fetchRecentTips(100),
+        fetchHandleStats(5),
+      ]);
+      if (cancelled) return;
+      const totalTips = tips.length;
+      const totalVolume = tips.reduce((acc, t) => acc + BigInt(t.amount), 0n);
+      const avgTip = totalTips > 0 ? totalVolume / BigInt(totalTips) : 0n;
+      const KNOWN: Record<string, string> = {
+        "0xc0a8544bd367c1f9e4bad8de180be3c96f97d663c4168d837e04c5628c64e77e": "github:PugarHuda",
+        "0x3c5b565e32b3a7f627794117bdd3a0292f1e4d225316f4b5b2bae3d08a6ca151": "twitter:EncodeClub",
+        "0x876ed16774c41851a77836c6b7c8a73d1c4b8235505742837e791346d9640d75": "twitter:hajislamet",
+        "0xe42fad11825c4bb4bc805f9ad53dbde50e93baf1431d09934ba95fe91bf60d91": "twitter:pugarhuda",
+        "0x6773975048115fba630eae27d130fa00457470464b1f3b7cbc48b2720e319a51": "twitter:MezoNetwork",
+      };
+      const topHandles = stats.map((s) => ({
+        label: KNOWN[s.handleId.toLowerCase()] ?? `${s.handleId.slice(0, 10)}…`,
+        total: BigInt(s.totalReceived),
+        tips: Number(s.tipCount),
+      }));
+      setLive({ totalTips, totalVolume, avgTip, topHandles, loaded: true });
+    }
+    load();
+    const t = setInterval(load, 30_000);
+    return () => {
+      cancelled = true;
+      clearInterval(t);
+    };
+  }, []);
 
   // Read initial slide from URL once.
   useEffect(() => {
@@ -30,7 +82,8 @@ export default function SlidesPage() {
     window.history.replaceState(null, "", url.toString());
   }, [idx]);
 
-  const next = useCallback(() => setIdx((i) => Math.min(SLIDES.length - 1, i + 1)), []);
+  const slides = useMemo(() => SLIDES(live), [live]);
+  const next = useCallback(() => setIdx((i) => Math.min(slides.length - 1, i + 1)), [slides.length]);
   const prev = useCallback(() => setIdx((i) => Math.max(0, i - 1)), []);
 
   // Keyboard nav.
@@ -45,7 +98,7 @@ export default function SlidesPage() {
       } else if (e.key === "Home") {
         setIdx(0);
       } else if (e.key === "End") {
-        setIdx(SLIDES.length - 1);
+        setIdx(slides.length - 1);
       } else if (e.key === "Escape") {
         window.location.href = "/";
       }
@@ -54,7 +107,7 @@ export default function SlidesPage() {
     return () => window.removeEventListener("keydown", onKey);
   }, [next, prev]);
 
-  const slide = SLIDES[idx];
+  const slide = slides[idx];
 
   return (
     <main
@@ -75,7 +128,7 @@ export default function SlidesPage() {
             className="mono text-[11px] uppercase tracking-[.12em]"
             style={{ color: "var(--ink-3)" }}
           >
-            pitch deck · {idx + 1} / {SLIDES.length}
+            pitch deck · {idx + 1} / {slides.length}
           </span>
           <Link
             href="/dashboard"
@@ -135,7 +188,7 @@ export default function SlidesPage() {
 
         {/* Slide indicator dots */}
         <div className="flex items-center gap-2">
-          {SLIDES.map((_, i) => (
+          {slides.map((_, i) => (
             <button
               key={i}
               onClick={() => setIdx(i)}
@@ -154,13 +207,13 @@ export default function SlidesPage() {
 
         <button
           onClick={next}
-          disabled={idx === SLIDES.length - 1}
+          disabled={idx === slides.length - 1}
           className="comic-btn primary"
           style={{
             fontSize: 13,
             padding: "6px 12px",
-            opacity: idx === SLIDES.length - 1 ? 0.35 : 1,
-            cursor: idx === SLIDES.length - 1 ? "not-allowed" : "pointer",
+            opacity: idx === slides.length - 1 ? 0.35 : 1,
+            cursor: idx === slides.length - 1 ? "not-allowed" : "pointer",
           }}
         >
           next <ArrowRight className="h-4 w-4" />
@@ -183,7 +236,7 @@ interface Slide {
   body: React.ReactNode;
 }
 
-const SLIDES: Slide[] = [
+function SLIDES(live: LiveStats): Slide[] { return [
   // ───────────────────── 1. Problem
   {
     kicker: "the problem · 1 / 5",
@@ -214,22 +267,30 @@ const SLIDES: Slide[] = [
     kicker: "the solution · 2 / 5",
     title: "Nih — tip MUSD anywhere on the web.",
     body: (
-      <div className="space-y-6">
-        <p className="text-lg max-w-3xl" style={{ color: "var(--ink-2)" }}>
-          A browser extension injects a tip button on Twitter, YouTube, GitHub, and LinkedIn. One click sends <b>real Mezo MUSD</b> — Bitcoin-backed stable — to the creator&apos;s wallet. Creators can borrow against accumulated tips at 1% APR without ever selling their BTC exposure.
-        </p>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { h: "Tip", d: "1-click MUSD via extension or /tip. 0.5% fee — half off if paid in MEZO." },
-            { h: "Subscribe", d: "Per-second streams (Patreon-style monthly presets) via NihStream." },
-            { h: "Borrow", d: "60% LTV credit line at 1% fixed APR against your tip balance." },
-            { h: "Earn", d: "Deposit MUSD into the real Mezo Stability Pool — BTC yield from liquidations." },
-          ].map((c) => (
-            <div key={c.h} className="comic-card p-4">
-              <b className="h3 block">{c.h}</b>
-              <p className="text-[13px] mt-1.5" style={{ color: "var(--ink-3)" }}>{c.d}</p>
-            </div>
-          ))}
+      <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-start">
+        <div>
+          <p className="text-base" style={{ color: "var(--ink-2)" }}>
+            Browser extension injects a tip button on <b>Twitter, YouTube, GitHub, LinkedIn</b>. One click sends <b>real Mezo MUSD</b> — Bitcoin-backed stable — to the creator&apos;s wallet. Creators borrow against accumulated tips at 1% APR without ever selling their BTC exposure.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-3 mt-4">
+            {[
+              { h: "Tip", d: "1-click MUSD via extension or /tip. 0.5% fee, 0.25% in MEZO." },
+              { h: "Subscribe", d: "Per-second streams (Patreon-style monthly presets) via NihStream." },
+              { h: "Borrow", d: "60% LTV credit line at 1% fixed APR against your tip balance." },
+              { h: "Earn", d: "Deposit MUSD into the real Mezo Stability Pool — BTC yield." },
+            ].map((c) => (
+              <div key={c.h} className="comic-card p-3">
+                <b className="text-[15px] block" style={{ fontFamily: "var(--font-display)" }}>{c.h}</b>
+                <p className="text-[12px] mt-1" style={{ color: "var(--ink-3)" }}>{c.d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="flex flex-col items-center gap-2">
+          <TwitterMockup />
+          <span className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+            extension preview
+          </span>
         </div>
       </div>
     ),
@@ -240,25 +301,62 @@ const SLIDES: Slide[] = [
     kicker: "demo · 3 / 5",
     title: "Live on matsnet with real data.",
     body: (
-      <div className="grid lg:grid-cols-2 gap-6 items-start">
-        <ul className="space-y-3 text-base" style={{ color: "var(--ink-2)" }}>
-          <li>📦 <b>10 contracts</b> live on Mezo matsnet · 29/29 tests passing.</li>
-          <li>💰 <b>FULL_REAL mode</b> — all Nih primitives use real Mezo MUSD (<code className="mono text-[11px]">0xf9BB…0af</code>).</li>
-          <li>📊 <b>Goldsky subgraph nih/v4</b> — 8 seeded real-MUSD tips already indexed.</li>
-          <li>🧩 <b>Plasmo extension</b> (Chrome MV3) — Twitter, YouTube, GitHub, LinkedIn.</li>
-          <li>🖥 <b>16-route dashboard</b>: tip, subscribe, borrow, earn, claim, unlock paywall, interactive tour, public profile, leaderboard, dev docs.</li>
-          <li>🤖 <b>AI tip-amount suggestion</b> via OpenRouter LLM + Boar Network on-chain context.</li>
-        </ul>
-        <div className="comic-card accent p-5">
-          <span className="kicker" style={{ opacity: 0.8 }}>try it now</span>
-          <ul className="mt-2 space-y-2 text-sm">
-            <li>👉 <a className="underline" href="/onboarding">/onboarding</a> — interactive product tour</li>
-            <li>👉 <a className="underline" href="/dashboard">/dashboard</a> — your handles + balances</li>
-            <li>👉 <a className="underline" href="/c/twitter/hajislamet">/c/twitter/hajislamet</a> — public profile</li>
-            <li>👉 <a className="underline" href="/unlock">/unlock</a> — MUSD-gated content demo</li>
-            <li>👉 <a className="underline" href="/docs">/docs</a> — developer reference</li>
-          </ul>
+      <div className="space-y-5">
+        {/* Live numbers row — refreshed every 30s from Goldsky */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <BigStat label="Total tips" value={live.loaded ? String(live.totalTips) : "…"} />
+          <BigStat
+            label="Total MUSD volume"
+            value={live.loaded ? formatMUSD(live.totalVolume) : "…"}
+            unit="MUSD"
+            highlight
+          />
+          <BigStat
+            label="Avg tip"
+            value={live.loaded ? formatMUSD(live.avgTip) : "…"}
+            unit="MUSD"
+          />
+          <BigStat label="Live subgraph" value="nih/v4" unit="goldsky" />
         </div>
+        <div className="grid lg:grid-cols-2 gap-5 items-start">
+          <ul className="space-y-2 text-[14px]" style={{ color: "var(--ink-2)" }}>
+            <li>📦 <b>10 contracts</b> on Mezo matsnet · 29/29 tests.</li>
+            <li>💰 <b>FULL_REAL</b> — every Nih primitive uses real Mezo MUSD (<code className="mono text-[10px]">0xf9BB…0af</code>).</li>
+            <li>📊 Goldsky subgraph <b>nih/v4</b> indexing live (numbers above).</li>
+            <li>🧩 Plasmo extension (Chrome MV3) on 4 platforms.</li>
+            <li>🖥 18 dashboard routes — tip / subscribe / borrow / earn / trove / claim / unlock / tour / profile / leaderboard / docs / slides.</li>
+            <li>🤖 AI tip-amount via OpenRouter LLM + Boar mainnet context.</li>
+          </ul>
+          <div className="comic-card accent p-4">
+            <span className="kicker" style={{ opacity: 0.8 }}>try it now</span>
+            <ul className="mt-1.5 space-y-1.5 text-[13px]">
+              <li>👉 <a className="underline" href="/onboarding">/onboarding</a> — guided tour</li>
+              <li>👉 <a className="underline" href="/dashboard">/dashboard</a> — your handles + stats</li>
+              <li>👉 <a className="underline" href="/trove">/trove</a> — open BTC trove → mint MUSD</li>
+              <li>👉 <a className="underline" href="/unlock">/unlock</a> — MUSD-gated content</li>
+              <li>👉 <a className="underline" href="/docs">/docs</a> — developer reference</li>
+            </ul>
+          </div>
+        </div>
+        {live.loaded && live.topHandles.length > 0 && (
+          <div className="comic-card p-3">
+            <span className="kicker">top handles right now</span>
+            <div className="grid sm:grid-cols-3 lg:grid-cols-5 gap-2 mt-2">
+              {live.topHandles.map((h) => (
+                <div
+                  key={h.label}
+                  className="p-2 text-[11px]"
+                  style={{ background: "var(--paper)", border: "2.5px solid var(--ink)" }}
+                >
+                  <b className="block truncate">{h.label}</b>
+                  <span className="mono" style={{ color: "var(--ink-3)" }}>
+                    {formatMUSD(h.total)} MUSD · {h.tips} tip{h.tips === 1 ? "" : "s"}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     ),
   },
@@ -339,4 +437,91 @@ const SLIDES: Slide[] = [
       </div>
     ),
   },
-];
+]; }
+
+// Compact stat box for the live-numbers row.
+function BigStat({
+  label,
+  value,
+  unit,
+  highlight,
+}: {
+  label: string;
+  value: string;
+  unit?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        padding: 12,
+        background: highlight ? "var(--accent)" : "var(--paper)",
+        color: highlight ? "var(--accent-ink)" : "var(--ink)",
+        border: "3px solid var(--ink)",
+        boxShadow: highlight ? "3px 3px 0 0 var(--ink)" : "2px 2px 0 0 var(--ink)",
+      }}
+    >
+      <p className="kicker" style={{ color: highlight ? "rgba(0,0,0,0.7)" : "var(--ink-3)" }}>
+        {label}
+      </p>
+      <p
+        className="tabular mt-1 leading-none"
+        style={{ fontFamily: "var(--font-display)", fontSize: 26, color: "inherit" }}
+      >
+        {value}
+      </p>
+      {unit && (
+        <p className="mono text-[10px] mt-0.5" style={{ color: "inherit", opacity: 0.7 }}>
+          {unit}
+        </p>
+      )}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────
+// Twitter mockup — SVG-only so it ships zero assets but still looks
+// like a real tweet with the Nih tip button injected under it.
+// ─────────────────────────────────────────────────────────────────────
+function TwitterMockup() {
+  return (
+    <svg
+      viewBox="0 0 520 280"
+      preserveAspectRatio="xMidYMid meet"
+      style={{ width: "100%", maxWidth: 480, height: "auto" }}
+    >
+      {/* Card */}
+      <rect x="2" y="2" width="516" height="276" rx="14" fill="#FFFFFF" stroke="#0A0A0A" strokeWidth="3" />
+      {/* Avatar */}
+      <circle cx="42" cy="42" r="22" fill="#1DA1F2" stroke="#0A0A0A" strokeWidth="2" />
+      <text x="42" y="48" textAnchor="middle" fontSize="20" fontWeight="700" fill="#FFFFFF">V</text>
+      {/* Name + handle */}
+      <text x="74" y="38" fontSize="14" fontWeight="700" fill="#0A0A0A">Vitalik Buterin</text>
+      <text x="74" y="55" fontSize="12" fill="#666">@VitalikButerin · 2h</text>
+      {/* Tweet body */}
+      <text x="22" y="92" fontSize="13" fill="#0A0A0A">Stable money on Bitcoin rails should feel</text>
+      <text x="22" y="111" fontSize="13" fill="#0A0A0A">as effortless as sending a like. We&apos;re</text>
+      <text x="22" y="130" fontSize="13" fill="#0A0A0A">closer than ever.</text>
+      {/* Reactions row */}
+      <text x="22" y="170" fontSize="11" fill="#999">💬 412   🔁 1.8K   ❤ 9.2K</text>
+      {/* Nih tip button — comic style with offset shadow */}
+      <g transform="translate(22, 195)">
+        <rect x="3" y="3" width="160" height="44" fill="#0A0A0A" />
+        <rect x="0" y="0" width="160" height="44" fill="#FFD32D" stroke="#0A0A0A" strokeWidth="3" />
+        <text x="14" y="29" fontSize="14" fontWeight="700" fill="#0A0A0A">
+          N · Tip 5 MUSD ✦
+        </text>
+      </g>
+      {/* Pointing label */}
+      <g transform="translate(200, 200)">
+        <path d="M0 18 L18 14" stroke="#E03131" strokeWidth="2" fill="none" />
+        <text x="24" y="20" fontSize="11" fill="#E03131" fontStyle="italic">
+          injected by the Nih extension
+        </text>
+        <text x="24" y="36" fontSize="11" fill="#E03131" fontStyle="italic">
+          on every supported social profile.
+        </text>
+      </g>
+    </svg>
+  );
+}

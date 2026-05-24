@@ -23,7 +23,7 @@ export default async function LeaderboardPage() {
           <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>
             Top-tipped creators
           </h1>
-          <p className="text-muted">
+          <p className="muted">
             Indexed in real-time by Goldsky from the Nih subgraph on Mezo matsnet.
           </p>
         </div>
@@ -42,7 +42,7 @@ export default async function LeaderboardPage() {
         ) : (
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h2 className="text-sm uppercase tracking-widest text-muted mb-4">
+              <h2 className="text-sm uppercase tracking-widest muted mb-4">
                 Top recipients
               </h2>
               <ol className="space-y-2">
@@ -56,14 +56,21 @@ export default async function LeaderboardPage() {
                   return (
                     <li
                       key={r.address}
-                      className="flex items-center gap-4 rounded-lg border border-border bg-surface px-4 py-3"
+                      style={{
+  padding: "10px 16px",
+  background: "var(--paper)",
+  color: "var(--ink)",
+  border: "3px solid var(--ink)",
+  boxShadow: "2px 2px 0 0 var(--ink)",
+}}
+className="flex items-center gap-4"
                     >
-                      <span className="text-xl font-semibold text-muted w-7">{i + 1}</span>
+                      <span className="text-xl font-semibold muted w-7">{i + 1}</span>
                       <span className="font-mono text-sm flex-1 truncate">{label}</span>
                       <span className="text-sm font-semibold text-brand">
                         {formatMUSD(BigInt(r.totalReceived))} MUSD
                       </span>
-                      <span className="text-[10px] text-muted mono">{r.tipCount} tip{Number(r.tipCount) === 1 ? "" : "s"}</span>
+                      <span className="text-[10px] muted mono">{r.tipCount} tip{Number(r.tipCount) === 1 ? "" : "s"}</span>
                     </li>
                   );
                 })}
@@ -71,21 +78,28 @@ export default async function LeaderboardPage() {
             </div>
 
             <div>
-              <h2 className="text-sm uppercase tracking-widest text-muted mb-4">
+              <h2 className="text-sm uppercase tracking-widest muted mb-4">
                 Recent tips
               </h2>
               <ul className="space-y-2">
                 {recentTips.map((tip) => (
                   <li
                     key={tip.id}
-                    className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3"
+                    style={{
+  padding: "10px 16px",
+  background: "var(--paper)",
+  color: "var(--ink)",
+  border: "3px solid var(--ink)",
+  boxShadow: "2px 2px 0 0 var(--ink)",
+}}
+className="flex items-center gap-3"
                   >
                     <Coins className="h-4 w-4 text-accent" />
-                    <code className="font-mono text-xs text-muted">
+                    <code className="font-mono text-xs muted">
                       {truncateAddress(tip.sender.address)}
                     </code>
-                    <span className="text-muted text-xs">→</span>
-                    <code className="font-mono text-xs text-muted">
+                    <span className="muted text-xs">→</span>
+                    <code className="font-mono text-xs muted">
                       {tip.recipient ? truncateAddress(tip.recipient.address) : "vault"}
                     </code>
                     <span className="ml-auto text-sm font-semibold">
