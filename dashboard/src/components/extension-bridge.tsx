@@ -37,33 +37,19 @@ export function ExtensionBridge() {
   async function linkNow() {
     if (!address || !nonce) return;
     setError(null);
-    const c = (window as unknown as {
-      chrome?: {
-        storage?: {
-          local?: { set: (kv: Record<string, unknown>) => void };
-        };
-        runtime?: {
-          sendMessage?: (extId: string, msg: unknown, cb?: () => void) => void;
-          lastError?: unknown;
-        };
-      };
-    }).chrome;
+    // Webpages do NOT have chrome.storage API access — only extension
+    // contexts do. Encode the wallet handoff into the URL hash so the
+    // popup (which CAN read this tab's URL via chrome.tabs.query) picks
+    // it up on its next poll. Includes nonce so the popup can verify
+    // this is the flow it originated.
     const a = address as `0x${string}`;
+    const payload = `${nonce}:${a}`;
     try {
-      // Storage payload is BOTH the address AND the nonce the popup
-      // expects. The popup only accepts the address if the nonces match.
-      c?.storage?.local?.set({
-        walletAddress: a,
-        bridgeNonceUsed: nonce,
-      });
-    } catch { /* not in a real extension context */ }
-    try {
-      c?.runtime?.sendMessage?.(
-        "nih@extension",
-        { type: "wallet", address: a, nonce },
-        () => { void c?.runtime?.lastError; },
-      );
-    } catch { /* ignore */ }
+      window.location.hash = `nih-wallet=${encodeURIComponent(payload)}`;
+    } catch (e) {
+      setError(`Couldn't write the URL hash: ${(e as Error).message}`);
+      return;
+    }
     setSynced(true);
   }
 

@@ -147,6 +147,34 @@ h1, h2, h3, .h1, .h2, .h3 {
 .comic-card.accent { background: var(--accent); color: var(--accent-ink); }
 .comic-card.ink { background: var(--ink); color: var(--paper); border-color: var(--ink); }
 
+/* Force readable text inside the dark `.ink` variant — children that use
+   light-mode tokens (text-muted = #555, text-fg = #000) become invisible
+   on the black background otherwise. */
+.comic-card.ink,
+.comic-card.ink p,
+.comic-card.ink li,
+.comic-card.ink span,
+.comic-card.ink b,
+.comic-card.ink strong,
+.comic-card.ink h1,
+.comic-card.ink h2,
+.comic-card.ink h3,
+.comic-card.ink h4,
+.comic-card.ink .h1,
+.comic-card.ink .h2,
+.comic-card.ink .h3 { color: var(--paper); }
+.comic-card.ink .kicker,
+.comic-card.ink .muted,
+.comic-card.ink .text-muted { color: rgba(255, 255, 255, 0.72); }
+.comic-card.ink code,
+.comic-card.ink .text-fg { color: #FFD32D; }
+
+/* Force readable text inside the yellow `.accent` variant — same fix,
+   children using ink-3 / muted become near-invisible on yellow. */
+.comic-card.accent .muted,
+.comic-card.accent .text-muted,
+.comic-card.accent .kicker { color: rgba(0, 0, 0, 0.7); }
+
 /* Comic button */
 .comic-btn {
   display: inline-flex;

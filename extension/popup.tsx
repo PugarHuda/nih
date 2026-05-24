@@ -42,33 +42,48 @@ function IndexPopup() {
       }
     })();
 
-    // Watch storage for the dashboard writing the address back. Accept
-    // only when the bridge nonce we generated in `connectViaDashboard`
-    // matches what the dashboard echoed — otherwise some other site
-    // could have triggered the storage write via a phishing redirect.
-    const onChange: Parameters<typeof storage.watch>[0] = {
-      walletAddress: async (c) => {
-        const v = c.newValue as string | undefined;
-        if (!v) return;
+    // Cross-context wallet bridge.
+    //
+    // Webpages don't have chrome.storage / chrome.runtime APIs, so the
+    // dashboard can't push the wallet address to us directly. Instead the
+    // dashboard writes `#nih-wallet=<nonce>:<address>` into its tab URL
+    // hash when the user clicks "Send to extension". The popup polls all
+    // tabs matching nih-seven.vercel.app/* and reads the hash. Nonce is
+    // verified against the one this popup generated in connectViaDashboard.
+    let pollInterval: ReturnType<typeof setInterval> | null = null;
+    async function pollDashboardTabs() {
+      try {
         const expectedNonce = await storage.get<string>("bridgeNonce");
-        const usedNonce = await storage.get<string>("bridgeNonceUsed");
-        if (!expectedNonce || expectedNonce !== usedNonce) {
-          console.warn(
-            "[nih popup] ignoring walletAddress write — nonce mismatch",
-            { expectedNonce, usedNonce },
-          );
+        if (!expectedNonce) return; // not waiting on a bridge
+        const tabs = await chrome.tabs.query({ url: `${DASHBOARD_URL}/*` });
+        for (const t of tabs) {
+          if (!t.url || !t.id) continue;
+          const match = t.url.match(/#nih-wallet=([^&]+)/);
+          if (!match) continue;
+          const [n, addr] = decodeURIComponent(match[1]).split(":");
+          if (n !== expectedNonce) continue;
+          if (!addr || !addr.startsWith("0x")) continue;
+          // Accept: consume nonce, set address, scrub the hash from the tab.
+          await storage.remove("bridgeNonce");
+          await storage.set("walletAddress", addr);
+          setAddress(addr);
+          setWaitingForConnect(false);
+          loadBalance(addr);
+          try {
+            chrome.tabs.update(t.id, { url: t.url.split("#")[0] });
+          } catch { /* ignore */ }
           return;
         }
-        // Consume the nonce so the same one can't be reused.
-        await storage.remove("bridgeNonce");
-        await storage.remove("bridgeNonceUsed");
-        setAddress(v);
-        setWaitingForConnect(false);
-        loadBalance(v);
-      },
+      } catch (e) {
+        console.warn("[nih popup] bridge poll error", e);
+      }
+    }
+    pollInterval = setInterval(pollDashboardTabs, 1500);
+    // Also run immediately on mount in case the tab is already open.
+    pollDashboardTabs();
+    return () => {
+      if (pollInterval) clearInterval(pollInterval);
     };
-    storage.watch(onChange);
-    return () => storage.unwatch(onChange);
   }, []);
 
   async function loadBalance(addr: string) {
