@@ -5,7 +5,10 @@ import type { Hex } from "viem";
 import { verify, challengeFor, type Platform } from "@/lib/verifiers";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
-const PLATFORMS = new Set<Platform>(["twitter", "youtube", "github", "substack", "medium"]);
+const PLATFORMS = new Set<Platform>([
+  "twitter", "youtube", "github", "substack", "medium",
+  "reddit", "hackernews", "twitch", "linkedin",
+]);
 
 /**
  * Backend verifier — Tier 1 attestation.

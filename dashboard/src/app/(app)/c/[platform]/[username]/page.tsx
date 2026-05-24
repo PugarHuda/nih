@@ -11,7 +11,10 @@ import { Button } from "@/components/ui/button";
 import { formatMUSD, truncateAddress } from "@/lib/utils";
 import { ExternalLink, ArrowRight, ShieldCheck } from "lucide-react";
 
-const PLATFORMS = new Set<Platform>(["twitter", "youtube", "github", "substack", "medium"]);
+const PLATFORMS = new Set<Platform>([
+  "twitter", "youtube", "github", "substack", "medium",
+  "reddit", "hackernews", "twitch", "linkedin",
+]);
 // Tier 0 = no record. Tiers 1-3 are different attestation routes, but
 // from a tipper's perspective they all mean "ownership proven".
 const TIER_LABELS = ["Unverified", "Verified", "Verified", "Verified"];
