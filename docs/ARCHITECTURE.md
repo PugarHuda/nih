@@ -1,5 +1,19 @@
 # Architecture
 
+> **Current state (2026-05-24)**: deployed in **FULL_REAL mode** — every Nih
+> contract (Router / Vault / Credit / Stream) wires MUSD to Mezo's real
+> primitive at `0xf9BBcCC0F1b68EA07c86de6F88C76b3d8E2dD0af`. NihEarn wraps
+> the real StabilityPool. NihTrove wraps real BorrowerOperations. The
+> only mock left is MEZO (real MEZO not on matsnet yet). See
+> `contracts/scripts/deploy.ts` `FULL_REAL=1` mode and `README.md`
+> "Deployed contract addresses" for the live addresses.
+>
+> **Added since v1**: NihStream (per-second subscriptions), NihEarn (real
+> StabilityPool wrapper), NihTrove (real BorrowerOperations proxy),
+> `/onboarding` interactive product tour, `/unlock` pay-to-access page,
+> `/docs` developer reference, mobile hamburger nav, `ExtensionBridge`
+> wallet sync with nonce + consent, `tx-toast` receipt-gated UX.
+
 ## System diagram
 
 ```

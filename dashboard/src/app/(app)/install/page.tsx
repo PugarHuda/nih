@@ -16,7 +16,9 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 
-const ZIP_URL = "https://github.com/PugarHuda/nih/releases/download/v0.4.0/nih-extension-v0.4.0.zip";
+// Self-hosted in dashboard/public so the latest build is always live with
+// each Vercel deploy — no GitHub release roundtrip.
+const ZIP_URL = "/nih-extension-latest.zip";
 const WEB_STORE_URL: string | null = null; // set after Chrome Web Store listing is live
 
 export default function InstallPage() {
@@ -111,7 +113,7 @@ export default function InstallPage() {
             title="Unzip the download, then drag the folder into Chrome"
             body={
               <p className="text-sm text-muted">
-                Unzip <code className="text-fg">nih-extension-v0.4.0.zip</code> on your
+                Unzip <code className="text-fg">nih-extension-latest.zip</code> on your
                 desktop, then literally drag the unzipped folder onto the extensions page.
                 Chrome installs it instantly. (Or click{" "}
                 <strong className="text-fg">Load unpacked</strong> and pick the folder.)

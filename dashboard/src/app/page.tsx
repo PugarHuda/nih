@@ -36,7 +36,7 @@ export default function LandingPage() {
             <img src="/assets/logo.svg" alt="Nih" style={{ height: 36, width: "auto", display: "block" }} />
           </Link>
           <nav>
-            <Link href="/dashboard">Dashboard</Link>
+            <Link href="/docs">Docs</Link>
             <Link
               href="/dashboard"
               className="comic-btn primary"

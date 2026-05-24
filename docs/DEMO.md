@@ -1,123 +1,92 @@
 # Demo guide — 3-minute video script
 
-> One goal: walk the judges through the whole magic loop in under 180 seconds.
-> Tip → claim → borrow against income → composition wins.
+> One goal: walk the judges through the magic loop in under 180 seconds.
+> Tip → subscribe → borrow against income → real Mezo Stability Pool yield.
 
 ## Cast
 
-- **Sender persona** (Alice) — random tipper. MetaMask installed, has matsnet BTC + 100 MUSD from the faucet.
-- **Creator persona** (Bob) — Twitter user @hajislamet. Already manually registered to the deployer wallet by the `register-handles.ts` script (so tips land straight in his wallet, not the vault).
-- **Unregistered persona** (Carol) — Twitter user @newcreator. We'll tip her too — funds park in the vault, then she claims via the verification flow.
+- **Sender persona** (Alice) — random tipper. MetaMask installed, has matsnet BTC + a few real Mezo MUSD (open a small trove if empty).
+- **Creator persona** (Bob) — Twitter user @hajislamet. Already registered to the deployer wallet via `seed-tips.ts`, so tips land straight in his wallet.
 
-## Stage setup (do this BEFORE recording)
+## Stage setup (before recording)
 
 1. OBS Studio, 1080p 30fps, hardware encoder.
 2. Two browser windows side-by-side.
-   - Window A (Sender / Alice): `https://twitter.com/hajislamet` (or any tweet you control).
+   - Window A (Sender / Alice): `https://twitter.com/hajislamet` or any tweet you control.
    - Window B (Creator / Bob): `https://nih-seven.vercel.app/dashboard`.
-3. Both windows: MetaMask installed, signed into the same wallet (yours), already on Mezo matsnet.
-4. Hit `/faucet` from the dashboard to mint 100 MUSD + 100 MEZO.
-5. Hit `https://faucet.test.mezo.org` to top up BTC for gas (~0.01 BTC is plenty).
-6. Pre-warm the extension: load unpacked from `extension/build/chrome-mv3-prod/`. Verify the "N Tip MUSD" button appears under tweets.
+3. Both windows: extension loaded from `extension/build/chrome-mv3-prod/` via `chrome://extensions → Load unpacked`.
+4. Pre-fund: `https://faucet.test.mezo.org` for BTC gas (~0.01 BTC).
+5. Pre-fund real MUSD via Mezo trove at `https://app.test.mezo.org` (link is in `/faucet`).
+6. Confirm `https://nih-seven.vercel.app/api/health` returns the FULL_REAL addresses (MUSD = `0xf9BB…0af`).
 
 ## Scene 1 — The hook (0:00 – 0:25)
 
 **On screen:** Window A, Twitter feed scrolling.
 
 **Voiceover:**
-> "Tipping someone on Twitter today means a Patreon link, a custodial Lightning wallet, or just giving up. Nih makes it as simple as a like — but the money you're sending is backed by Bitcoin."
+> "Tipping someone on Twitter today means a Patreon link, a custodial Lightning wallet, or just giving up. Nih makes it as simple as a like — but the money you're sending is real Bitcoin-backed MUSD on Mezo, end to end."
 
-**Action:**
-- Hover over a tweet from @hajislamet — the "N Tip MUSD" button is already injected.
-- Click it. Popover slides in. Pick 5 MUSD. MetaMask prompts. Confirm.
-- Toast: "Tip sent."
+**Action:** scroll past @hajislamet's tweet. The "N · Tip MUSD" button is visible under each post.
 
-## Scene 2 — The creator side (0:25 – 0:55)
-
-**On screen:** Switch to Window B (`/dashboard`).
+## Scene 2 — Tip flow (0:25 – 1:00)
 
 **Voiceover:**
-> "Meanwhile, the creator opens Nih. The 5 MUSD already landed — no platform cut, no conversion, no waiting period. Stable money, settled in three seconds."
+> "One click — pick an amount, confirm in your wallet — and MUSD lands in Bob's wallet. No Patreon middle-layer. No selling Bitcoin."
 
 **Action:**
-- Dashboard already shows new balance: `5 MUSD`. `Lifetime tips received` ticks up to whatever total you have.
-- Pan to the action grid: highlight the "Borrow against your tips" card.
+1. Click "Tip MUSD 5" under @hajislamet's tweet.
+2. Wallet pops up — confirm approve (first time only).
+3. Wallet pops up — confirm tip tx. Toast shows "Sent — waiting for confirmation…" then flips to green "Tipped 5 MUSD" with an explorer link.
+4. Switch to Window B (Bob's dashboard). The live banner shows the tip arriving within ~15s of indexing.
 
-## Scene 3 — The killer feature (0:55 – 1:30)
-
-**On screen:** Click into `/borrow`.
+## Scene 3 — Subscribe (1:00 – 1:25)
 
 **Voiceover:**
-> "Here's where Nih stops being a tipping app and becomes a bank. Creators borrow against their accumulated tips — without selling any Bitcoin."
+> "Patreon-style subscriptions, on Bitcoin rails. Five MUSD a month, streamed by the second. Cancel any time — the unaccrued portion refunds instantly."
 
 **Action:**
-- Type `50` MUSD as collateral.
-- UI shows: `You receive 30 MUSD` at `1% APR fixed`.
-- Click `Approve MUSD` → MetaMask confirm.
-- Click `Borrow 30 MUSD` → confirm. Toast: "Borrowed 30 MUSD".
-- Highlight the dashboard: 30 MUSD in wallet, 50 MUSD locked. Income literally turned into cash flow.
+1. From Bob's profile page (`/c/twitter/hajislamet`) click "5 MUSD / mo".
+2. Lands on `/stream` with the form pre-filled.
+3. Submit. Show the live "Outgoing" row updating per-second.
 
-## Scene 4 — The claim flow (1:30 – 2:10)
-
-**On screen:** Open `/claim` in a fresh tab.
+## Scene 4 — Borrow against tips (1:25 – 2:00)
 
 **Voiceover:**
-> "What about someone who got tipped before they registered? Tips park in an on-chain vault. To claim them, prove you own the handle — by posting the challenge text on your public profile."
+> "Bob's earned a couple hundred MUSD. He needs cash today, but he doesn't want to sell his Bitcoin tomorrow. Click open credit line."
 
 **Action:**
-- Select `github`, type `PugarHuda` (or use a fresh handle).
-- The page shows: `Verifying my Nih wallet 0xdbe1...e09`. Copy.
-- Cut to a GitHub README in a tab — paste it in, commit.
-- Back to Nih. Click `Verify handle`. Server fetches the public README, finds the text, signs Tier 1 attestation. Toast: "Handle verified!"
-- Vault balance is now claimable. Click `Claim X MUSD` → MetaMask → done.
+1. `/borrow` page — paste 100 MUSD collateral.
+2. Confirm approve + open.
+3. Toast confirms. The "Active credit line" card appears with Collateral / Principal / Interest accrued / Total owed boxes + LTV bar.
+4. Click "Repay 60 MUSD & close" — full repay shows the collateral release.
 
-## Scene 5 — Composition + partners (2:10 – 2:50)
-
-**On screen:** `/leaderboard` page (Goldsky-powered).
+## Scene 5 — Compose + unlock (2:00 – 2:30)
 
 **Voiceover:**
-> "Nih is the only hackathon submission that touches all three Mezo primitives in one product. MUSD as settlement currency. MEZO as the optional fee discount. Mezo-Earn-compatible savings, with credit-line collateral built on top. Indexed live by Goldsky. Multi-RPC backed by Spectrum and Validation Cloud. AI tip suggestions through Boar Network's blockchain MCP."
+> "Bob can park his idle MUSD into Mezo's real Stability Pool through Nih and earn BTC from liquidations. Same MUSD also unlocks paywalled content. Same primitive, three uses."
 
 **Action:**
-- Show the leaderboard auto-updating with the tips we just sent.
-- Quick cut to architecture diagram (one beat).
+1. `/earn` — show the "powered by real Mezo StabilityPool" header + deposit.
+2. `/unlock` — pay 5 MUSD to reveal a gated essay. Tx broadcast → toast waits for receipt → content reveals.
 
-## Scene 6 — The close (2:50 – 3:00)
-
-**On screen:** Logo on dark background, tagline below.
+## Scene 6 — Close (2:30 – 3:00)
 
 **Voiceover:**
-> "Nih. Tip MUSD anywhere on the web. Bitcoin-backed banking, one click at a time."
+> "Bitcoin in. Stablecoin out. Income that doubles as a credit line. Built on real Mezo MUSD, real BorrowerOperations, real Stability Pool. Nih makes Bitcoin spendable, and creators bankable. Tip MUSD anywhere on the web."
 
----
+**On screen:** Logo + tagline + URL + GitHub.
 
-## Pre-flight checklist
+## Backup B-roll
 
-- [ ] Extension loaded into Chrome, pinned, popup opens
-- [ ] Dashboard reachable at `https://nih-seven.vercel.app`
-- [ ] Wallet on matsnet, balances visible: BTC > 0.01, MUSD > 100, MEZO > 100
-- [ ] At least one tip already sent so the leaderboard isn't empty
-- [ ] @hajislamet (and your own GitHub) pre-registered via `register-handles.ts`
-- [ ] Demo recording: practice three times for timing before you hit record
-- [ ] Background music chosen, fades out during voiceover
-- [ ] Subtitles ready (some judges watch without audio)
-- [ ] Last 5 seconds = logo + tagline only — that's the sticky frame
+- `/dashboard` — TipDropBanner rotating real seeded tips, ActivityHeatmap filling in.
+- `/leaderboard` — top recipient handles from real subgraph data.
+- `/docs` — developer reference page (proof there's a real API).
+- `/api/health` — quick curl in a terminal showing the FULL_REAL addresses.
+- `/api/spectrum-stats` — partner integration end-to-end.
+- `/onboarding` — start the interactive product tour.
 
-## Backup links to put in the submission form
+## Common gotchas
 
-- Live dashboard: `https://nih-seven.vercel.app`
-- Install extension: `https://nih-seven.vercel.app/install`
-- GitHub repo: `https://github.com/PugarHuda/nih`
-- GitHub release (extension zip): `https://github.com/PugarHuda/nih/releases/tag/v0.1.0`
-- Goldsky subgraph endpoint: `https://api.goldsky.com/api/public/project_cmo5pukv64upu01y48tefank9/subgraphs/nih/v1/gn`
-- Deployed contract addresses: see `contracts/deployments/matsnet.json` and the README table
-
-## Common demo gotchas (and the fix)
-
-| Symptom | Cause | Fix |
-|---|---|---|
-| MetaMask still on Ethereum mainnet | Chain not switched | The chain banner / Connect button auto-prompts — accept it |
-| `Tip too small` revert | Below 0.5 MUSD minimum | Bump to ≥ 1 MUSD |
-| Approve loops forever | First approve transaction got dropped (low gas) | Refresh page, try again |
-| Tip looks "stuck" | RPC node lagging | Hard refresh — wagmi fallback transport rotates through Spectrum / Mezo public automatically |
-| Subgraph leaderboard empty | Goldsky still indexing your fresh tip | Wait 10–30 seconds, refresh — it catches up |
+- **"You hold 0 MUSD"** on `/earn` or `/borrow` — that's real MUSD now. Open a trove via `/faucet → Open Mezo trove`. Mock MUSD is no longer the tip token.
+- **Browser extension popup says "Waiting for dashboard…"** — that's the secure flow. Connect on the dashboard tab, click the green "Send to extension" banner.
+- **Mobile**: hamburger menu top-right.

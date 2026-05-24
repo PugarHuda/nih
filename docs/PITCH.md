@@ -2,7 +2,7 @@
 
 ## The 30-second pitch
 
-> Bitcoin is the best money the world has ever invented, but you can't tip your favorite YouTube creator with it without first selling, then dealing with a custodian, then crossing your fingers it arrives. **Nih makes it as easy as a like.** A browser extension injects a tip button on Twitter, YouTube, Substack, Medium, and GitHub. One click sends MUSD — Bitcoin-backed stablecoin — to the creator's wallet. And here's the magic: those creators can borrow against their accumulated tips without ever selling their Bitcoin exposure. Built on Mezo, powered by MUSD and MEZO. Tipping meets self-service banking.
+> Bitcoin is the best money the world has ever invented, but you can't tip your favorite YouTube creator with it without first selling, then dealing with a custodian, then crossing your fingers it arrives. **Nih makes it as easy as a like.** A browser extension injects a tip button on Twitter, YouTube, Substack, Medium, and GitHub. One click sends MUSD — Mezo's real Bitcoin-backed stablecoin — to the creator's wallet. And here's the magic: those creators can borrow against their accumulated tips without ever selling their Bitcoin exposure. Built on Mezo, powered by MUSD and MEZO. Tipping meets self-service banking.
 
 ## The problem
 
@@ -17,12 +17,15 @@
 
 ## The solution
 
-**Nih = browser extension + on-chain registry + escrow vault + credit line.**
+**Nih = browser extension + on-chain registry + escrow vault + credit line + per-second streams + pay-to-unlock content + Mezo Stability-Pool yield, all settling in real Mezo MUSD.**
 
-1. **Browser extension** injects a "Tip MUSD" button on every social profile (Twitter, YouTube, Substack, Medium, GitHub).
-2. **On-chain registry** maps social handle → Mezo wallet via tiered verification (Tier 1 signature, Tier 2 OAuth, Tier 3 DAO whitelist).
+1. **Browser extension** injects a "Tip MUSD" button on every social profile (Twitter, YouTube, Substack, Medium, GitHub, Reddit, Hacker News, Twitch, LinkedIn — 9 platforms).
+2. **On-chain registry** maps social handle → Mezo wallet via tiered verification (Tier 1 challenge-text + URL/canonical anchor; Tier 2 OAuth planned; Tier 3 DAO whitelist).
 3. **Escrow vault** parks tips for unregistered handles for up to 180 days; auto-refunds if unclaimed.
-4. **Credit line** lets creators borrow up to 60% LTV against accumulated tips — without selling.
+4. **Credit line (NihCredit)** lets creators borrow up to 60% LTV at 1% APR fixed against accumulated tips — without selling.
+5. **Per-second subscriptions (NihStream)** — Patreon-style monthly preset buttons that escrow MUSD and stream accrual to the creator by the second.
+6. **Pay-to-unlock (/unlock)** — MUSD-gated content reveal; the on-chain `Tipped` event is the receipt, gated on actual transaction receipt (no spoof).
+7. **Real Mezo yield (NihEarn)** — deposit real MUSD into Mezo's actual StabilityPool through Nih and earn BTC from liquidations + MUSD from redemption fees.
 
 ## Why Mezo
 
@@ -35,42 +38,46 @@
 
 | Primitive | How Nih uses it | Track impact |
 |---|---|---|
-| **MUSD** | Default tip token, all settlement | Supernormal dApps ✓ |
+| **MUSD (real Mezo, `0xf9BB…0af`)** | Default tip token, ALL settlement (tip / credit / stream / unlock) | Supernormal dApps ✓ |
 | **MEZO** | Optional fee payment for 50% discount | MEZO Utilization ✓ |
-| **Mezo Earn** | Creator dashboard auto-suggests savings deposit | Bank on Bitcoin ✓ |
-| **Trove (MUSD borrow)** | Credit Line module borrows against locked tips | Bank on Bitcoin ✓ |
+| **Mezo StabilityPool** | NihEarn deposits real MUSD → BTC yield from liquidations | Bank on Bitcoin ✓ |
+| **Mezo BorrowerOperations + TroveManager** | NihTrove per-user proxy for trove open / close / mint MUSD | Bank on Bitcoin ✓ |
 
-This is the only known submission that **touches all three Mezo tracks at once**.
+This is the only known submission that **touches all three Mezo tracks at once** AND wraps Mezo's real BorrowerOperations + StabilityPool primitives (not a fork).
 
 ## Differentiators
 
 | | Tippin.me | X Native Tip | Patreon | **Nih** |
 |---|---|---|---|---|
-| Currency | BTC volatile | BTC volatile | Fiat | **MUSD stable** |
-| Platforms | 1 | 1 | platform-locked | **5 (extensible)** |
+| Currency | BTC volatile | BTC volatile | Fiat | **Real Mezo MUSD** |
+| Platforms | 1 | 1 | platform-locked | **9 (extensible)** |
 | Self-custody | partial | partial | no | **yes** |
 | Fee | ~0.5% | ~1% | 5–10% | **0.5% (0.25% in MEZO)** |
-| Composable | no | no | no | **credit line** |
+| Composable | no | no | no | **credit + streams + yield + paywall** |
+| Real Mezo primitives | n/a | n/a | n/a | **3 (MUSD, BorrowerOps, StabilityPool)** |
 
-## Traction & roadmap
+## Traction (this submission)
 
-**Hackathon week (now)**
-- Smart contracts deployed on Mezo matsnet
-- Browser extension (Chrome + Firefox) shipped
-- Dashboard live on Vercel
-- Demo video recorded
+- **10 smart contracts** deployed on Mezo matsnet, 29/29 tests passing
+- **Goldsky subgraph (nih/v4)** indexing real-MUSD events, currently at block 13.2M+
+- **8 seeded real-MUSD tips** with 5 registered handles, demonstrating the loop
+- **16 dashboard routes** including `/onboarding` interactive product tour, `/unlock` pay-to-access, `/docs` developer reference
+- **Browser extension** built (Plasmo Chrome MV3, 9 platforms), self-hosted at `/install`
+- **6 partner integrations** wired (Goldsky, Spectrum, Boar, OpenRouter, Tenderly, Validation Cloud)
+- **Security hardening** — receipt-gated tx UX, on-chain signature replay guard, verifier ownership anchor, extension nonce + consent, vault setRouter onlyOwner
+
+## Roadmap
 
 **Post-hackathon (milestone grant track)**
-- Chrome Web Store publish
-- Twitter OAuth Tier 2 verification
+- Chrome Web Store publish (build artefact ready, awaiting review)
+- Twitter / GitHub OAuth Tier 2 verification
 - 100 verified creators onboarded
-- Goldsky subgraph in production
+- Mainnet deployment (Validation Cloud RPC, same code path)
 
 **6 months**
 - YouTube creator partnerships
-- Mainnet launch
-- Mobile companion app
-- DAO migration of fee treasury
+- Mobile PWA polish (already responsive)
+- DAO migration of fee treasury (currently treasury = deployer)
 
 ## Team
 
