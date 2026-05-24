@@ -13,7 +13,7 @@ import { formatMUSD } from "@/lib/utils";
 import { useRequireChain } from "@/lib/use-require-chain";
 import { CheckCircle2, AlertCircle, Loader2, Copy, ExternalLink } from "lucide-react";
 
-type Platform = "twitter" | "youtube" | "github" | "substack" | "medium";
+type Platform = "twitter" | "youtube" | "github" | "linkedin";
 
 const PLATFORM_HINTS: Record<Platform, { where: string; cta?: string; ctaUrl?: (u: string) => string }> = {
   twitter: {
@@ -27,13 +27,10 @@ const PLATFORM_HINTS: Record<Platform, { where: string; cta?: string; ctaUrl?: (
     ctaUrl: (u) => `https://github.com/${u}/${u}/edit/main/README.md`,
   },
   youtube: {
-    where: "Paste the text into your channel description (youtube.com/{username}/about).",
+    where: "Paste the text into your channel description (youtube.com/@{username}/about).",
   },
-  substack: {
-    where: "Paste the text into your Substack About page ({username}.substack.com/about).",
-  },
-  medium: {
-    where: "Paste the text into your Medium bio (medium.com/@{username}).",
+  linkedin: {
+    where: "Paste the text into your LinkedIn About section (linkedin.com/in/{username}).",
   },
 };
 
@@ -194,7 +191,7 @@ export default function ClaimPage() {
                 <div>
                   <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Platform</label>
                   <div className="flex flex-wrap gap-2">
-                    {(["twitter", "youtube", "github", "substack", "medium"] as const).map((p) => (
+                    {(["twitter", "youtube", "github", "linkedin"] as const).map((p) => (
                       <button
                         key={p}
                         onClick={() => setPlatform(p)}

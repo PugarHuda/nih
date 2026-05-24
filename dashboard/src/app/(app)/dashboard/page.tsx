@@ -51,6 +51,13 @@ export default function DashboardPage() {
     <>
       <Header />
       <main className="container mx-auto px-6 py-12 max-w-6xl">
+        {/* Profile section pinned to the TOP, immediately under the
+            header — so users see their handles + per-handle stats
+            before scrolling. */}
+        <div className="mb-8">
+          <ProfileHandlesCard />
+        </div>
+
         <div className="fade-up">
           <span className="kicker">creator dashboard</span>
           <h1 className="h1 mt-2 mb-2">
@@ -70,14 +77,7 @@ export default function DashboardPage() {
         <div className="grid sm:grid-cols-3 gap-4 mb-6" data-tour="stats-row">
           <ComicStat label="Wallet balance" value={`${balance} MUSD`} note={isConnected ? undefined : "connect wallet"} highlight />
           <ComicStat label="Lifetime tips received" value={`${received} MUSD`} note={`since you joined Nih`} />
-          <ComicStat label="Linked handles" value={`${handleCount}`} note={`of 9 supported platforms`} />
-        </div>
-
-        {/* Your profile — same data as the /c/[platform]/[username] public
-            page, inline so the user doesn't have to click through to see
-            their handle stats. */}
-        <div className="mb-6">
-          <ProfileHandlesCard />
+          <ComicStat label="Linked handles" value={`${handleCount}`} note={`of 4 supported platforms`} />
         </div>
 
         {/* Main grid — left big charts, right side cards */}

@@ -2,29 +2,20 @@
  * Per-platform handle ownership verifiers.
  *
  * Each verifier independently fetches a public surface owned by the claimed
- * identity (GitHub README, Twitter profile, Substack about, etc.) and looks
- * for the challenge string. If found, the backend mints a Tier 1 attestation.
+ * identity (GitHub README, Twitter profile, YouTube about, LinkedIn slug)
+ * and looks for the challenge string. If found, the backend mints a
+ * Tier 1 attestation.
  *
  * Challenge string is `Verifying my Nih wallet 0x{wallet}` — lowercase-compared.
- * The wallet address is the salt: an attacker can post the challenge for THEIR
- * wallet, but can't make it match a victim's wallet (since the address differs).
+ * The wallet address is the salt: an attacker can post the challenge for
+ * THEIR wallet, but can't make it match a victim's wallet (since the
+ * address differs).
  */
 import { verifyGithub } from "./github";
 import { verifyTwitter } from "./twitter";
-import { verifyMedium } from "./medium";
-import { verifySubstack } from "./substack";
 import { verifyYouTube } from "./youtube";
 
-export type Platform =
-  | "twitter"
-  | "youtube"
-  | "github"
-  | "substack"
-  | "medium"
-  | "reddit"
-  | "hackernews"
-  | "twitch"
-  | "linkedin";
+export type Platform = "twitter" | "youtube" | "github" | "linkedin";
 
 export interface VerifyResult {
   ok: boolean;
@@ -37,10 +28,9 @@ export function challengeFor(wallet: string): string {
 }
 
 /**
- * Generic URL-anchored verifier for platforms whose ownership URL is
- * unambiguous (e.g. reddit.com/user/{u}, twitch.tv/{u}). Fetches that
- * URL — the path itself proves we asked for THIS user — and looks for
- * the challenge substring in the response.
+ * Generic URL-anchored verifier. The fetched URL path proves we asked
+ * for THIS user (so substring spoofs from a different profile can't
+ * reach this branch).
  */
 async function verifyViaUrl(url: string, challenge: string): Promise<VerifyResult> {
   try {
@@ -65,15 +55,10 @@ export async function verify(
   const challenge = challengeFor(wallet);
   const u = username.replace(/^@/, "");
   switch (platform) {
-    case "github":     return verifyGithub(u, challenge);
-    case "twitter":    return verifyTwitter(u, challenge);
-    case "medium":     return verifyMedium(u, challenge);
-    case "substack":   return verifySubstack(u, challenge);
-    case "youtube":    return verifyYouTube(u, challenge);
-    case "reddit":     return verifyViaUrl(`https://www.reddit.com/user/${u}/about.json`, challenge);
-    case "hackernews": return verifyViaUrl(`https://hacker-news.firebaseio.com/v0/user/${u}.json`, challenge);
-    case "twitch":     return verifyViaUrl(`https://www.twitch.tv/${u}/about`, challenge);
-    case "linkedin":   return verifyViaUrl(`https://www.linkedin.com/in/${u}/`, challenge);
-    default:           return { ok: false, reason: `Unsupported platform: ${platform}` };
+    case "github":   return verifyGithub(u, challenge);
+    case "twitter":  return verifyTwitter(u, challenge);
+    case "youtube":  return verifyYouTube(u, challenge);
+    case "linkedin": return verifyViaUrl(`https://www.linkedin.com/in/${u}/`, challenge);
+    default:         return { ok: false, reason: `Unsupported platform: ${platform}` };
   }
 }
