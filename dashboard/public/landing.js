@@ -345,12 +345,21 @@
 
   /* ──────────────── boot ──────────────── */
   function boot() {
+    // Idempotent — purge any sticky drift / sparkle / pow nodes the
+    // previous boot left behind (StyleSwapPurge sweeps these on
+    // (app)-route mount). Marquee panel listeners are attached to
+    // existing nodes; calling wireMarquee() twice is harmless.
+    document.body.querySelectorAll('.drift-layer, .spark, .pow, .panel-modal').forEach(el => el.remove());
+    applyStyle();
     wireMarquee();
     wireCursor();
     wireDrift();
     wireTicker();
     wireStoryReveal();
   }
+  // Expose boot so a soft-nav back to / from /dashboard can re-run init.
+  // The page.tsx mount effect calls `window.nihLandingBoot?.()` directly.
+  window.nihLandingBoot = boot;
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', boot);
   } else {

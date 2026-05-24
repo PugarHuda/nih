@@ -1,6 +1,9 @@
 import type { PlasmoCSConfig } from "plasmo";
 import { useEffect, useState } from "react";
+import { Storage } from "@plasmohq/storage";
 import { DASHBOARD_URL } from "~lib/config";
+
+const storage = new Storage({ area: "local" });
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.linkedin.com/in/*", "https://www.linkedin.com/feed/*", "https://www.linkedin.com/posts/*"],
@@ -24,16 +27,18 @@ export default function NihTipFloater() {
   const [username, setUsername] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("");
+  const [defaultTip, setDefaultTip] = useState(5);
 
   useEffect(() => {
+    storage.get<number>("defaultTip").then((v) => { if (v && Number(v) > 0) setDefaultTip(Number(v)); });
     function update() {
       setUsername(extractLinkedInSlug(window.location.pathname));
-      injectPerPostLinks();
+      injectPerPostLinks(defaultTip);
     }
     update();
     const i = setInterval(update, 2000);
     return () => clearInterval(i);
-  }, []);
+  }, [defaultTip]);
 
   if (!username) return null;
 
@@ -95,7 +100,7 @@ function extractLinkedInSlug(pathname: string): string | null {
   return null;
 }
 
-function injectPerPostLinks() {
+function injectPerPostLinks(defaultTip = 5) {
   // LinkedIn posts in the feed live in [data-urn^="urn:li:activity:"]
   const posts = document.querySelectorAll('[data-urn^="urn:li:activity:"]');
   posts.forEach((post) => {
@@ -112,11 +117,11 @@ function injectPerPostLinks() {
 
     const a = document.createElement("a");
     a.className = TIP_CLASS;
-    a.href = `${DASHBOARD_URL}/tip?platform=linkedin&username=${encodeURIComponent(handle)}&amount=5`;
+    a.href = `${DASHBOARD_URL}/tip?platform=linkedin&username=${encodeURIComponent(handle)}&amount=${defaultTip}`;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    a.title = `Tip @${handle} 5 MUSD for this post`;
-    a.textContent = "✦ Tip MUSD";
+    a.title = `Tip @${handle} ${defaultTip} MUSD for this post`;
+    a.textContent = `✦ Tip ${defaultTip} MUSD`;
     Object.assign(a.style, {
       display: "inline-flex",
       alignItems: "center",

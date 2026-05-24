@@ -1,6 +1,9 @@
 import type { PlasmoCSConfig } from "plasmo";
 import { useEffect, useState } from "react";
+import { Storage } from "@plasmohq/storage";
 import { DASHBOARD_URL } from "~lib/config";
+
+const storage = new Storage({ area: "local" });
 
 export const config: PlasmoCSConfig = {
   matches: ["https://twitter.com/*", "https://x.com/*"],
@@ -32,16 +35,20 @@ export default function NihTipFloater() {
   const [username, setUsername] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("");
+  const [defaultTip, setDefaultTip] = useState(5);
 
   useEffect(() => {
+    storage.get<number>("defaultTip").then((v) => {
+      if (v && Number(v) > 0) setDefaultTip(Number(v));
+    });
     function update() {
       setUsername(extractTwitterUsername(window.location.pathname));
-      injectPerTweetLinks();
+      injectPerTweetLinks(defaultTip);
     }
     update();
     const i = setInterval(update, 1500);
     return () => clearInterval(i);
-  }, []);
+  }, [defaultTip]);
 
   if (!username) return null;
 
@@ -136,7 +143,7 @@ function extractTwitterUsername(pathname: string): string | null {
  * Twitter's virtualised feed (tweets unmount + remount on scroll).
  * Idempotent: we tag each link with TIP_CLASS so we don't double-inject.
  */
-function injectPerTweetLinks() {
+function injectPerTweetLinks(defaultTip = 5) {
   const tweets = document.querySelectorAll('article[data-testid="tweet"]');
   tweets.forEach((article) => {
     if (article.querySelector(`.${TIP_CLASS}`)) return; // already injected
@@ -158,9 +165,12 @@ function injectPerTweetLinks() {
 
     const a = document.createElement("a");
     a.className = TIP_CLASS;
-    a.href = `${DASHBOARD_URL}/tip?platform=twitter&username=${encodeURIComponent(author)}&amount=5${
+    a.href = `${DASHBOARD_URL}/tip?platform=twitter&username=${encodeURIComponent(author)}&amount=${defaultTip}${
       tweetId ? `&context=tweet:${tweetId}` : ""
     }`;
+    a.dataset.amount = String(defaultTip);
+    // visible label uses the default
+    setTimeout(() => { if (a.textContent === "✦ Tip MUSD") a.textContent = `✦ Tip ${defaultTip} MUSD`; }, 0);
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     a.title = `Tip @${author} 5 MUSD for this tweet`;

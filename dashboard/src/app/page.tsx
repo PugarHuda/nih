@@ -15,10 +15,26 @@ export default function LandingPage() {
   useEffect(() => {
     document.body.setAttribute("data-style", "komik");
     document.body.setAttribute("data-mode", "light");
-    // landing.js append-only DOM (tweaks toggle, SFX overlays, parallax)
-    // survives client-side navigation away from "/". Sweep them on unmount
-    // so /dashboard and friends stay clean.
+    // landing.js was loaded once via <Script afterInteractive>. On a
+    // soft-nav back to / from /dashboard it does NOT re-execute its
+    // IIFE — so the live tip ticker, story-panel reveal observer, and
+    // parallax all stay dead until a hard refresh. We expose
+    // `window.nihLandingBoot()` from landing.js and call it on every
+    // mount of this page. Idempotent — safe to call repeatedly.
+    function rebootLanding() {
+      const w = window as unknown as { nihLandingBoot?: () => void };
+      try { w.nihLandingBoot?.(); } catch { /* ignore */ }
+    }
+    // Run now and after a short delay so a slow script load still gets caught.
+    rebootLanding();
+    const t1 = window.setTimeout(rebootLanding, 250);
+    const t2 = window.setTimeout(rebootLanding, 1000);
     return () => {
+      window.clearTimeout(t1);
+      window.clearTimeout(t2);
+      // landing.js append-only DOM (tweaks toggle, SFX overlays, parallax)
+      // survives client-side navigation away from "/". Sweep them on unmount
+      // so /dashboard and friends stay clean.
       document.body
         .querySelectorAll(".twk-mini-toggle, .twk-mini, .pow, .spark, .drift-layer, .panel-modal")
         .forEach((el) => el.remove());

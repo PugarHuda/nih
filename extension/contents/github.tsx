@@ -1,6 +1,9 @@
 import type { PlasmoCSConfig } from "plasmo";
 import { useEffect, useState } from "react";
+import { Storage } from "@plasmohq/storage";
 import { DASHBOARD_URL } from "~lib/config";
+
+const storage = new Storage({ area: "local" });
 
 export const config: PlasmoCSConfig = {
   matches: ["https://github.com/*"],
@@ -25,16 +28,18 @@ export default function NihTipFloater() {
   const [username, setUsername] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("");
+  const [defaultTip, setDefaultTip] = useState(5);
 
   useEffect(() => {
+    storage.get<number>("defaultTip").then((v) => { if (v && Number(v) > 0) setDefaultTip(Number(v)); });
     function update() {
       setUsername(extractGitHubUsername(window.location.pathname));
-      injectPerCommentLinks();
+      injectPerCommentLinks(defaultTip);
     }
     update();
     const i = setInterval(update, 2000);
     return () => clearInterval(i);
-  }, []);
+  }, [defaultTip]);
 
   if (!username) return null;
 
@@ -105,7 +110,7 @@ function extractGitHubUsername(pathname: string): string | null {
  * Selector: `.timeline-comment-header .author` is GitHub's stable
  * comment-author link. Injected once per comment.
  */
-function injectPerCommentLinks() {
+function injectPerCommentLinks(defaultTip = 5) {
   const headers = document.querySelectorAll(".timeline-comment-header");
   headers.forEach((h) => {
     if (h.querySelector(`.${TIP_CLASS}`)) return;
@@ -116,11 +121,11 @@ function injectPerCommentLinks() {
 
     const a = document.createElement("a");
     a.className = TIP_CLASS;
-    a.href = `${DASHBOARD_URL}/tip?platform=github&username=${encodeURIComponent(handle)}&amount=5`;
+    a.href = `${DASHBOARD_URL}/tip?platform=github&username=${encodeURIComponent(handle)}&amount=${defaultTip}`;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    a.title = `Tip @${handle} 5 MUSD for this comment`;
-    a.textContent = "✦ Tip 5 MUSD";
+    a.title = `Tip @${handle} ${defaultTip} MUSD for this comment`;
+    a.textContent = `✦ Tip ${defaultTip} MUSD`;
     Object.assign(a.style, {
       display: "inline-block",
       padding: "2px 8px",

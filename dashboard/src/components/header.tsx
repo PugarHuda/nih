@@ -7,15 +7,16 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { ConnectWallet } from "./connect-wallet";
 
+// Slimmer top nav — 5 primary links (Dashboard + the 4 money flows).
+// "Trove" merges into Borrow flow on dashboard. /leaderboard, /install,
+// /onboarding, /docs, /slides reachable via the dashboard's "things-to-do"
+// + footer; not every minor route needs a top-nav slot.
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/stream", label: "Stream" },
-  { href: "/earn", label: "Earn" },
+  { href: "/tip", label: "Tip" },
+  { href: "/stream", label: "Subscribe" },
   { href: "/borrow", label: "Borrow" },
-  { href: "/trove", label: "Trove" },
-  { href: "/claim", label: "Claim" },
-  { href: "/leaderboard", label: "Top" },
-  { href: "/install", label: "Install" },
+  { href: "/earn", label: "Earn" },
 ];
 
 export function Header() {

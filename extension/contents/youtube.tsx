@@ -1,6 +1,9 @@
 import type { PlasmoCSConfig } from "plasmo";
 import { useEffect, useState } from "react";
+import { Storage } from "@plasmohq/storage";
 import { DASHBOARD_URL } from "~lib/config";
+
+const storage = new Storage({ area: "local" });
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.youtube.com/*"],
@@ -23,16 +26,18 @@ export default function NihTipFloater() {
   const [username, setUsername] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [custom, setCustom] = useState("");
+  const [defaultTip, setDefaultTip] = useState(5);
 
   useEffect(() => {
+    storage.get<number>("defaultTip").then((v) => { if (v && Number(v) > 0) setDefaultTip(Number(v)); });
     function update() {
       setUsername(extractYouTubeHandle());
-      injectPerVideoLink();
+      injectPerVideoLink(defaultTip);
     }
     update();
     const i = setInterval(update, 2000);
     return () => clearInterval(i);
-  }, []);
+  }, [defaultTip]);
 
   if (!username) return null;
 
@@ -85,7 +90,7 @@ export default function NihTipFloater() {
   );
 }
 
-function injectPerVideoLink() {
+function injectPerVideoLink(defaultTip = 5) {
   // Only on watch pages (URL /watch?v=…)
   if (!window.location.pathname.startsWith("/watch")) return;
   if (document.querySelector(`.${TIP_CLASS}`)) return;
@@ -105,13 +110,13 @@ function injectPerVideoLink() {
 
   const a = document.createElement("a");
   a.className = TIP_CLASS;
-  a.href = `${DASHBOARD_URL}/tip?platform=youtube&username=${encodeURIComponent(channel)}&amount=5${
+  a.href = `${DASHBOARD_URL}/tip?platform=youtube&username=${encodeURIComponent(channel)}&amount=${defaultTip}${
     videoId ? `&context=video:${videoId}` : ""
   }`;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
-  a.title = `Tip @${channel} 5 MUSD for this video`;
-  a.textContent = "✦ Tip 5 MUSD";
+  a.title = `Tip @${channel} ${defaultTip} MUSD for this video`;
+  a.textContent = `✦ Tip ${defaultTip} MUSD`;
   Object.assign(a.style, {
     display: "inline-flex",
     alignItems: "center",

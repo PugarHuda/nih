@@ -149,25 +149,28 @@ h1, h2, h3, .h1, .h2, .h3 {
 
 /* Force readable text inside the dark `.ink` variant — children that use
    light-mode tokens (text-muted = #555, text-fg = #000) become invisible
-   on the black background otherwise. */
+   on the black background otherwise. Use !important since some inline
+   styles otherwise override. */
 .comic-card.ink,
 .comic-card.ink p,
 .comic-card.ink li,
 .comic-card.ink span,
 .comic-card.ink b,
 .comic-card.ink strong,
+.comic-card.ink em,
+.comic-card.ink a,
 .comic-card.ink h1,
 .comic-card.ink h2,
 .comic-card.ink h3,
 .comic-card.ink h4,
 .comic-card.ink .h1,
 .comic-card.ink .h2,
-.comic-card.ink .h3 { color: var(--paper); }
+.comic-card.ink .h3 { color: #FFFEF7 !important; }
 .comic-card.ink .kicker,
 .comic-card.ink .muted,
-.comic-card.ink .text-muted { color: rgba(255, 255, 255, 0.72); }
+.comic-card.ink .text-muted { color: rgba(255, 255, 255, 0.78) !important; }
 .comic-card.ink code,
-.comic-card.ink .text-fg { color: #FFD32D; }
+.comic-card.ink .text-fg { color: #FFD32D !important; }
 
 /* Force readable text inside the yellow `.accent` variant — same fix,
    children using ink-3 / muted become near-invisible on yellow. */
