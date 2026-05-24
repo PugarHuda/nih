@@ -175,6 +175,22 @@ h1, h2, h3, .h1, .h2, .h3 {
 .comic-card.accent .text-muted,
 .comic-card.accent .kicker { color: rgba(0, 0, 0, 0.7); }
 
+/* Tailwind utility cards (`bg-bg/40`, `bg-surface/50`, `border-border`)
+   used by `<Card>`, `<StepRow>`, `<Stat>` boxes etc. The base utilities
+   set near-cream backgrounds with alpha — when paired with
+   `text-muted` children at #555 (~30% lightness) the perceived
+   contrast falls under WCAG AA. Force a stronger floor for body text
+   inside any such container so users don't see invisible labels. */
+.bg-bg\/40, .bg-bg\/50, .bg-bg\/60,
+.bg-surface\/40, .bg-surface\/50, .bg-surface\/60 {
+  /* Lift the alpha so the background actually carries against the page. */
+  background-color: var(--paper) !important;
+}
+.bg-bg\/40 .text-muted, .bg-bg\/50 .text-muted, .bg-bg\/60 .text-muted,
+.bg-surface\/40 .text-muted, .bg-surface\/50 .text-muted, .bg-surface\/60 .text-muted {
+  color: var(--ink-2) !important;
+}
+
 /* Comic button */
 .comic-btn {
   display: inline-flex;
@@ -305,6 +321,32 @@ body.no-anim *::before,
 body.no-anim *::after {
   animation-play-state: paused !important;
   transition: none !important;
+}
+
+/* View Transitions API cross-fade. Browsers with support
+   (Chrome 111+, Edge, Safari 18+) render this smoothly via
+   `document.startViewTransition` invoked from
+   `<ViewTransitionNav>`. Browsers without support fall through
+   to a normal nav — no regression. */
+@keyframes nih-vt-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes nih-vt-fade-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+::view-transition-old(root) {
+  animation: nih-vt-fade-out .18s ease-out both;
+}
+::view-transition-new(root) {
+  animation: nih-vt-fade-in .26s ease-out both;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none !important;
+  }
 }
 
 /* When using next-themes / dark scheme on iOS, force light */
