@@ -5,62 +5,89 @@ import { useAccount } from "wagmi";
 import { useSearchParams } from "next/navigation";
 
 /**
- * When the Nih browser extension wants to know the user's wallet address
- * (the popup can't see window.ethereum), it opens this dashboard with
- * `?from=extension`. As soon as wagmi reports a connected address, we
- * post it to the extension via chrome.runtime.sendMessage AND mirror it
- * to chrome.storage so the popup can pick it up either way.
+ * Cross-context wallet bridge for the Nih extension popup.
  *
- * Renders a small banner so the user understands what just happened —
- * "We sent your address back to the Nih extension. You can close this
- * tab or keep using the dashboard."
+ * SECURITY: a previous version auto-fired the chrome.storage write on
+ * every page mount with `?from=extension`. That let any third-party
+ * site embed `<iframe src="nih-seven.vercel.app/?from=extension">` and
+ * leak the user's connected wallet to the Nih extension without consent.
+ *
+ * Current design requires BOTH:
+ *   1. A `nonce` URL query parameter that the popup generated and
+ *      wrote to `chrome.storage.local.bridgeNonce` before opening this
+ *      tab. The popup re-checks the nonce before accepting any
+ *      `walletAddress` payload — pages without the right nonce can't
+ *      pretend to be the legit extension flow.
+ *   2. An explicit user-clicked button on this banner. No more silent
+ *      auto-forward.
  */
 export function ExtensionBridge() {
   const params = useSearchParams();
   const fromExt = params.get("from") === "extension";
+  const nonce = params.get("nonce") ?? "";
   const { address, isConnected } = useAccount();
   const [synced, setSynced] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!fromExt || !isConnected || !address) return;
-    let cancelled = false;
+  // Defensive: if the URL has `from=extension` but no nonce, refuse to
+  // even render the linking UI — that's almost certainly someone trying
+  // to phish the legit popup flow.
+  const missingNonce = fromExt && !nonce;
 
-    async function syncAddress() {
-      // Chrome extension types aren't installed in the dashboard project
-      // (no @types/chrome) — access via window cast so the regular browser
-      // build still type-checks while the extension can still find us.
-      const c = (window as unknown as {
-        chrome?: {
-          storage?: { local?: { set: (kv: Record<string, unknown>) => void } };
-          runtime?: {
-            sendMessage?: (
-              extId: string,
-              msg: unknown,
-              cb?: () => void,
-            ) => void;
-            lastError?: unknown;
-          };
+  async function linkNow() {
+    if (!address || !nonce) return;
+    setError(null);
+    const c = (window as unknown as {
+      chrome?: {
+        storage?: {
+          local?: { set: (kv: Record<string, unknown>) => void };
         };
-      }).chrome;
-      const a = address as `0x${string}`;
-      try {
-        c?.storage?.local?.set({ walletAddress: a });
-      } catch { /* not in an extension context */ }
-      try {
-        c?.runtime?.sendMessage?.("nih@extension", { type: "wallet", address: a }, () => {
-          void c?.runtime?.lastError;
-        });
-      } catch { /* ignore */ }
-      if (!cancelled) setSynced(true);
-    }
+        runtime?: {
+          sendMessage?: (extId: string, msg: unknown, cb?: () => void) => void;
+          lastError?: unknown;
+        };
+      };
+    }).chrome;
+    const a = address as `0x${string}`;
+    try {
+      // Storage payload is BOTH the address AND the nonce the popup
+      // expects. The popup only accepts the address if the nonces match.
+      c?.storage?.local?.set({
+        walletAddress: a,
+        bridgeNonceUsed: nonce,
+      });
+    } catch { /* not in a real extension context */ }
+    try {
+      c?.runtime?.sendMessage?.(
+        "nih@extension",
+        { type: "wallet", address: a, nonce },
+        () => { void c?.runtime?.lastError; },
+      );
+    } catch { /* ignore */ }
+    setSynced(true);
+  }
 
-    syncAddress();
-    return () => {
-      cancelled = true;
-    };
-  }, [fromExt, isConnected, address]);
+  // Clear sync state if the connected address changes — re-consent.
+  useEffect(() => {
+    setSynced(false);
+  }, [address]);
 
   if (!fromExt) return null;
+
+  if (missingNonce) {
+    return (
+      <div className="comic-card fixed top-4 right-4 max-w-xs z-50 p-4">
+        <span className="kicker" style={{ color: "var(--bad)" }}>extension bridge · refused</span>
+        <h3 className="h3 mt-1">Suspicious link</h3>
+        <p className="text-[12px] mt-1 leading-snug" style={{ color: "var(--ink-3)" }}>
+          A page requested wallet-bridge mode without the security nonce
+          the Nih extension generates. Ignored. If you opened this from
+          the extension popup yourself, click the popup&apos;s
+          &quot;Connect via dashboard&quot; button again.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -72,24 +99,38 @@ export function ExtensionBridge() {
         <>
           <h3 className="h3 mt-1">Linked.</h3>
           <p className="text-[12px] mt-1 leading-snug opacity-85">
-            We sent your wallet address back to the Nih extension popup. You can
-            close this tab or keep using the dashboard.
+            Wallet sent to the Nih extension popup. Close this tab or
+            keep using the dashboard.
           </p>
         </>
       ) : !isConnected ? (
         <>
           <h3 className="h3 mt-1">One step left.</h3>
           <p className="text-[12px] mt-1 leading-snug opacity-85">
-            The extension popup is waiting on us. Connect your wallet (top
-            right) and we'll forward the address back automatically.
+            Connect your wallet (top right). After that, click the button
+            below to share your address with the extension popup.
           </p>
         </>
       ) : (
         <>
-          <h3 className="h3 mt-1">Linking…</h3>
+          <h3 className="h3 mt-1">Confirm sharing.</h3>
           <p className="text-[12px] mt-1 leading-snug opacity-85">
-            Sending your address to the extension popup.
+            Send <code className="mono text-[11px]">{address?.slice(0, 6)}…{address?.slice(-4)}</code>{" "}
+            to the Nih extension popup that opened this tab?
           </p>
+          <button
+            type="button"
+            onClick={linkNow}
+            className="comic-btn primary mt-3"
+            style={{ fontSize: 13, padding: "6px 12px", width: "100%" }}
+          >
+            Send to extension
+          </button>
+          {error && (
+            <p className="text-[11px] mt-2" style={{ color: "var(--bad)" }}>
+              {error}
+            </p>
+          )}
         </>
       )}
     </div>

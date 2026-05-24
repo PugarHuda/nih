@@ -27,6 +27,11 @@ contract NihRegistry is Ownable {
     /// @notice handleId = keccak256(abi.encodePacked(platform, ":", username))
     mapping(bytes32 handleId => Identity) public identities;
     mapping(address wallet => bytes32[]) public walletHandles;
+    /// @notice Replay guard. Tracks attestation digests already consumed
+    /// by `registerWithSignature`. Without this, a Tier-1 signature is
+    /// valid until `deadline` and could be replayed if a wallet ever
+    /// gets unregistered or the same digest is presented twice.
+    mapping(bytes32 digest => bool) public usedSignatures;
 
     /// @notice Trusted signer for Tier.Signature & Tier.OAuth claims. Set to backend pubkey.
     address public verifier;
@@ -35,6 +40,7 @@ contract NihRegistry is Ownable {
     event VerifierUpdated(address indexed newVerifier);
 
     error InvalidSignature();
+    error SignatureAlreadyUsed();
     error AlreadyRegistered();
     error NotOwner();
 
@@ -53,7 +59,8 @@ contract NihRegistry is Ownable {
     }
 
     /// @notice Register a handle via verifier-signed attestation.
-    /// @dev Verifier signs (handleId, wallet, tier, deadline).
+    /// @dev Verifier signs (handleId, wallet, tier, deadline, chainId).
+    /// Each signature digest can be consumed at most once (replay guard).
     function registerWithSignature(
         bytes32 _handleId,
         Tier tier,
@@ -65,9 +72,11 @@ contract NihRegistry is Ownable {
 
         bytes32 digest = keccak256(abi.encodePacked(_handleId, msg.sender, tier, deadline, block.chainid))
             .toEthSignedMessageHash();
+        if (usedSignatures[digest]) revert SignatureAlreadyUsed();
         address signer = digest.recover(signature);
         if (signer != verifier) revert InvalidSignature();
 
+        usedSignatures[digest] = true;
         _register(_handleId, msg.sender, tier);
     }
 

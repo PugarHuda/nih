@@ -42,16 +42,29 @@ function IndexPopup() {
       }
     })();
 
-    // Watch storage for the dashboard writing the address back after the
-    // user connects from the "?from=extension" tab we opened.
+    // Watch storage for the dashboard writing the address back. Accept
+    // only when the bridge nonce we generated in `connectViaDashboard`
+    // matches what the dashboard echoed — otherwise some other site
+    // could have triggered the storage write via a phishing redirect.
     const onChange: Parameters<typeof storage.watch>[0] = {
-      walletAddress: (c) => {
+      walletAddress: async (c) => {
         const v = c.newValue as string | undefined;
-        if (v) {
-          setAddress(v);
-          setWaitingForConnect(false);
-          loadBalance(v);
+        if (!v) return;
+        const expectedNonce = await storage.get<string>("bridgeNonce");
+        const usedNonce = await storage.get<string>("bridgeNonceUsed");
+        if (!expectedNonce || expectedNonce !== usedNonce) {
+          console.warn(
+            "[nih popup] ignoring walletAddress write — nonce mismatch",
+            { expectedNonce, usedNonce },
+          );
+          return;
         }
+        // Consume the nonce so the same one can't be reused.
+        await storage.remove("bridgeNonce");
+        await storage.remove("bridgeNonceUsed");
+        setAddress(v);
+        setWaitingForConnect(false);
+        loadBalance(v);
       },
     };
     storage.watch(onChange);
@@ -73,11 +86,18 @@ function IndexPopup() {
     }
   }
 
-  function connectViaDashboard() {
+  async function connectViaDashboard() {
     setWaitingForConnect(true);
-    // Open dashboard with a hint so it auto-prompts the wallet and writes
-    // the resolved address to chrome.storage.
-    chrome.tabs.create({ url: `${DASHBOARD_URL}/dashboard?from=extension` });
+    // Generate a one-time nonce that the dashboard must echo back
+    // before we accept the wallet address it writes. Stops any other
+    // site that opens our dashboard with `?from=extension` from
+    // hijacking the storage write.
+    const nonce = crypto.randomUUID();
+    await storage.set("bridgeNonce", nonce);
+    await storage.remove("bridgeNonceUsed");
+    chrome.tabs.create({
+      url: `${DASHBOARD_URL}/dashboard?from=extension&nonce=${encodeURIComponent(nonce)}`,
+    });
   }
 
   async function disconnect() {
