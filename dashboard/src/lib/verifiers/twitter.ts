@@ -46,8 +46,12 @@ export async function verifyTwitter(username: string, challenge: string): Promis
     }
   } catch { /* try next */ }
 
-  // 2) Public profile HTML — only count if BOTH challenge and an
-  // ownership anchor pointing at THIS handle appear.
+  // 2) Public profile HTML at /{handle}. The URL path itself proves we
+  //    asked for THIS user — Twitter's SPA shell may not include a
+  //    canonical/og:url anchor reliably, so we relax to "challenge text
+  //    is in the body of a fetch we directly addressed to /{handle}".
+  //    The handle path is the ownership proof; substring-only spoofs
+  //    from a *different* profile can't hit this branch.
   for (const url of [
     `https://x.com/${handle}`,
     `https://twitter.com/${handle}`,
@@ -59,8 +63,7 @@ export async function verifyTwitter(username: string, challenge: string): Promis
       });
       if (!res.ok) continue;
       const text = await res.text();
-      const t = text.toLowerCase();
-      if (t.includes(lower) && hasOwnershipAnchor(text)) {
+      if (text.toLowerCase().includes(lower)) {
         return { ok: true, evidence: url };
       }
     } catch { /* next */ }

@@ -53,12 +53,27 @@ export default function BorrowPage() {
     query: { enabled: !!address },
   });
 
+  // Pool treasury — NihCredit needs >= borrowable + collateral on hand
+  // to fulfil the loan. Surface this so users don't hit
+  // `InsufficientLiquidity` reverts.
+  const { data: poolBalance } = useReadContract({
+    address: addresses.MUSD,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [addresses.Credit],
+    query: { refetchInterval: 30_000 },
+  });
+
   const collateralWei = collateralInput ? parseEther(collateralInput) : 0n;
   const borrowable = (collateralWei * 6000n) / 10000n;
   const loanTuple = loan as readonly [bigint, bigint, bigint] | undefined;
   const hasActiveLoan = !!loanTuple && loanTuple[0] > 0n;
   const currentAllowance = (allowance as bigint | undefined) ?? 0n;
   const needsApproval = currentAllowance < collateralWei;
+  const pool = (poolBalance as bigint | undefined) ?? 0n;
+  // Contract requires pool >= collateral + borrowable AFTER the transfer-in
+  // (i.e. existing pool >= borrowable). Show insufficient state otherwise.
+  const insufficientLiquidity = collateralWei > 0n && pool < borrowable;
 
   async function handleApprove() {
     if (!(await ensure())) return;
@@ -313,10 +328,28 @@ export default function BorrowPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <Box label="You receive" value={`${formatMUSD(borrowable)} MUSD`} highlight />
                 <Box label="Rate" value="1% fixed APR" />
+                <Box label="Pool treasury" value={`${formatMUSD(pool)} MUSD`} />
               </div>
+
+              {insufficientLiquidity && (
+                <div
+                  className="p-3 text-[12px]"
+                  style={{
+                    background: "var(--accent-2)",
+                    color: "var(--paper)",
+                    border: "3.5px solid var(--ink)",
+                    boxShadow: "3px 3px 0 0 var(--ink)",
+                  }}
+                >
+                  <b>Treasury too low.</b> NihCredit needs at least{" "}
+                  {formatMUSD(borrowable)} MUSD on hand to fulfil this loan
+                  (current pool: {formatMUSD(pool)} MUSD). Reduce collateral or
+                  wait until lenders top the pool up.
+                </div>
+              )}
 
               {needsApproval && collateralWei > 0n ? (
                 <Button onClick={handleApprove} disabled={pending === "approve"} className="w-full">
@@ -329,7 +362,7 @@ export default function BorrowPage() {
                   )}
                 </Button>
               ) : (
-                <Button onClick={handleOpen} disabled={!collateralWei || pending === "open"} className="w-full">
+                <Button onClick={handleOpen} disabled={!collateralWei || pending === "open" || insufficientLiquidity} className="w-full">
                   {pending === "open" ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" /> Opening…

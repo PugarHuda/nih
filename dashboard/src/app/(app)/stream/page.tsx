@@ -51,6 +51,10 @@ export default function StreamPage() {
 
   const amountWei = amount ? parseEther(amount) : 0n;
   const ratePerSec = amountWei && duration ? amountWei / BigInt(duration) : 0n;
+  const recipientIsSelf =
+    isAddress(recipient) &&
+    !!address &&
+    recipient.toLowerCase() === address.toLowerCase();
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
     address: addresses.MUSD,
@@ -77,7 +81,8 @@ export default function StreamPage() {
   });
 
   const needsApproval = ((allowance as bigint | undefined) ?? 0n) < amountWei;
-  const valid = isAddress(recipient) && amountWei > 0n;
+  // recipient cannot equal the sender (NihStream reverts InvalidRecipient).
+  const valid = isAddress(recipient) && amountWei > 0n && !recipientIsSelf;
 
   async function handleStart() {
     if (!valid) return;
@@ -229,6 +234,12 @@ export default function StreamPage() {
                 <div>
                   <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Recipient address</label>
                   <Input value={recipient} onChange={(e) => setRecipient(e.target.value.trim())} placeholder="0x…" />
+                  {recipientIsSelf && (
+                    <p className="text-[12px] mt-1.5" style={{ color: "var(--bad)" }}>
+                      Stream recipient can&apos;t be your own wallet. Paste a
+                      different address.
+                    </p>
+                  )}
                 </div>
                 <div className="grid sm:grid-cols-2 gap-3">
                   <div>

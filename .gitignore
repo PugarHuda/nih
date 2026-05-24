@@ -20,5 +20,10 @@ deployments/localhost/
 .claude/
 .vercel/
 
+# Per-folder context files Claude reads — local-only, not for judges.
+CLAUDE.md
+**/CLAUDE.md
 
+# Misc OS / runtime
+bash.exe.stackdump
 .vercel
