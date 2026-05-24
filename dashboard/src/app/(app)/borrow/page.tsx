@@ -37,12 +37,13 @@ export default function BorrowPage() {
     query: { enabled: !!address },
   });
 
-  const { data: owed } = useReadContract({
+  const { data: owed, refetch: refetchOwed } = useReadContract({
     address: addresses.Credit,
     abi: creditAbi,
     functionName: "owedAmount",
     args: address ? [address] : undefined,
-    query: { enabled: !!address },
+    // refetchInterval so interest accrual is live without a manual reload.
+    query: { enabled: !!address, refetchInterval: 15_000 },
   });
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
@@ -107,7 +108,7 @@ export default function BorrowPage() {
       });
       txSuccess({ message: `Borrowed ${formatMUSD(borrowable)} MUSD`, txHash });
       setCollateralInput("");
-      await refetchLoan();
+      await Promise.all([refetchLoan(), refetchOwed()]);
     } catch (err) {
       txError(err);
     } finally {
@@ -125,7 +126,7 @@ export default function BorrowPage() {
         functionName: "repay",
       });
       txSuccess({ message: "Loan repaid; collateral released", txHash });
-      await refetchLoan();
+      await Promise.all([refetchLoan(), refetchOwed()]);
     } catch (err) {
       txError(err);
     } finally {
