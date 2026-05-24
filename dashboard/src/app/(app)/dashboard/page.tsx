@@ -15,6 +15,7 @@ import {
   MilestoneCard,
 } from "@/components/comic";
 import { ProfileHandlesCard } from "@/components/profile-handles-card";
+import { RecentTippersCard } from "@/components/recent-tippers-card";
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount();
@@ -73,6 +74,11 @@ export default function DashboardPage() {
             don't have to click through. */}
         <div className="mb-6" data-tour="profile-handles">
           <ProfileHandlesCard />
+        </div>
+
+        {/* Recent tippers — who sent what, when, on which handle. */}
+        <div className="mb-6">
+          <RecentTippersCard limit={8} />
         </div>
 
         {/* Big stat row — wallet balance + lifetime + handles */}
