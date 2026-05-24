@@ -38,7 +38,7 @@ interface Asset {
   id: string; // human-readable identifier (becomes part of context)
   title: string;
   byline: string;
-  platform: "substack" | "twitter" | "github";
+  platform: "twitter" | "github" | "linkedin";
   username: string;
   priceMUSD: number;
   preview: string;
@@ -50,7 +50,10 @@ const ASSETS: Asset[] = [
     id: "ha-thread-bitcoin-2026",
     title: "Why Bitcoin doesn't need staking",
     byline: "a long-form essay",
-    platform: "substack",
+    // Routed via twitter:hajislamet because hajislamet is the demo
+    // handle registered to the deployer wallet — substack version would
+    // park in NihVault unclaimable until @hajislamet verifies on substack.
+    platform: "twitter",
     username: "hajislamet",
     priceMUSD: 5,
     preview:

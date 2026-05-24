@@ -12,12 +12,23 @@
  * through `txError` with the revert reason if we can decode it.
  */
 import { toast } from "sonner";
-import { http, createPublicClient } from "viem";
+import { http, fallback, createPublicClient } from "viem";
 import { matsnet } from "@/lib/chain";
 
+// Build a fallback transport list matching wagmi.ts so a public-RPC
+// blip during the judge demo doesn't time out every receipt wait.
+const spectrum = process.env.NEXT_PUBLIC_SPECTRUM_RPC;
+const primary = process.env.NEXT_PUBLIC_RPC_URL ?? "https://rpc.test.mezo.org";
 const receiptClient = createPublicClient({
   chain: matsnet,
-  transport: http(),
+  transport: fallback(
+    [
+      ...(spectrum ? [http(spectrum)] : []),
+      http(primary),
+      http("https://rpc.test.mezo.org"),
+    ],
+    { rank: false },
+  ),
 });
 
 const EXPLORER = "https://explorer.test.mezo.org/tx";

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAccount, useWriteContract } from "wagmi";
 import { parseEther } from "viem";
 import { toast } from "sonner";
+import { txSuccess, txError } from "@/lib/tx-toast";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +29,7 @@ export default function FaucetPage() {
     if (!(await ensure())) return;
     setPending("mezo");
     try {
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.MEZO,
         abi: [
           { type: "function", name: "mint", stateMutability: "nonpayable", inputs: [{ type: "address" }, { type: "uint256" }], outputs: [] },
@@ -36,9 +37,9 @@ export default function FaucetPage() {
         functionName: "mint",
         args: [address, MINT_AMOUNT],
       });
-      toast.success(`Minted 100 MEZO`);
+      await txSuccess({ message: "Minted 100 MEZO", txHash });
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
     } finally {
       setPending("none");
     }

@@ -120,7 +120,7 @@ export function ProfileHandlesCard() {
         <h3 className="h3 mt-1.5 mb-1">No handles registered yet.</h3>
         <p className="text-[13px] leading-snug" style={{ color: "var(--ink-3)" }}>
           Verify a social handle to claim tips that arrive in your name.
-          We support 9 platforms.
+          We support twitter, youtube, github, linkedin.
         </p>
         <div className="mt-3">
           <Link href="/claim">

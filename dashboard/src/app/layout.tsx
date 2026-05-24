@@ -8,7 +8,7 @@ import { ClickSparkle } from "@/components/click-sparkle";
 export const metadata: Metadata = {
   title: "Nih — Tip MUSD anywhere on the web",
   description:
-    "Bitcoin-backed tipping on Mezo. Send MUSD with a click on Twitter, YouTube, Substack, GitHub. Creators borrow against their tips without selling.",
+    "Bitcoin-backed tipping on Mezo. Send MUSD with a click on Twitter, YouTube, GitHub, LinkedIn. Creators borrow against their tips without selling.",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,

@@ -62,7 +62,7 @@ export default function InstallPage() {
             <div className="flex-1">
               <CardHeader className="pb-2">
                 <CardTitle className="text-2xl">Download & install</CardTitle>
-                <CardDescription>2.1 MB · MV3 · open source · nine platforms</CardDescription>
+                <CardDescription>2.1 MB · MV3 · open source · 4 platforms</CardDescription>
               </CardHeader>
             </div>
             <Button size="lg" onClick={handleDownload} className="text-base">

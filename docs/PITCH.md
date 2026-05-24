@@ -2,7 +2,7 @@
 
 ## The 30-second pitch
 
-> Bitcoin is the best money the world has ever invented, but you can't tip your favorite YouTube creator with it without first selling, then dealing with a custodian, then crossing your fingers it arrives. **Nih makes it as easy as a like.** A browser extension injects a tip button on Twitter, YouTube, Substack, Medium, and GitHub. One click sends MUSD — Mezo's real Bitcoin-backed stablecoin — to the creator's wallet. And here's the magic: those creators can borrow against their accumulated tips without ever selling their Bitcoin exposure. Built on Mezo, powered by MUSD and MEZO. Tipping meets self-service banking.
+> Bitcoin is the best money the world has ever invented, but you can't tip your favorite YouTube creator with it without first selling, then dealing with a custodian, then crossing your fingers it arrives. **Nih makes it as easy as a like.** A browser extension injects a tip button on Twitter, YouTube, GitHub, and LinkedIn. One click sends MUSD — Mezo's real Bitcoin-backed stablecoin — to the creator's wallet. And here's the magic: those creators can borrow against their accumulated tips without ever selling their Bitcoin exposure. Built on Mezo, powered by MUSD and MEZO. Tipping meets self-service banking.
 
 ## The problem
 
@@ -19,7 +19,7 @@
 
 **Nih = browser extension + on-chain registry + escrow vault + credit line + per-second streams + pay-to-unlock content + Mezo Stability-Pool yield, all settling in real Mezo MUSD.**
 
-1. **Browser extension** injects a "Tip MUSD" button on every social profile (Twitter, YouTube, Substack, Medium, GitHub, Reddit, Hacker News, Twitch, LinkedIn — 9 platforms).
+1. **Browser extension** injects a "Tip MUSD" button on every social profile (Twitter, YouTube, GitHub, LinkedIn — 4 platforms, all with on-chain verifier support).
 2. **On-chain registry** maps social handle → Mezo wallet via tiered verification (Tier 1 challenge-text + URL/canonical anchor; Tier 2 OAuth planned; Tier 3 DAO whitelist).
 3. **Escrow vault** parks tips for unregistered handles for up to 180 days; auto-refunds if unclaimed.
 4. **Credit line (NihCredit)** lets creators borrow up to 60% LTV at 1% APR fixed against accumulated tips — without selling.
@@ -50,7 +50,7 @@ This is the only known submission that **touches all three Mezo tracks at once**
 | | Tippin.me | X Native Tip | Patreon | **Nih** |
 |---|---|---|---|---|
 | Currency | BTC volatile | BTC volatile | Fiat | **Real Mezo MUSD** |
-| Platforms | 1 | 1 | platform-locked | **9 (extensible)** |
+| Platforms | 1 | 1 | platform-locked | **4 (extensible)** |
 | Self-custody | partial | partial | no | **yes** |
 | Fee | ~0.5% | ~1% | 5–10% | **0.5% (0.25% in MEZO)** |
 | Composable | no | no | no | **credit + streams + yield + paywall** |
@@ -62,7 +62,7 @@ This is the only known submission that **touches all three Mezo tracks at once**
 - **Goldsky subgraph (nih/v4)** indexing real-MUSD events, currently at block 13.2M+
 - **8 seeded real-MUSD tips** with 5 registered handles, demonstrating the loop
 - **16 dashboard routes** including `/onboarding` interactive product tour, `/unlock` pay-to-access, `/docs` developer reference
-- **Browser extension** built (Plasmo Chrome MV3, 9 platforms), self-hosted at `/install`
+- **Browser extension** built (Plasmo Chrome MV3, 4 platforms), self-hosted at `/install`
 - **6 partner integrations** wired (Goldsky, Spectrum, Boar, OpenRouter, Tenderly, Validation Cloud)
 - **Security hardening** — receipt-gated tx UX, on-chain signature replay guard, verifier ownership anchor, extension nonce + consent, vault setRouter onlyOwner
 

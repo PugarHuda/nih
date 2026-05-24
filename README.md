@@ -12,7 +12,7 @@
 - 📦 **GitHub**: https://github.com/PugarHuda/nih
 - ⛓ **Contracts (FULL_REAL — all MUSD = real Mezo MUSD)**: Mezo matsnet (chainId 31611) — see [addresses below](#deployed-contract-addresses-matsnet)
 - 📊 **Goldsky subgraph**: [`nih/v4`](https://api.goldsky.com/api/public/project_cmo5pukv64upu01y48tefank9/subgraphs/nih/v4/gn) — live event indexing
-- 🧩 **Extension**: latest build at [`/install`](https://nih-seven.vercel.app/install) (Chrome MV3, 9 platforms — Twitter, YouTube, Substack, Medium, GitHub, Reddit, Hacker News, Twitch, LinkedIn)
+- 🧩 **Extension**: latest build at [`/install`](https://nih-seven.vercel.app/install) (Chrome MV3, 4 platforms — Twitter, YouTube, GitHub, LinkedIn)
 - ⚡ **Real Mezo MUSD end-to-end**: tip / borrow / stream / earn / unlock all route through `0xf9BBcCC0F1b68EA07c86de6F88C76b3d8E2dD0af`
 - 🌊 **Streaming subscriptions**: NihStream — per-second MUSD subscriptions, Patreon-style monthly presets
 - 💰 **Real Earn**: NihEarn wraps Mezo's StabilityPool for liquidation yield
@@ -20,7 +20,7 @@
 - 🔓 **Pay-to-unlock**: /unlock — MUSD-gated content reveal (consumer dApp showcase)
 - 🚀 **Auto-deploy**: every push to `main` ships to Vercel production
 
-A browser extension + dashboard that turns any social profile (Twitter, YouTube, Substack, Medium, GitHub) into a Bitcoin-backed bank account. Tip in MUSD with a click; creators receive stable Bitcoin-backed money and instantly borrow against accumulated tips without selling.
+A browser extension + dashboard that turns any social profile (Twitter, YouTube, GitHub, LinkedIn) into a Bitcoin-backed bank account. Tip in MUSD with a click; creators receive stable Bitcoin-backed money and instantly borrow against accumulated tips without selling.
 
 ---
 
@@ -29,7 +29,7 @@ A browser extension + dashboard that turns any social profile (Twitter, YouTube,
 | | Tippin.me | X Native Tip | **Nih** |
 |---|---|---|---|
 | Currency | BTC (volatile) | BTC (volatile) | **MUSD (Bitcoin-backed stable)** |
-| Platforms | Twitter only | Twitter only | **Twitter, YT, Substack, Medium, GitHub** |
+| Platforms | Twitter only | Twitter only | **Twitter, YouTube, GitHub, LinkedIn** |
 | Wallet | Lightning custodial | Lightning | **Self-custody (Xverse/Unisat/MetaMask)** |
 | Composable | ❌ | ❌ | **Credit Line + Streams + Stability-Pool Yield** |
 | Fee | ~0.5% | ~1% | **0.5% (50% off if paid in MEZO)** |
@@ -85,7 +85,7 @@ nih/
 ├── contracts/      # Hardhat — Solidity 0.8.28 smart contracts (29/29 tests)
 ├── dashboard/      # Next.js 15 App Router — creator dashboard, tip, claim,
 │                   #   borrow, stream, earn, unlock, onboarding, docs
-├── extension/      # Plasmo — browser extension (Chrome MV3, 9 platforms)
+├── extension/      # Plasmo — browser extension (Chrome MV3, 4 platforms)
 ├── subgraph/       # Goldsky subgraph (nih/v4) — indexes all events
 └── docs/           # PITCH.md, DEMO.md, ARCHITECTURE.md, BONUS-PRIZES.md
 ```

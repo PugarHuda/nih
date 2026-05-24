@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { keccak256, encodePacked } from "viem";
 import { toast } from "sonner";
+import { txSuccess, txError } from "@/lib/tx-toast";
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -93,18 +94,23 @@ export default function ClaimPage() {
       }
       const { tier, deadline, signature } = data;
 
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.Registry,
         abi: registryAbi,
         functionName: "registerWithSignature",
         args: [handleIdHash!, tier, BigInt(deadline), signature],
       });
 
-      toast.success("Handle verified!");
-      setStep("registered");
-      await refetchResolve();
+      await txSuccess({
+        message: "Handle verified!",
+        txHash,
+        onConfirmed: async () => {
+          setStep("registered");
+          await refetchResolve();
+        },
+      });
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
       setStep("input");
     }
   }
@@ -114,17 +120,22 @@ export default function ClaimPage() {
     if (!(await ensure())) return;
     setStep("claiming");
     try {
-      await writeContractAsync({
+      const txHash = await writeContractAsync({
         address: addresses.Vault,
         abi: vaultAbi,
         functionName: "claim",
         args: [handleIdHash],
       });
-      toast.success("Tips claimed!");
-      setStep("done");
-      await refetchPending();
+      await txSuccess({
+        message: "Tips claimed!",
+        txHash,
+        onConfirmed: async () => {
+          setStep("done");
+          await refetchPending();
+        },
+      });
     } catch (err) {
-      toast.error((err as Error).message);
+      txError(err);
       setStep("registered");
     }
   }

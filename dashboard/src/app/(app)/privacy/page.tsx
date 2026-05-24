@@ -40,7 +40,7 @@ export default function PrivacyPage() {
           </p>
           <p>
             Handle verification fetches publicly readable pages on Twitter, GitHub,
-            YouTube, Substack, and Medium when you opt into the claim flow. We do not
+            YouTube, and LinkedIn when you opt into the claim flow. We do not
             store any of the response content beyond the boolean &quot;challenge found&quot;.
           </p>
         </Section>

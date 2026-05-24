@@ -77,7 +77,7 @@ export default function DashboardPage() {
         <div className="grid sm:grid-cols-3 gap-4 mb-6" data-tour="stats-row">
           <ComicStat label="Wallet balance" value={`${balance} MUSD`} note={isConnected ? undefined : "connect wallet"} highlight />
           <ComicStat label="Lifetime tips received" value={`${received} MUSD`} note={`since you joined Nih`} />
-          <ComicStat label="Linked handles" value={`${handleCount}`} note={`of 4 supported platforms`} />
+          <ComicStat label="Linked handles" value={`${handleCount}`} note={`across twitter / youtube / github / linkedin`} />
         </div>
 
         {/* Main grid — left big charts, right side cards */}

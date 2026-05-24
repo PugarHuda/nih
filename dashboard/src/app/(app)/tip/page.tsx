@@ -21,8 +21,7 @@ function TipInner() {
     | "twitter"
     | "youtube"
     | "github"
-    | "substack"
-    | "medium";
+    | "linkedin";
   const username = (params.get("username") ?? "").replace(/^@/, "");
   const amount = Number(params.get("amount") ?? "5");
   const context = params.get("context") ?? "";

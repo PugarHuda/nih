@@ -742,7 +742,7 @@ export default function LandingPage() {
         <span className="num">02</span>
         <div className="body">
           <b>Tip from anywhere</b>
-          <span>One button injected on Twitter, YouTube, Substack, Medium, GitHub, Reddit, HN.</span>
+          <span>One button injected on Twitter, YouTube, GitHub, and LinkedIn.</span>
         </div>
       </div>
       <div className="item">
