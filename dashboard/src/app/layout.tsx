@@ -50,6 +50,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Bangers&family=Space+Grotesk:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Caveat:wght@500;700&family=Instrument+Serif:ital@0;1&display=swap"
           rel="stylesheet"
         />
+        {/* Prefetch the landing assets so clicking the logo from an
+            app route doesn't trigger a network roundtrip + FOUC. */}
+        <link rel="prefetch" href="/landing.css" as="style" />
+        <link rel="prefetch" href="/landing.js" as="script" />
       </head>
       <body
         className="min-h-screen antialiased"

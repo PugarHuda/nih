@@ -266,6 +266,19 @@ h1, h2, h3, .h1, .h2, .h3 {
 body.no-anim .fade-up,
 body.no-anim .fade-up-delayed { animation: none; }
 
+/* Cross-route navigation suppression — blanket kill every running CSS
+   animation + transition while `body.no-anim` is on. Without this, the
+   landing's marquees, parallax, sparkles, etc. all snap to their first
+   keyframe and then leap forward when no-anim clears, which the user
+   perceives as a flicker. Blanket suppression keeps everything frozen
+   for the 400ms transition window, then animations resume cleanly. */
+body.no-anim *,
+body.no-anim *::before,
+body.no-anim *::after {
+  animation-play-state: paused !important;
+  transition: none !important;
+}
+
 /* When using next-themes / dark scheme on iOS, force light */
 @media (prefers-color-scheme: dark) {
   :root { color-scheme: light; }
