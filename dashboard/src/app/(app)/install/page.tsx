@@ -250,15 +250,23 @@ function StepRow({
 }) {
   return (
     <div
-      className={`fade-up rounded-xl border p-5 ${
-        active ? "border-brand/40 bg-surface" : "border-border bg-bg/40"
-      }`}
+      className="fade-up p-5"
+      style={{
+        background: "var(--paper)",
+        border: active ? "3.5px solid var(--ink)" : "3px solid var(--line-2)",
+        boxShadow: active ? "4px 4px 0 0 var(--ink)" : "none",
+        color: "var(--ink)",
+        opacity: active ? 1 : 0.75,
+      }}
     >
       <div className="flex items-start gap-4">
         <div
-          className={`flex-none h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold ${
-            active ? "bg-brand text-bg" : "bg-surface text-muted border border-border"
-          }`}
+          className="flex-none h-9 w-9 rounded-full flex items-center justify-center text-sm font-semibold"
+          style={{
+            background: active ? "var(--accent)" : "var(--paper)",
+            color: "var(--ink)",
+            border: "2.5px solid var(--ink)",
+          }}
         >
           {active ? number : <PlayCircle className="h-4 w-4" />}
         </div>

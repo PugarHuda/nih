@@ -376,15 +376,34 @@ function StreamRow({ streamId, role, refresh }: { streamId: bigint; role: "sende
   }
 
   return (
-    <li className="rounded-lg border border-border bg-bg/40 p-3">
-      <div className="flex items-center justify-between">
+    <li
+      className="p-3"
+      style={{
+        background: "var(--paper)",
+        border: "3px solid var(--ink)",
+        boxShadow: "2px 2px 0 0 var(--ink)",
+      }}
+    >
+      <div className="flex items-center justify-between gap-3">
         <div>
-          <p className="text-xs text-muted">#{streamId.toString()} · {role === "sender" ? "to" : "from"} <code className="font-mono">{truncateAddress(counterparty)}</code></p>
-          <p className="text-sm font-semibold mt-0.5">{formatMUSD(s[2])} MUSD total</p>
+          <p className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+            #{streamId.toString()} · {role === "sender" ? "to" : "from"}{" "}
+            <code className="mono" style={{ color: "var(--ink)" }}>{truncateAddress(counterparty)}</code>
+          </p>
+          <p className="text-[15px] mt-0.5" style={{ fontFamily: "var(--font-display)", color: "var(--ink)" }}>
+            {formatMUSD(s[2])} MUSD total
+          </p>
         </div>
         <div className="text-right">
-          <p className="text-xs text-muted">{role === "recipient" ? "Withdrawable" : "Streamed"}</p>
-          <p className="text-sm font-semibold text-accent">{formatMUSD((withdrawable as bigint | undefined) ?? 0n)} MUSD</p>
+          <p className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
+            {role === "recipient" ? "Withdrawable" : "Streamed"}
+          </p>
+          <p
+            className="text-[15px] tabular"
+            style={{ fontFamily: "var(--font-display)", color: "var(--accent-2)" }}
+          >
+            {formatMUSD((withdrawable as bigint | undefined) ?? 0n)} MUSD
+          </p>
         </div>
       </div>
       <div className="flex gap-2 mt-3">

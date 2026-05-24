@@ -51,21 +51,21 @@ export default function DashboardPage() {
     <>
       <Header />
       <main className="container mx-auto px-6 py-12 max-w-6xl">
-        {/* Profile section pinned to the TOP, immediately under the
-            header — so users see their handles + per-handle stats
-            before scrolling. */}
-        <div className="mb-8">
-          <ProfileHandlesCard />
-        </div>
-
         <div className="fade-up">
           <span className="kicker">creator dashboard</span>
           <h1 className="h1 mt-2 mb-2">
             {isConnected ? "Welcome back." : "Sign in to see your tips."}
           </h1>
-          <p className="text-base mb-8" style={{ color: "var(--ink-3)" }}>
+          <p className="text-base mb-6" style={{ color: "var(--ink-3)" }}>
             Receive tips, borrow against them, and never sell your Bitcoin.
           </p>
+        </div>
+
+        {/* Compact profile strip with the user's handles — same data as
+            the public /c/[platform]/[username] page, inline so they
+            don't have to click through. */}
+        <div className="mb-6">
+          <ProfileHandlesCard />
         </div>
 
         {/* Live tip-drop banner — POW! comic notification */}

@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import "./globals.css";
 import { GlobalNavSuppress } from "@/components/global-nav-suppress";
 import { ViewTransitionNav } from "@/components/view-transition-nav";
+import { ClickSparkle } from "@/components/click-sparkle";
 
 export const metadata: Metadata = {
   title: "Nih — Tip MUSD anywhere on the web",
@@ -65,6 +66,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <GlobalNavSuppress />
         </Suspense>
         <ViewTransitionNav />
+        <ClickSparkle />
         {children}
       </body>
     </html>

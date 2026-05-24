@@ -3,13 +3,13 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useAccount, useReadContract } from "wagmi";
-import { ExternalLink, ArrowRight, ShieldCheck } from "lucide-react";
+import { ArrowRight, ShieldCheck, Copy } from "lucide-react";
 import { addresses, registryAbi, vaultAbi } from "@/lib/contracts";
 import { createPublicClient, http } from "viem";
 import { matsnet } from "@/lib/chain";
 import { lookupHandle, fetchHandleStats, type HandleStat } from "@/lib/goldsky";
 import { formatMUSD } from "@/lib/utils";
-import { profileUrl, PLATFORM_LABELS, type Platform } from "@/lib/handle-utils";
+import { PLATFORM_LABELS, type Platform } from "@/lib/handle-utils";
 
 /**
  * Your-profile card — the same data the public profile page shows, but
@@ -145,111 +145,101 @@ export function ProfileHandlesCard() {
         </Link>
       </div>
 
-      <ul className="flex flex-col gap-2.5">
+      <ul className="grid sm:grid-cols-2 gap-2.5">
         {rows.map((r) => {
           const platformLabel = r.platform ? PLATFORM_LABELS[r.platform].name : "unknown";
           const platformIcon = r.platform ? PLATFORM_LABELS[r.platform].icon : "•";
           const publicHref = r.platform ? `/c/${r.platform}/${encodeURIComponent(r.username)}` : null;
-          const externalHref = r.platform ? profileUrl(r.platform, r.username) : null;
+          const shareUrl = publicHref ? `https://nih-seven.vercel.app${publicHref}` : null;
           return (
             <li
               key={r.handleId}
-              className="p-3 flex flex-col sm:flex-row sm:items-center gap-3"
+              className="px-3 py-2.5 flex items-center gap-2.5"
               style={{
                 background: "var(--paper)",
                 border: "3px solid var(--ink)",
-                boxShadow: "3px 3px 0 0 var(--ink)",
+                boxShadow: "2px 2px 0 0 var(--ink)",
+                minHeight: 56,
               }}
             >
-              <div className="flex items-center gap-3 flex-1 min-w-0">
-                <span
-                  className="flex-none flex items-center justify-center"
-                  style={{
-                    width: 36,
-                    height: 36,
-                    background: "var(--accent)",
-                    color: "var(--ink)",
-                    border: "3px solid var(--ink)",
-                    fontFamily: "var(--font-display)",
-                    fontSize: 16,
-                  }}
-                >
-                  {platformIcon}
-                </span>
-                <div className="min-w-0">
-                  <b className="text-[14px] truncate">@{r.username}</b>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span
-                      className="mono text-[10px] uppercase tracking-wider"
-                      style={{ color: "var(--ink-3)" }}
-                    >
-                      {platformLabel}
-                    </span>
-                    <span
-                      className="inline-flex items-center gap-1 mono text-[10px] uppercase tracking-wider"
-                      style={{ color: "var(--good)" }}
-                    >
-                      <ShieldCheck className="h-3 w-3" /> Verified
-                    </span>
-                  </div>
+              <span
+                className="flex-none flex items-center justify-center"
+                style={{
+                  width: 32,
+                  height: 32,
+                  background: "var(--accent)",
+                  color: "var(--ink)",
+                  border: "2.5px solid var(--ink)",
+                  fontFamily: "var(--font-display)",
+                  fontSize: 14,
+                }}
+                title={platformLabel}
+              >
+                {platformIcon}
+              </span>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-baseline gap-1.5 truncate">
+                  <b className="text-[13px] truncate" style={{ color: "var(--ink)" }}>
+                    @{r.username}
+                  </b>
+                  <ShieldCheck className="h-3 w-3 flex-none" style={{ color: "var(--good)" }} />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-2 sm:grid-cols-2 gap-2 text-right sm:min-w-[240px]">
-                <div>
-                  <div className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
-                    lifetime
-                  </div>
-                  <div className="tabular text-[14px]" style={{ fontFamily: "var(--font-display)" }}>
-                    {formatMUSD(r.lifetime)} MUSD
-                  </div>
-                  <div className="mono text-[10px]" style={{ color: "var(--ink-3)" }}>
-                    {r.tipCount} tip{r.tipCount === 1 ? "" : "s"}
-                  </div>
-                </div>
-                <div>
-                  <div className="mono text-[10px] uppercase tracking-wider" style={{ color: "var(--ink-3)" }}>
-                    in vault
-                  </div>
-                  <div
-                    className="tabular text-[14px]"
-                    style={{
-                      fontFamily: "var(--font-display)",
-                      color: r.pending > 0n ? "var(--accent-2)" : "var(--ink)",
-                    }}
-                  >
-                    {formatMUSD(r.pending)} MUSD
-                  </div>
+                <div className="flex items-center gap-2 mt-0.5 mono text-[10px]" style={{ color: "var(--ink-3)" }}>
+                  <span className="tabular">
+                    <b style={{ color: "var(--ink)" }}>{formatMUSD(r.lifetime)}</b> MUSD · {r.tipCount} tip{r.tipCount === 1 ? "" : "s"}
+                  </span>
                   {r.pending > 0n && (
-                    <Link href="/claim" className="mono text-[10px] underline" style={{ color: "var(--accent-2)" }}>
-                      claim now
+                    <Link
+                      href="/claim"
+                      className="underline"
+                      style={{ color: "var(--accent-2)" }}
+                    >
+                      claim {formatMUSD(r.pending)}
                     </Link>
                   )}
                 </div>
               </div>
-
-              <div className="flex items-center gap-2 flex-none">
+              <div className="flex items-center gap-1 flex-none">
                 {publicHref && (
-                  <Link href={publicHref}>
-                    <button
-                      className="comic-btn"
-                      style={{ fontSize: 12, padding: "5px 10px" }}
-                      title="Public profile page"
-                    >
-                      public
-                    </button>
+                  <Link
+                    href={publicHref}
+                    title="Open public profile"
+                    className="px-2 py-1 mono text-[10px] uppercase tracking-wider"
+                    style={{
+                      border: "2px solid var(--ink)",
+                      background: "var(--paper)",
+                      color: "var(--ink)",
+                    }}
+                  >
+                    view
                   </Link>
                 )}
-                {externalHref && (
-                  <a
-                    href={externalHref}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title={`Open on ${platformLabel}`}
-                    style={{ color: "var(--ink-3)" }}
+                {shareUrl && (
+                  <button
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(shareUrl);
+                        const { toast } = await import("sonner");
+                        toast.success("Profile link copied", {
+                          description: shareUrl,
+                          duration: 4000,
+                        });
+                      } catch {
+                        /* ignore */
+                      }
+                    }}
+                    title="Copy share link"
+                    className="px-2 py-1"
+                    style={{
+                      border: "2px solid var(--ink)",
+                      background: "var(--accent)",
+                      color: "var(--ink)",
+                      cursor: "pointer",
+                    }}
+                    aria-label="Copy share link"
                   >
-                    <ExternalLink className="h-4 w-4" />
-                  </a>
+                    <Copy className="h-3 w-3" />
+                  </button>
                 )}
               </div>
             </li>

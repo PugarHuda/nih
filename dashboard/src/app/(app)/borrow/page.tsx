@@ -331,7 +331,7 @@ export default function BorrowPage() {
 
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <Box label="You receive" value={`${formatMUSD(borrowable)} MUSD`} highlight />
-                <Box label="Rate" value="1% fixed APR" />
+                <Box label="Rate" value="1% fixed APR" hint="Same as Mezo&apos;s native trove — fixed forever" />
                 <Box label="Pool treasury" value={`${formatMUSD(pool)} MUSD`} />
               </div>
 
@@ -383,13 +383,13 @@ export default function BorrowPage() {
   );
 }
 
-function Box({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function Box({ label, value, highlight, hint }: { label: string; value: string; highlight?: boolean; hint?: string }) {
   return (
     <div
       style={{
         padding: 12,
         border: "3.5px solid var(--ink)",
-        background: highlight ? "var(--accent)" : "var(--bg-2)",
+        background: highlight ? "var(--accent)" : "var(--paper)",
         color: highlight ? "var(--accent-ink)" : "var(--ink)",
         boxShadow: highlight ? "3px 3px 0 0 var(--ink)" : "none",
       }}
@@ -401,6 +401,11 @@ function Box({ label, value, highlight }: { label: string; value: string; highli
       >
         {value}
       </p>
+      {hint && (
+        <p className="text-[10px] mt-1 opacity-70" style={{ color: "inherit" }}>
+          {hint}
+        </p>
+      )}
     </div>
   );
 }
