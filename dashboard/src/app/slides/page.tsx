@@ -397,9 +397,61 @@ function SLIDES(live: LiveStats): Slide[] { return [
     ),
   },
 
-  // ───────────────────── 5. Ask
+  // ───────────────────── 5. Market + economics
   {
-    kicker: "ask · 5 / 5",
+    kicker: "market · 5 / 6",
+    title: "TAM × unit economics.",
+    body: (
+      <div className="grid lg:grid-cols-2 gap-5">
+        <div className="comic-card p-5">
+          <span className="kicker">TAM</span>
+          <h3 className="h3 mt-1.5">Creator economy = $250B+ by 2027</h3>
+          <ul className="mt-2 space-y-1.5 text-[13px]" style={{ color: "var(--ink-2)" }}>
+            <li><b>50M+</b> creators globally (Goldman Sachs, 2023)</li>
+            <li>Patreon alone moved <b>~$3.5B</b> in 2024</li>
+            <li>BTC holders willing to spend stable: <b>~12M</b> wallets</li>
+            <li>Mezo's bet: 1% of that = <b>120K MUSD-active wallets</b> in y1</li>
+          </ul>
+        </div>
+        <div className="comic-card p-5">
+          <span className="kicker">unit economics</span>
+          <h3 className="h3 mt-1.5">0.5% fee × volume = predictable take</h3>
+          <ul className="mt-2 space-y-1.5 text-[13px]" style={{ color: "var(--ink-2)" }}>
+            <li>Avg tip: <b>5–10 MUSD</b> (matches Twitter Super tips)</li>
+            <li>Active tipper avg: <b>4 tips/month</b></li>
+            <li>10K tippers × $30/mo × 0.5% = <b>$1.5K MRR @ 10K users</b></li>
+            <li>100K users → <b>$15K MRR</b>; 1M → <b>$150K MRR</b></li>
+            <li>Borrow flow: 1% APR on locked tips = <b>parallel revenue</b></li>
+          </ul>
+        </div>
+        <div className="comic-card accent p-5 lg:col-span-2">
+          <span className="kicker" style={{ opacity: 0.8 }}>mainnet roadmap</span>
+          <ol
+            className="mt-2 grid sm:grid-cols-3 gap-3 text-[12px] leading-snug"
+            style={{ color: "rgba(0,0,0,0.78)" }}
+          >
+            <li>
+              <b>M+30d</b>: deploy contracts to mainnet (Validation Cloud RPC),
+              Chrome Web Store live, 100 verified creators.
+            </li>
+            <li>
+              <b>M+90d</b>: OAuth Tier-2 (NextAuth Twitter/GitHub), Wave-2 partners
+              (Lolli, sign-in-with-wallet, Boar dashboards), $50K MUSD volume.
+            </li>
+            <li>
+              <b>M+180d</b>: per-post tip injection (Twitter/GitHub/LinkedIn),
+              creator analytics dashboard, mobile PWA polish, DAO migration of
+              fee treasury.
+            </li>
+          </ol>
+        </div>
+      </div>
+    ),
+  },
+
+  // ───────────────────── 6. Ask
+  {
+    kicker: "ask · 6 / 6",
     title: "Bitcoin spendable. Creators bankable.",
     body: (
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
