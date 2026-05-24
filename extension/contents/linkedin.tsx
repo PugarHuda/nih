@@ -1,102 +1,87 @@
-import type { PlasmoCSConfig, PlasmoGetInlineAnchor } from "plasmo";
-import { useState } from "react";
-import { Storage } from "@plasmohq/storage";
-import { tip } from "~lib/tip";
-import { TIP_PRESETS } from "~lib/config";
+import type { PlasmoCSConfig } from "plasmo";
+import { useEffect, useState } from "react";
+import { DASHBOARD_URL } from "~lib/config";
 
 export const config: PlasmoCSConfig = {
   matches: ["https://www.linkedin.com/in/*"],
   run_at: "document_idle",
 };
 
-const storage = new Storage({ area: "local" });
-
 /**
- * LinkedIn injection. LinkedIn aggressively rewrites the DOM, so the
- * anchor strategy needs to be resilient — we target a few stable
- * containers in the profile top card and fall back to the action bar.
+ * Floating "Tip MUSD" button on LinkedIn profile pages.
+ * URL form: linkedin.com/in/{slug}. Slug is the LinkedIn username.
  */
-export const getInlineAnchor: PlasmoGetInlineAnchor = async () => {
-  const candidates = [
-    "main .pv-top-card-v2-ctas",
-    "main .pv-top-card",
-    "main section.artdeco-card",
-  ];
-  for (const sel of candidates) {
-    const el = document.querySelector(sel) as HTMLElement | null;
-    if (el) return { element: el, insertPosition: "afterend" as const };
-  }
-  return null;
-};
+export default function NihTipFloater() {
+  const [username, setUsername] = useState<string | null>(null);
 
-function extractHandle(): string | null {
-  // /in/handle/ — vanity URL or numeric
-  const match = window.location.pathname.match(/^\/in\/([^/]+)/);
-  return match ? match[1] : null;
-}
-
-function LinkedInTipBlock() {
-  const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
-  const username = extractHandle();
-  if (!username) return null;
-
-  async function send(amt: number) {
-    setBusy(true);
-    try {
-      const payInMezo = (await storage.get<boolean>("payInMezo")) ?? false;
-      await tip({ platform: "medium" as any, username: username!, amount: amt, payFeeInMezo: payInMezo });
-      setDone(true);
-      setTimeout(() => setDone(false), 2500);
-    } catch (err) {
-      alert((err as Error).message);
-    } finally {
-      setBusy(false);
+  useEffect(() => {
+    function update() {
+      setUsername(extractLinkedInSlug(window.location.pathname));
     }
-  }
+    update();
+    const i = setInterval(update, 2000);
+    return () => clearInterval(i);
+  }, []);
+
+  if (!username) return null;
+  const url = `${DASHBOARD_URL}/tip?platform=linkedin&username=${encodeURIComponent(username)}&amount=5`;
 
   return (
-    <section
-      style={{
-        margin: "16px 0",
-        padding: "16px 20px",
-        borderRadius: "8px",
-        border: "1px solid #d4d4d4",
-        background: "#ffffff",
-        color: "#1a1a1a",
-        fontFamily: "system-ui, sans-serif",
-        maxWidth: "640px",
-        boxShadow: "0 1px 3px rgba(0,0,0,.08)",
-      }}
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`Tip @${username} MUSD via Nih`}
+      style={floaterStyle}
     >
-      <p style={{ fontSize: "13px", marginBottom: "10px" }}>
-        Tip <strong>{username}</strong> on the spot — Bitcoin-backed MUSD, no platform fee.
-      </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
-        {TIP_PRESETS.map((amt) => (
-          <button
-            key={amt}
-            disabled={busy}
-            onClick={() => send(amt)}
-            style={{
-              height: "36px",
-              background: "hsl(22, 90%, 56%)",
-              color: "#1a1a1a",
-              border: "none",
-              borderRadius: "16px",
-              fontSize: "13px",
-              fontWeight: 700,
-              cursor: busy ? "not-allowed" : "pointer",
-              opacity: busy ? 0.6 : 1,
-            }}
-          >
-            {amt} MUSD
-          </button>
-        ))}
-      </div>
-      {done && <p style={{ fontSize: "13px", color: "hsl(140, 60%, 30%)", marginTop: "8px" }}>✓ Tip sent</p>}
-    </section>
+      <NihLogo /> Tip @{username} · MUSD
+    </a>
   );
 }
 
-export default LinkedInTipBlock;
+function extractLinkedInSlug(pathname: string): string | null {
+  // /in/{slug} or /in/{slug}/details/...
+  const m = pathname.match(/^\/in\/([^/]+)/);
+  if (!m) return null;
+  return decodeURIComponent(m[1]);
+}
+
+const floaterStyle: React.CSSProperties = {
+  position: "fixed",
+  bottom: 24,
+  right: 24,
+  zIndex: 2147483647,
+  background: "#FFD32D",
+  color: "#0A0A0A",
+  border: "3px solid #0A0A0A",
+  boxShadow: "4px 4px 0 0 #0A0A0A",
+  padding: "10px 16px",
+  fontFamily: "system-ui, sans-serif",
+  fontSize: 14,
+  fontWeight: 700,
+  textDecoration: "none",
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+};
+
+function NihLogo() {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        width: 22,
+        height: 22,
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0A0A0A",
+        color: "#FFD32D",
+        fontFamily: "system-ui",
+        fontSize: 13,
+        fontWeight: 700,
+      }}
+    >
+      N
+    </span>
+  );
+}

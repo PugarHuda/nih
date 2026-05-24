@@ -43,6 +43,16 @@ const STEPS: TourStep[] = [
   },
   {
     path: "/dashboard",
+    target: "profile-handles",
+    title: "Your handles + where tips land",
+    body:
+      "Each row is a social handle this wallet owns. Lifetime MUSD + tip count are " +
+      "pulled live from the subgraph; \"in vault\" shows tips waiting to be claimed. " +
+      "Copy a share link with the button on the right.",
+    placement: "bottom",
+  },
+  {
+    path: "/dashboard",
     target: "stats-row",
     title: "Your numbers",
     body:
@@ -56,7 +66,7 @@ const STEPS: TourStep[] = [
     title: "Everything tied together",
     body:
       "Each card is a real flow: claim a handle, open a credit line, deposit to Mezo's " +
-      "real Stability Pool, or stream MUSD. We'll visit two of them now.",
+      "real Stability Pool, mint MUSD via Mezo trove, or stream MUSD. We'll visit a few now.",
     placement: "top",
   },
   {
@@ -85,6 +95,15 @@ const STEPS: TourStep[] = [
       "After you've claimed tips, NihCredit lets you mint up to 60% of that balance as " +
       "fresh MUSD at 1% APR. Same model Mezo uses for BTC collateral, applied to creator " +
       "income.",
+    placement: "bottom",
+  },
+  {
+    path: "/trove",
+    target: "trove-howto",
+    title: "Mint MUSD from BTC",
+    body:
+      "Need real MUSD without earning tips? Open a Mezo trove via NihTrove — deposit BTC " +
+      "as collateral, mint MUSD instantly. Same primitive that powers the tip economy.",
     placement: "bottom",
   },
 ];

@@ -61,16 +61,18 @@ export default function DashboardPage() {
           </p>
         </div>
 
+        {/* Live tip-drop banner ABOVE the profile strip so the most
+            attention-grabbing element (a tip just landed!) is the first
+            thing the eye catches. */}
+        <div data-tour="tip-banner">
+          <TipDropBanner />
+        </div>
+
         {/* Compact profile strip with the user's handles — same data as
             the public /c/[platform]/[username] page, inline so they
             don't have to click through. */}
-        <div className="mb-6">
+        <div className="mb-6" data-tour="profile-handles">
           <ProfileHandlesCard />
-        </div>
-
-        {/* Live tip-drop banner — POW! comic notification */}
-        <div data-tour="tip-banner">
-          <TipDropBanner />
         </div>
 
         {/* Big stat row — wallet balance + lifetime + handles */}

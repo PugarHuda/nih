@@ -127,7 +127,7 @@ export default function TrovePage() {
         </div>
 
         {/* How it works */}
-        <div className="comic-card mb-6 px-5 py-4">
+        <div className="comic-card mb-6 px-5 py-4" data-tour="trove-howto">
           <span className="kicker">how it works</span>
           <ol
             className="mt-2 grid sm:grid-cols-4 gap-3 text-[12px] leading-snug"

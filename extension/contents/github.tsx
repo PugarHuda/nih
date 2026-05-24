@@ -1,85 +1,95 @@
-import type { PlasmoCSConfig, PlasmoGetInlineAnchor } from "plasmo";
-import { useState } from "react";
-import { Storage } from "@plasmohq/storage";
-import { tip } from "~lib/tip";
-import { TIP_PRESETS } from "~lib/config";
+import type { PlasmoCSConfig } from "plasmo";
+import { useEffect, useState } from "react";
+import { DASHBOARD_URL } from "~lib/config";
 
 export const config: PlasmoCSConfig = {
   matches: ["https://github.com/*"],
   run_at: "document_idle",
 };
 
-const storage = new Storage({ area: "local" });
+/**
+ * Floating "Tip MUSD" button on GitHub user pages.
+ * URL form: github.com/{username} or github.com/{username}/{repo}.
+ * Repo pages: tip routes to the OWNER (the {username} segment).
+ */
+export default function NihTipFloater() {
+  const [username, setUsername] = useState<string | null>(null);
 
-export const getInlineAnchor: PlasmoGetInlineAnchor = async () => {
-  // Profile pages have a section[itemtype*="Person"] container; anchor under the user actions
-  const node = document.querySelector('div.vcard-names-container') as HTMLElement | null;
-  if (!node) return null;
-  return { element: node, insertPosition: "afterend" as const };
-};
-
-function GhTipButton() {
-  const [busy, setBusy] = useState(false);
-  const [done, setDone] = useState(false);
-  const username = window.location.pathname.split("/").filter(Boolean)[0] ?? "";
-  if (!username || username.startsWith("orgs")) return null;
-
-  async function send(amt: number) {
-    setBusy(true);
-    try {
-      const payInMezo = (await storage.get<boolean>("payInMezo")) ?? false;
-      await tip({ platform: "github", username, amount: amt, payFeeInMezo: payInMezo });
-      setDone(true);
-      setTimeout(() => setDone(false), 2000);
-    } catch (err) {
-      alert((err as Error).message);
-    } finally {
-      setBusy(false);
+  useEffect(() => {
+    function update() {
+      setUsername(extractGitHubUsername(window.location.pathname));
     }
-  }
+    update();
+    const i = setInterval(update, 2000);
+    return () => clearInterval(i);
+  }, []);
+
+  if (!username) return null;
+  const url = `${DASHBOARD_URL}/tip?platform=github&username=${encodeURIComponent(username)}&amount=5`;
 
   return (
-    <div
-      style={{
-        marginTop: "12px",
-        padding: "12px",
-        borderRadius: "8px",
-        border: "1px solid hsl(20, 10%, 16%)",
-        background: "hsl(20, 14%, 8%)",
-        color: "hsl(30, 20%, 96%)",
-        fontFamily: "system-ui, sans-serif",
-      }}
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={`Tip @${username} MUSD via Nih`}
+      style={floaterStyle}
     >
-      <p style={{ fontSize: "12px", color: "hsl(20, 8%, 60%)", marginBottom: "8px" }}>
-        Tip @{username} with MUSD — Bitcoin-backed.
-      </p>
-      <div style={{ display: "flex", gap: "6px" }}>
-        {TIP_PRESETS.map((amt) => (
-          <button
-            key={amt}
-            disabled={busy}
-            onClick={() => send(amt)}
-            style={{
-              flex: 1,
-              height: "34px",
-              background: "hsl(22, 90%, 56%)",
-              color: "hsl(20, 14%, 5%)",
-              border: "none",
-              borderRadius: "6px",
-              fontSize: "13px",
-              fontWeight: 600,
-              cursor: "pointer",
-            }}
-          >
-            Tip {amt}
-          </button>
-        ))}
-      </div>
-      {done && (
-        <p style={{ fontSize: "12px", color: "hsl(140, 60%, 50%)", marginTop: "8px" }}>✓ Sent</p>
-      )}
-    </div>
+      <NihLogo /> Tip @{username} · MUSD
+    </a>
   );
 }
 
-export default GhTipButton;
+function extractGitHubUsername(pathname: string): string | null {
+  const skip = new Set([
+    "settings", "notifications", "explore", "marketplace", "topics", "trending",
+    "pulls", "issues", "discussions", "codespaces", "sponsors", "search",
+    "logout", "login", "join", "new", "organizations", "features", "site",
+    "about", "pricing", "enterprise", "team", "customer-stories", "security",
+  ]);
+  const seg = pathname.split("/").filter(Boolean)[0];
+  if (!seg || skip.has(seg)) return null;
+  // GitHub usernames: 1-39 chars alphanum + hyphens (no leading hyphen)
+  if (!/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,38})$/.test(seg)) return null;
+  return seg;
+}
+
+const floaterStyle: React.CSSProperties = {
+  position: "fixed",
+  bottom: 24,
+  right: 24,
+  zIndex: 2147483647,
+  background: "#FFD32D",
+  color: "#0A0A0A",
+  border: "3px solid #0A0A0A",
+  boxShadow: "4px 4px 0 0 #0A0A0A",
+  padding: "10px 16px",
+  fontFamily: "system-ui, sans-serif",
+  fontSize: 14,
+  fontWeight: 700,
+  textDecoration: "none",
+  display: "flex",
+  alignItems: "center",
+  gap: 8,
+};
+
+function NihLogo() {
+  return (
+    <span
+      style={{
+        display: "inline-flex",
+        width: 22,
+        height: 22,
+        alignItems: "center",
+        justifyContent: "center",
+        background: "#0A0A0A",
+        color: "#FFD32D",
+        fontFamily: "system-ui",
+        fontSize: 13,
+        fontWeight: 700,
+      }}
+    >
+      N
+    </span>
+  );
+}

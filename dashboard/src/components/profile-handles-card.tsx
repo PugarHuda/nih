@@ -137,8 +137,12 @@ export function ProfileHandlesCard() {
     <div className="comic-card">
       <div className="flex items-baseline justify-between mb-3">
         <div>
-          <span className="kicker">your profile · {rows.length} handle{rows.length === 1 ? "" : "s"}</span>
+          <span className="kicker">handles owned by your wallet · {rows.length}</span>
           <h3 className="h3 mt-1.5">Where the tips land.</h3>
+          <p className="text-[11px] mt-0.5" style={{ color: "var(--ink-3)" }}>
+            One wallet can own multiple handles (e.g. a creator with X + GitHub + LinkedIn).
+            All five seeded handles below resolve to this demo wallet for the hackathon walk-through.
+          </p>
         </div>
         <Link href="/claim" className="text-[12px] underline" style={{ color: "var(--ink-3)" }}>
           claim another
