@@ -150,9 +150,12 @@ ${Object.entries(ctx).map(([k, v]) => `- ${k}: ${v}`).join("\n") || "- no prior 
       headers: {
         authorization: `Bearer ${apiKey}`,
         "content-type": "application/json",
-        // Optional but recommended — helps OpenRouter attribute usage
+        // Optional but recommended — helps OpenRouter attribute usage.
+        // ASCII only: a non-ASCII char here (e.g. an em-dash) makes undici's
+        // fetch throw "invalid header value", which silently killed the whole
+        // LLM call and fell back to the heuristic.
         "http-referer": "https://nih-seven.vercel.app",
-        "x-title": "Nih — Mezo Hackathon",
+        "x-title": "Nih - Mezo Hackathon",
       },
       body: JSON.stringify({
         model,
