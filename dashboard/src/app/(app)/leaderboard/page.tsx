@@ -34,7 +34,8 @@ export default async function LeaderboardPage() {
             Top-tipped creators
           </h1>
           <p className="muted">
-            Indexed in real-time by Goldsky from the Nih subgraph on Mezo matsnet.
+            Who&apos;s getting the most love right now — and the most generous
+            tippers keeping it going. Updates live as tips land.
           </p>
         </div>
 

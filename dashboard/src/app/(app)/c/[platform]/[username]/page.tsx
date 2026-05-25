@@ -153,17 +153,17 @@ export default async function ProfilePage({ params }: PageProps) {
           {/* Stats */}
           <div className="grid grid-cols-2 gap-3 mt-6">
             <Stat
-              label="Lifetime received"
+              label="Tips received"
               value={`${formatMUSD(totalReceived)} MUSD`}
-              hint={isRegistered ? "Tips delivered to wallet" : "—"}
+              hint={isRegistered ? "Landed in their wallet" : "—"}
             />
             <Stat
-              label="Pending in vault"
+              label="Waiting to be claimed"
               value={`${formatMUSD(pending)} MUSD`}
               hint={
                 isRegistered
-                  ? "Tips flow straight to wallet — no parking needed"
-                  : "Waiting for ownership proof"
+                  ? "Verified — new tips go straight to their wallet"
+                  : "Held safe until they claim this account"
               }
             />
           </div>
@@ -226,8 +226,8 @@ export default async function ProfilePage({ params }: PageProps) {
                 ))}
               </div>
               <p className="text-[11px] text-muted mt-2">
-                Routes via NihStream — locks the month up front, recipient
-                accrues per second, cancel any time.
+                Like a membership that trickles in over the month. Cancel
+                anytime — they keep only what&apos;s passed, the rest comes back.
               </p>
             </div>
           )}
@@ -236,7 +236,8 @@ export default async function ProfilePage({ params }: PageProps) {
             <div className="mt-5 rounded-lg border border-brand/30 bg-brand/5 p-4 text-sm">
               <p className="text-fg font-medium mb-1">Are you @{username}?</p>
               <p className="text-muted mb-3">
-                Tips sent before you registered park in an on-chain vault. Verify ownership to claim them.
+                Any tips people sent you before you joined are being held safely.
+                Prove this account is yours and they&apos;re all yours.
               </p>
               <Button asChild size="sm" variant="default">
                 <Link href="/claim">Claim your tips <ArrowRight className="h-3.5 w-3.5" /></Link>

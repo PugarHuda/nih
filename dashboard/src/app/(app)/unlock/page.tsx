@@ -138,14 +138,12 @@ export default function UnlockPage() {
           <span className="kicker">pay-to-unlock · powered by MUSD</span>
           <h1 className="h1 mt-2 mb-2">Read it for the price of a coffee.</h1>
           <p className="text-base mb-2 max-w-2xl" style={{ color: "var(--ink-3)" }}>
-            Creators put a paywall on a piece of content. Readers unlock it
-            with a one-shot MUSD payment routed through NihRouter. The
-            on-chain Tipped event is the receipt — once it's indexed by
-            Goldsky for your wallet + this asset's context, the page reveals
-            the full body.
+            Some posts are locked. Pay once with MUSD and it opens right up — no
+            subscription, no sign-up. Your payment <em>is</em> the key: the moment
+            it goes through, the full piece appears.
           </p>
           <p className="text-xs mono mb-8" style={{ color: "var(--ink-3)" }}>
-            no new contracts · just MUSD + the existing tip router · ~15s reveal latency
+            one quick payment · opens in about 15 seconds
           </p>
         </div>
 
