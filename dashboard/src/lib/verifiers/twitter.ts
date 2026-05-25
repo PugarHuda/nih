@@ -16,9 +16,42 @@ import type { VerifyResult } from "./index";
  * those don't carry @victim's canonical url / og:url / syndication
  * timeline header.
  */
-export async function verifyTwitter(username: string, challenge: string): Promise<VerifyResult> {
+export async function verifyTwitter(
+  username: string,
+  challenge: string,
+  tweetUrl?: string,
+): Promise<VerifyResult> {
   const lower = challenge.toLowerCase();
   const handle = username.replace(/^@/, "").toLowerCase();
+
+  // 0) Direct tweet-URL path — fastest, no rate limit.
+  // User pastes the exact tweet URL containing the challenge. We hit
+  // Twitter's oEmbed endpoint which works immediately for any public
+  // tweet AND guarantees the tweet's `author_url` matches THIS handle.
+  if (tweetUrl) {
+    try {
+      const oembed = `https://publish.twitter.com/oembed?url=${encodeURIComponent(tweetUrl)}&omit_script=true`;
+      const res = await fetch(oembed, { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        const authorUrl: string = (data?.author_url ?? "").toLowerCase();
+        const html: string = (data?.html ?? "").toLowerCase();
+        const expectedAuthors = [
+          `https://twitter.com/${handle}`,
+          `https://x.com/${handle}`,
+        ];
+        if (expectedAuthors.includes(authorUrl) && html.includes(lower)) {
+          return { ok: true, evidence: `oembed:${tweetUrl}` };
+        }
+        return {
+          ok: false,
+          reason: !expectedAuthors.includes(authorUrl)
+            ? `Tweet's author (${authorUrl}) doesn't match @${handle}. Paste a tweet from YOUR own account.`
+            : `Tweet doesn't contain the exact challenge text. Make sure you copied the full line.`,
+        };
+      }
+    } catch { /* fall through to syndication */ }
+  }
 
   function hasOwnershipAnchor(html: string): boolean {
     const h = html.toLowerCase();

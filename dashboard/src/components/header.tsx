@@ -17,18 +17,14 @@ const NAV_LINKS = [
   { href: "/earn", label: "Earn" },
 ];
 
-// Secondary nav — surfaced via a "More ▾" dropdown so nothing is cut,
-// but the primary bar stays uncluttered.
+// Secondary nav — bundled in a "More ▾" dropdown. Trimmed to the
+// 3 user-facing money flows; /docs, /slides, /onboarding, /faucet,
+// /unlock are reachable via the landing page / dashboard footer.
 const MORE_LINKS = [
   { href: "/trove", label: "Trove (mint MUSD)" },
   { href: "/claim", label: "Claim handle" },
   { href: "/leaderboard", label: "Leaderboard" },
-  { href: "/unlock", label: "Pay-to-unlock" },
-  { href: "/onboarding", label: "Onboarding tour" },
   { href: "/install", label: "Install extension" },
-  { href: "/faucet", label: "Faucet" },
-  { href: "/docs", label: "Developer docs" },
-  { href: "/slides", label: "Pitch deck" },
 ];
 
 export function Header() {

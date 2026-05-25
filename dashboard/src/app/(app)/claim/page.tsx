@@ -41,6 +41,7 @@ export default function ClaimPage() {
   const [username, setUsername] = useState("");
   const [step, setStep] = useState<"input" | "verifying" | "registered" | "claiming" | "done">("input");
   const [verifyError, setVerifyError] = useState<string | null>(null);
+  const [evidenceUrl, setEvidenceUrl] = useState("");
   const [challenge, setChallenge] = useState<string>("");
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
@@ -83,7 +84,12 @@ export default function ClaimPage() {
       const resp = await fetch("/api/verify", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ platform, username, wallet: address }),
+        body: JSON.stringify({
+          platform,
+          username,
+          wallet: address,
+          evidenceUrl: evidenceUrl.trim() || undefined,
+        }),
       });
       const data = await resp.json();
       if (!resp.ok) {
@@ -359,6 +365,44 @@ export default function ClaimPage() {
                     <Button variant="outline" size="sm" disabled>
                       {hint.cta} <ExternalLink className="h-3.5 w-3.5" />
                     </Button>
+                  )}
+                  {/* Tweet-URL shortcut — only for Twitter. Uses
+                      Twitter oEmbed (publish.twitter.com) which works
+                      immediately for any public tweet, bypassing
+                      syndication's rate-limit cache. Author of the
+                      tweet must match @username. */}
+                  {platform === "twitter" && (
+                    <div
+                      className="mt-3 p-3"
+                      style={{
+                        background: "var(--accent)",
+                        color: "var(--ink)",
+                        border: "3px solid var(--ink)",
+                        boxShadow: "3px 3px 0 0 var(--ink)",
+                      }}
+                    >
+                      <p className="text-[12px] font-semibold mb-1">
+                        Tweet URL (faster, no rate limit)
+                      </p>
+                      <p className="text-[11px] leading-snug mb-2" style={{ color: "rgba(0,0,0,0.8)" }}>
+                        Paste the URL of your tweet containing the challenge.
+                        We hit Twitter&apos;s oEmbed API which returns instantly
+                        for any public tweet — no waiting for syndication.
+                      </p>
+                      <input
+                        type="url"
+                        placeholder="https://x.com/yourhandle/status/1234567890"
+                        value={evidenceUrl}
+                        onChange={(e) => setEvidenceUrl(e.target.value)}
+                        className="w-full font-mono text-xs"
+                        style={{
+                          padding: "6px 10px",
+                          background: "var(--paper)",
+                          color: "var(--ink)",
+                          border: "2px solid var(--ink)",
+                        }}
+                      />
+                    </div>
                   )}
                   {verifyError && (
                     <div className="rounded-lg bg-danger/10 border border-danger/30 p-3 text-xs text-danger">

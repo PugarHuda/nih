@@ -33,7 +33,12 @@ export async function POST(req: NextRequest) {
 
   const body = await req.json().catch(() => null);
   if (!body) return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
-  const { platform, username, wallet } = body as { platform?: string; username?: string; wallet?: string };
+  const { platform, username, wallet, evidenceUrl } = body as {
+    platform?: string;
+    username?: string;
+    wallet?: string;
+    evidenceUrl?: string;
+  };
 
   if (!platform || !username || !wallet) {
     return NextResponse.json({ error: "Missing fields" }, { status: 400 });
@@ -51,7 +56,7 @@ export async function POST(req: NextRequest) {
   }
 
   // 1. Real ownership check
-  const result = await verify(platform as Platform, username, wallet);
+  const result = await verify(platform as Platform, username, wallet, evidenceUrl);
   if (!result.ok) {
     return NextResponse.json(
       {

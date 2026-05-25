@@ -51,12 +51,13 @@ export async function verify(
   platform: Platform,
   username: string,
   wallet: string,
+  evidenceUrl?: string,
 ): Promise<VerifyResult> {
   const challenge = challengeFor(wallet);
   const u = username.replace(/^@/, "");
   switch (platform) {
     case "github":   return verifyGithub(u, challenge);
-    case "twitter":  return verifyTwitter(u, challenge);
+    case "twitter":  return verifyTwitter(u, challenge, evidenceUrl);
     case "youtube":  return verifyYouTube(u, challenge);
     case "linkedin": return verifyViaUrl(`https://www.linkedin.com/in/${u}/`, challenge);
     default:         return { ok: false, reason: `Unsupported platform: ${platform}` };
