@@ -26,9 +26,11 @@ export default function NihTipFloater() {
   const [username, setUsername] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [defaultTip, setDefaultTip] = useState(5);
+  const [payInMezo, setPayInMezo] = useState(false);
 
   useEffect(() => {
     storage.get<number>("defaultTip").then((v) => { if (v && Number(v) > 0) setDefaultTip(Number(v)); });
+    storage.get<boolean>("payInMezo").then((v) => setPayInMezo(!!v));
     function update() {
       setUsername(extractYouTubeHandle());
       injectPerVideoLink(defaultTip);
@@ -46,6 +48,8 @@ export default function NihTipFloater() {
         <TipPanel
           username={username}
           platform="youtube"
+          payInMezo={payInMezo}
+          returnUrl={window.location.href}
           onClose={() => setOpen(false)}
         />
       )}
@@ -76,9 +80,12 @@ function injectPerVideoLink(defaultTip = 5) {
 
   const a = document.createElement("a");
   a.className = TIP_CLASS;
+  const back = videoId
+    ? `https://www.youtube.com/watch?v=${videoId}`
+    : window.location.href;
   a.href = `${DASHBOARD_URL}/tip?platform=youtube&username=${encodeURIComponent(channel)}&amount=${defaultTip}${
     videoId ? `&context=video:${videoId}` : ""
-  }`;
+  }&return=${encodeURIComponent(back)}`;
   a.target = "_blank";
   a.rel = "noopener noreferrer";
   a.title = `Tip @${channel} ${defaultTip} MUSD for this video`;

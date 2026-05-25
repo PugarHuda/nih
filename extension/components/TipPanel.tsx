@@ -18,20 +18,32 @@ export function TipPanel({
   username,
   platform,
   onClose,
+  payInMezo = false,
+  returnUrl,
 }: {
   username: string;
   platform: Platform;
   onClose: () => void;
+  payInMezo?: boolean;
+  returnUrl?: string;
 }) {
   const [mode, setMode] = useState<"tip" | "sub">("tip");
   const [custom, setCustom] = useState("");
 
   function go(amount: number) {
     const base = mode === "tip" ? `${DASHBOARD_URL}/tip` : `${DASHBOARD_URL}/stream`;
+    // Extras passed to dashboard:
+    //  - feeMezo=1   → /tip flips its "Pay fee in MEZO" toggle on
+    //  - return=<URL> → /tip shows a "Back to <platform>" CTA after success
+    //                  so the sender stays on the page where they came from.
+    const extras: string[] = [];
+    if (payInMezo) extras.push("feeMezo=1");
+    if (returnUrl) extras.push(`return=${encodeURIComponent(returnUrl)}`);
+    const suffix = extras.length ? `&${extras.join("&")}` : "";
     const url =
       mode === "tip"
-        ? `${base}?platform=${platform}&username=${encodeURIComponent(username)}&amount=${amount}`
-        : `${base}?platform=${platform}&username=${encodeURIComponent(username)}&amount=${amount}&duration=2592000`;
+        ? `${base}?platform=${platform}&username=${encodeURIComponent(username)}&amount=${amount}${suffix}`
+        : `${base}?platform=${platform}&username=${encodeURIComponent(username)}&amount=${amount}&duration=2592000${suffix}`;
     window.open(url, "_blank", "noopener,noreferrer");
     onClose();
   }

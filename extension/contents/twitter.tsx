@@ -35,11 +35,13 @@ export default function NihTipFloater() {
   const [username, setUsername] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [defaultTip, setDefaultTip] = useState(5);
+  const [payInMezo, setPayInMezo] = useState(false);
 
   useEffect(() => {
     storage.get<number>("defaultTip").then((v) => {
       if (v && Number(v) > 0) setDefaultTip(Number(v));
     });
+    storage.get<boolean>("payInMezo").then((v) => setPayInMezo(!!v));
     function update() {
       setUsername(extractTwitterUsername(window.location.pathname));
       injectPerTweetLinks(defaultTip);
@@ -57,6 +59,8 @@ export default function NihTipFloater() {
         <TipPanel
           username={username}
           platform="twitter"
+          payInMezo={payInMezo}
+          returnUrl={window.location.href}
           onClose={() => setOpen(false)}
         />
       )}
@@ -109,9 +113,15 @@ function injectPerTweetLinks(defaultTip = 5) {
 
     const a = document.createElement("a");
     a.className = TIP_CLASS;
+    // Return target: the tweet's own permalink if we have the id, else
+    // the current timeline. Lets /tip show a "Back to this tweet" CTA so
+    // the tipper lands right where they came from.
+    const back = tweetId
+      ? `https://x.com/${author}/status/${tweetId}`
+      : window.location.href;
     a.href = `${DASHBOARD_URL}/tip?platform=twitter&username=${encodeURIComponent(author)}&amount=${defaultTip}${
       tweetId ? `&context=tweet:${tweetId}` : ""
-    }`;
+    }&return=${encodeURIComponent(back)}`;
     a.dataset.amount = String(defaultTip);
     // visible label uses the default
     setTimeout(() => { if (a.textContent === "✦ Tip MUSD") a.textContent = `✦ Tip ${defaultTip} MUSD`; }, 0);

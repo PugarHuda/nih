@@ -28,9 +28,11 @@ export default function NihTipFloater() {
   const [username, setUsername] = useState<string | null>(null);
   const [open, setOpen] = useState(false);
   const [defaultTip, setDefaultTip] = useState(5);
+  const [payInMezo, setPayInMezo] = useState(false);
 
   useEffect(() => {
     storage.get<number>("defaultTip").then((v) => { if (v && Number(v) > 0) setDefaultTip(Number(v)); });
+    storage.get<boolean>("payInMezo").then((v) => setPayInMezo(!!v));
     function update() {
       setUsername(extractGitHubUsername(window.location.pathname));
       injectPerCommentLinks(defaultTip);
@@ -48,6 +50,8 @@ export default function NihTipFloater() {
         <TipPanel
           username={username}
           platform="github"
+          payInMezo={payInMezo}
+          returnUrl={window.location.href}
           onClose={() => setOpen(false)}
         />
       )}
@@ -87,7 +91,7 @@ function injectPerCommentLinks(defaultTip = 5) {
 
     const a = document.createElement("a");
     a.className = TIP_CLASS;
-    a.href = `${DASHBOARD_URL}/tip?platform=github&username=${encodeURIComponent(handle)}&amount=${defaultTip}`;
+    a.href = `${DASHBOARD_URL}/tip?platform=github&username=${encodeURIComponent(handle)}&amount=${defaultTip}&return=${encodeURIComponent(window.location.href)}`;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     a.title = `Tip @${handle} ${defaultTip} MUSD for this comment`;

@@ -11,6 +11,7 @@ import {
 } from "@/lib/goldsky";
 import { addresses, routerAbi } from "@/lib/contracts";
 import { formatMUSD, truncateAddress } from "@/lib/utils";
+import { useTipperLabels } from "@/lib/use-tipper-labels";
 
 // Shared polling hook so multiple comic widgets share one Goldsky timer.
 function useNihStats(intervalMs = 15_000) {
@@ -107,6 +108,7 @@ function Avatar({ name }: { name: string }) {
 // ─────────────────────────────────────────────────────────────────
 export function TipDropBanner() {
   const { tips, loaded } = useNihStats();
+  const { label: tipperLabel } = useTipperLabels();
   const [idx, setIdx] = useState(0);
   const [fadeKey, setFadeKey] = useState(0);
 
@@ -138,6 +140,10 @@ export function TipDropBanner() {
   const platform = handle?.platform ?? "other";
   const platformLabel = handle ? (PLATFORM_LABEL[platform] ?? platform) : "an unregistered handle";
   const handleLabel = handle ? `@${handle.username}` : tip.handleId.slice(0, 10) + "…";
+  // Resolve the tipper's wallet → their registered handle when we know it,
+  // so the ticker reads "twitter:bob tipped" instead of a raw 0x address.
+  const sender = tipperLabel(tip.sender.address);
+  const senderLabel = sender ? `${sender.platform}:${sender.username}` : truncateAddress(tip.sender.address);
 
   return (
     <div className="mb-6 overflow-hidden">
@@ -150,7 +156,7 @@ export function TipDropBanner() {
         <Avatar name={handle?.username ?? "??"} />
         <div className="flex-1 min-w-0">
           <b className="text-sm">
-            <code className="mono text-xs opacity-80">{truncateAddress(tip.sender.address)}</code>
+            <code className="mono text-xs opacity-80">{senderLabel}</code>
             {" tipped "}
             <span className="tabular">{formatMUSD(BigInt(tip.amount))}</span> MUSD to {handleLabel} on{" "}
             {platformLabel}

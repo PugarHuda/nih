@@ -124,6 +124,7 @@ export const KNOWN_HANDLES: Record<string, { platform: string; username: string 
   "0xc0a8544bd367c1f9e4bad8de180be3c96f97d663c4168d837e04c5628c64e77e": { platform: "github", username: "PugarHuda" },
   "0x6773975048115fba630eae27d130fa00457470464b1f3b7cbc48b2720e319a51": { platform: "twitter", username: "MezoNetwork" },
   "0x3c5b565e32b3a7f627794117bdd3a0292f1e4d225316f4b5b2bae3d08a6ca151": { platform: "twitter", username: "EncodeClub" },
+  "0xf4b93ecd1f999495e6fbb57b7ed5e22a86439aa54227208fb72066531464bead": { platform: "twitter", username: "BangDropID" },
 };
 
 export function lookupHandle(handleId: string): { platform: string; username: string } | null {

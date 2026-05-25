@@ -27,6 +27,7 @@ function IndexPopup() {
   const [balance, setBalance] = useState<string>("0");
   const [defaultTip, setDefaultTip] = useState<number>(5);
   const [payInMezo, setPayInMezo] = useState<boolean>(false);
+  const [feeInfo, setFeeInfo] = useState<boolean>(false);
   const [waitingForConnect, setWaitingForConnect] = useState(false);
 
   useEffect(() => {
@@ -203,20 +204,65 @@ function IndexPopup() {
                   </button>
                 ))}
               </div>
+              {/* Custom amount — set any default the presets don't cover.
+                  The amount-picker on each page still lets you override per-tip. */}
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  type="number"
+                  min={0.5}
+                  step={0.5}
+                  value={defaultTip}
+                  onChange={(e) => {
+                    const v = Number(e.target.value);
+                    if (v > 0) saveSettings(v, payInMezo);
+                  }}
+                  placeholder="custom"
+                  className="h-9 flex-1 rounded-md border border-border bg-surface px-3 text-xs"
+                  aria-label="Custom default tip amount"
+                />
+                <span className="text-[11px] text-muted">MUSD</span>
+              </div>
+              <p className="text-[10px] text-muted mt-1.5">
+                {TIP_PRESETS.includes(defaultTip as (typeof TIP_PRESETS)[number])
+                  ? "Or type any custom amount above."
+                  : `Custom default: ${defaultTip} MUSD.`}
+              </p>
             </div>
 
-            <label className="flex items-center justify-between rounded-lg border border-border bg-surface p-3 cursor-pointer">
-              <div>
-                <p className="text-sm font-medium">Pay fee in MEZO</p>
-                <p className="text-[11px] text-muted">50% off protocol fee</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={payInMezo}
-                onChange={(e) => saveSettings(defaultTip, e.target.checked)}
-                className="h-4 w-4 accent-brand"
-              />
-            </label>
+            <div className="rounded-lg border border-border bg-surface">
+              <label className="flex items-center justify-between p-3 cursor-pointer">
+                <div>
+                  <p className="text-sm font-medium">Pay fee in MEZO</p>
+                  <p className="text-[11px] text-muted">50% off protocol fee · creator gets 100%</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={payInMezo}
+                  onChange={(e) => saveSettings(defaultTip, e.target.checked)}
+                  className="h-4 w-4 accent-brand"
+                />
+              </label>
+              <button
+                type="button"
+                onClick={() => setFeeInfo((v) => !v)}
+                className="w-full px-3 pb-2 text-left text-[10px] text-muted hover:text-fg"
+              >
+                {feeInfo ? "▾ " : "▸ "}What does this mean?
+              </button>
+              {feeInfo && (
+                <div className="px-3 pb-3 text-[10px] leading-relaxed text-muted space-y-1.5">
+                  <p>
+                    Nih takes a small protocol fee per tip. <b>Default: 0.5%</b> deducted from
+                    your MUSD — the creator gets 99.5%.
+                  </p>
+                  <p>
+                    <b>On:</b> the fee drops to <b>0.25%</b> and is paid in <b>MEZO</b> instead.
+                    The creator then receives <b>100%</b> of your MUSD, and you pay half the fee.
+                    You&apos;ll approve a little MEZO once.
+                  </p>
+                </div>
+              )}
+            </div>
 
             <a
               href={DASHBOARD_URL + "/dashboard"}

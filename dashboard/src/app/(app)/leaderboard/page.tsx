@@ -1,16 +1,24 @@
 import { Header } from "@/components/header";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { fetchTopRecipients, fetchRecentTips, lookupHandle, KNOWN_HANDLES } from "@/lib/goldsky";
+import { resolveOwnerLabels, labelFor } from "@/lib/tipper-labels";
 import { formatMUSD, truncateAddress } from "@/lib/utils";
 import { Trophy, Coins } from "lucide-react";
 
 export const revalidate = 60;
 
 export default async function LeaderboardPage() {
-  const [recipients, recentTips] = await Promise.all([
+  const [recipients, recentTips, tipperMap] = await Promise.all([
     fetchTopRecipients(10),
     fetchRecentTips(15),
+    resolveOwnerLabels(),
   ]);
+  // Turn a tipper wallet into "twitter:alice" when the address owns a
+  // handle we know; otherwise fall back to the short hex address.
+  const senderLabel = (addr: string) => {
+    const h = labelFor(tipperMap, addr);
+    return h ? `${h.platform}:${h.username}` : truncateAddress(addr);
+  };
 
   return (
     <>
@@ -95,8 +103,8 @@ className="flex items-center gap-4"
 className="flex items-center gap-3"
                   >
                     <Coins className="h-4 w-4 text-accent" />
-                    <code className="font-mono text-xs muted">
-                      {truncateAddress(tip.sender.address)}
+                    <code className="font-mono text-xs muted truncate max-w-[42%]">
+                      {senderLabel(tip.sender.address)}
                     </code>
                     <span className="muted text-xs">→</span>
                     <code className="font-mono text-xs muted">
