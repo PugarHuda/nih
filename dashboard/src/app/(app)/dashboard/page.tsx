@@ -15,8 +15,7 @@ import {
   MilestoneCard,
 } from "@/components/comic";
 import { ProfileHandlesCard } from "@/components/profile-handles-card";
-import { RecentTippersCard } from "@/components/recent-tippers-card";
-import { SentTipsCard } from "@/components/sent-tips-card";
+import { TipActivityCard } from "@/components/tip-activity-card";
 
 export default function DashboardPage() {
   const { address, isConnected } = useAccount();
@@ -77,14 +76,9 @@ export default function DashboardPage() {
           <ProfileHandlesCard />
         </div>
 
-        {/* Recent tippers — who sent what, when, on which handle. */}
+        {/* Unified tip activity — Everyone / You in one compact feed. */}
         <div className="mb-6">
-          <RecentTippersCard limit={8} />
-        </div>
-
-        {/* Tips you sent — your own outgoing history ("where did I tip?"). */}
-        <div className="mb-6">
-          <SentTipsCard limit={10} />
+          <TipActivityCard />
         </div>
 
         {/* Big stat row — wallet balance + lifetime + handles */}
