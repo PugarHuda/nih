@@ -85,8 +85,9 @@ export default function OnboardingPage() {
       n: 2,
       title: "Grab test funds",
       copy:
-        "Mock MUSD and Mock MEZO on matsnet are open-mint. Visit the faucet and " +
-        "pull 100 of each. Need test BTC for gas? Use the Mezo faucet too.",
+        "Nih runs on Mezo's real MUSD — mint it by opening a Mezo trove with " +
+        "test BTC. Test MEZO is open-mint at the faucet for the fee-discount " +
+        "flow. Need test BTC for gas? Use the Mezo faucet too.",
       cta: (
         <div className="flex gap-2">
           <Link href="/faucet">
@@ -151,15 +152,15 @@ export default function OnboardingPage() {
       n: 5,
       title: "Borrow against the stack",
       copy:
-        "Once you've earned, lock the MUSD into NihTrove (backed by Mezo's real " +
-        "MUSD primitive) and open a credit line. Pay it back later — never sell your Bitcoin.",
+        "Once you've earned, lock your MUSD as collateral in NihCredit and draw " +
+        "a credit line at 1% APR (up to 60% LTV). Pay it back anytime — never sell your Bitcoin.",
       cta: (
         <Link href="/borrow">
           <Button size="sm">Open credit line</Button>
         </Link>
       ),
       done: false,
-      doneLabel: "requires open trove + minted MUSD line",
+      doneLabel: "needs MUSD in your wallet to lock as collateral",
     },
   ];
 
@@ -169,7 +170,7 @@ export default function OnboardingPage() {
       <main className="container mx-auto px-6 py-12 max-w-4xl">
         <div className="fade-up">
           <span className="kicker">walk-through · 3 minutes</span>
-          <h1 className="h1 mt-2 mb-2">From zero to first tip in six panels.</h1>
+          <h1 className="h1 mt-2 mb-2">From zero to first tip in five steps.</h1>
           <p className="text-base mb-6" style={{ color: "var(--ink-3)" }}>
             We have two flavours: a guided tour that highlights real sections on
             the live app, or read the panels below if you prefer to skim.
@@ -181,8 +182,8 @@ export default function OnboardingPage() {
           <div className="flex-1 min-w-0">
             <h2 className="h2 mb-1">Start the live tour</h2>
             <p className="text-sm opacity-80">
-              Six pop-ups across the dashboard, tip flow, stream, and borrow
-              sections. Roughly 90 seconds. You stay on the real app — every
+              Eight pop-ups across the dashboard, tip, subscribe, borrow, and
+              mint sections. Roughly 90 seconds. You stay on the real app — every
               section the tour spotlights is the one you'd actually use.
             </p>
           </div>
