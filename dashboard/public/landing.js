@@ -291,32 +291,90 @@
      STYLES / PALETTES / STYLE_ACCENT constants are kept above purely so
      applyStyle() can resolve persisted user prefs from prior visits. */
 
-  /* ──────────────── 6. Live tip ticker ──────────────── */
+  /* ──────────────── 6. Live tip ticker ────────────────
+     Real tips from the Goldsky subgraph (nih/v4). The endpoint is public
+     (NEXT_PUBLIC_GOLDSKY_URL) and CORS-enabled, so this vanilla landing
+     script can read it directly. While the fetch is in flight — or if it
+     fails / the index is momentarily empty — we render a few example rows
+     so the ticker is never blank, but the default state is real on-chain
+     data. Built with safe DOM nodes (no innerHTML). */
+  const NIH_GOLDSKY = 'https://api.goldsky.com/api/public/project_cmo5pukv64upu01y48tefank9/subgraphs/nih/v4/gn';
+  const NIH_HANDLES = {
+    '0x876ed16774c41851a77836c6b7c8a73d1c4b8235505742837e791346d9640d75': '@hajislamet',
+    '0xe42fad11825c4bb4bc805f9ad53dbde50e93baf1431d09934ba95fe91bf60d91': '@pugarhuda',
+    '0xc0a8544bd367c1f9e4bad8de180be3c96f97d663c4168d837e04c5628c64e77e': 'PugarHuda',
+    '0x6773975048115fba630eae27d130fa00457470464b1f3b7cbc48b2720e319a51': '@MezoNetwork',
+    '0x3c5b565e32b3a7f627794117bdd3a0292f1e4d225316f4b5b2bae3d08a6ca151': '@EncodeClub',
+    '0xf4b93ecd1f999495e6fbb57b7ed5e22a86439aa54227208fb72066531464bead': '@BangDropID',
+  };
+  function nihRel(ts) {
+    const d = Math.floor(Date.now() / 1000) - Number(ts);
+    if (d < 60) return d + 's';
+    if (d < 3600) return Math.floor(d / 60) + 'm';
+    if (d < 86400) return Math.floor(d / 3600) + 'h';
+    return Math.floor(d / 86400) + 'd';
+  }
+  function nihRenderTicker(rows) {
+    const tickerEl = document.querySelector('.lp-ticker');
+    if (!tickerEl || !rows.length) return;
+    const track = document.createElement('div');
+    track.className = 'lp-tk-track';
+    // Duplicate the row set for a seamless marquee loop.
+    rows.concat(rows).forEach(t => {
+      const item = document.createElement('span');
+      item.className = 'lp-tk-item';
+      const mk = (tag, cls, text) => {
+        const el = document.createElement(tag);
+        if (cls) el.className = cls;
+        el.textContent = text;          // textContent — no HTML injection
+        return el;
+      };
+      item.appendChild(mk('b', '', t.from));
+      item.appendChild(mk('span', 'lp-tk-arrow', '→'));
+      item.appendChild(mk('b', '', t.to));
+      item.appendChild(mk('span', 'lp-tk-plat', '·'));
+      item.appendChild(mk('span', 'lp-tk-plat', t.plat));
+      item.appendChild(mk('span', 'lp-tk-amt', '+' + t.amt + ' MUSD'));
+      item.appendChild(mk('span', 'lp-tk-when', t.when));
+      track.appendChild(item);
+    });
+    tickerEl.replaceChildren(track);
+  }
   function wireTicker() {
     const tickerEl = document.querySelector('.lp-ticker');
     if (!tickerEl) return;
-    const TIPS = [
-      { from: 'mira',  to: '@bobbuilds',  amt: 5,   plat: 'X', when: '2s' },
-      { from: 'jun',   to: 'PugarHuda',   amt: 10,  plat: 'GitHub', when: '7s' },
-      { from: 'kit',   to: '@caroldraws', amt: 25,  plat: 'X', when: '14s' },
-      { from: 'lin',   to: '@hajislamet', amt: 8,   plat: 'X', when: '22s' },
-      { from: 'dee',   to: '@miratypes',  amt: 3,   plat: 'X', when: '31s' },
-      { from: 'sam',   to: 'PugarHuda',   amt: 50,  plat: 'GitHub', when: '42s' },
-      { from: 'nat',   to: '@bobbuilds',  amt: 1,   plat: 'X', when: '58s' },
-      { from: 'alice', to: '@caroldraws', amt: 12,  plat: 'X', when: '1m' },
+    const FALLBACK = [
+      { from: '0x4f…a1', to: '@hajislamet', amt: 8,  plat: 'X', when: '—' },
+      { from: '0x9c…3d', to: 'PugarHuda',   amt: 10, plat: 'GitHub', when: '—' },
+      { from: '0x2b…7e', to: '@BangDropID', amt: 5,  plat: 'X', when: '—' },
     ];
-    const html = TIPS.concat(TIPS).map(t => `
-      <span class="lp-tk-item">
-        <b>${t.from}</b>
-        <span class="lp-tk-arrow">→</span>
-        <b>${t.to}</b>
-        <span class="lp-tk-plat">·</span>
-        <span class="lp-tk-plat">${t.plat}</span>
-        <span class="lp-tk-amt">+${t.amt} MUSD</span>
-        <span class="lp-tk-when">${t.when}</span>
-      </span>
-    `).join('');
-    tickerEl.innerHTML = `<div class="lp-tk-track">${html}</div>`;
+    nihRenderTicker(FALLBACK);
+    fetch(NIH_GOLDSKY, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        query: '{ tips(first: 12, orderBy: timestamp, orderDirection: desc) { amount handleId sender { address } timestamp } }',
+      }),
+    })
+      .then(r => r.ok ? r.json() : null)
+      .then(j => {
+        const tips = j && j.data && j.data.tips;
+        if (!tips || !tips.length) return;
+        const rows = tips.map(t => {
+          const addr = (t.sender && t.sender.address) || '0x0';
+          const hid = (t.handleId || '').toLowerCase();
+          const label = NIH_HANDLES[hid] || (hid.slice(0, 8) + '…');
+          return {
+            from: addr.slice(0, 4) + '…' + addr.slice(-2),
+            to: label,
+            amt: Math.round(Number(t.amount) / 1e18 * 100) / 100,
+            plat: label.charAt(0) === '@' ? 'X' : 'GitHub',
+            when: nihRel(t.timestamp),
+          };
+        });
+        nihRenderTicker(rows);
+      })
+      .catch(() => { /* keep fallback rows */ });
   }
 
   /* ──────────────── 7. Story comic reveal-on-scroll ──────────────── */

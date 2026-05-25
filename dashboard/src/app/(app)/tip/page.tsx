@@ -66,7 +66,7 @@ function TipInner() {
   const [countdown, setCountdown] = useState<number | null>(null);
   const [feeInfo, setFeeInfo] = useState(false);
   const [payInMezo, setPayInMezo] = useState(params.get("feeMezo") === "1");
-  const [suggestion, setSuggestion] = useState<{ amount: number; reasoning: string; source: string } | null>(null);
+  const [suggestion, setSuggestion] = useState<{ amount: number; reasoning: string; source: string; model?: string } | null>(null);
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
 
@@ -335,7 +335,7 @@ function TipInner() {
             </div>
 
             <>
-              {suggestion && suggestion.amount !== amount && (
+              {suggestion && (
                 <div className="rounded-lg border border-accent/30 bg-accent/5 p-4 fade-up">
                   <div className="flex items-start gap-3">
                     <span className="rounded-md bg-accent/15 p-1.5 text-accent">
@@ -343,17 +343,28 @@ function TipInner() {
                     </span>
                     <div className="flex-1 text-sm">
                       <p className="text-fg mb-1">
-                        {suggestion.source === "claude+boar" ? "Claude suggests" : "Heuristic suggests"}{" "}
+                        {suggestion.source.includes("claude")
+                          ? "Claude suggests"
+                          : suggestion.source.includes("ai")
+                          ? "AI suggests"
+                          : "Heuristic suggests"}{" "}
                         <strong className="text-accent">{suggestion.amount} MUSD</strong>
+                        {suggestion.source.includes("boar") && (
+                          <span className="text-[10px] text-muted ml-1.5">· on-chain context via Boar</span>
+                        )}
                       </p>
                       <p className="text-muted text-xs leading-relaxed">{suggestion.reasoning}</p>
                     </div>
-                    <a
-                      href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=${suggestion.amount}${payInMezo ? "&feeMezo=1" : ""}${returnUrl ? `&return=${encodeURIComponent(returnUrl)}` : ""}`}
-                      className="text-xs text-brand hover:underline whitespace-nowrap mt-0.5"
-                    >
-                      Use →
-                    </a>
+                    {suggestion.amount !== amount ? (
+                      <a
+                        href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=${suggestion.amount}${payInMezo ? "&feeMezo=1" : ""}${returnUrl ? `&return=${encodeURIComponent(returnUrl)}` : ""}`}
+                        className="text-xs text-brand hover:underline whitespace-nowrap mt-0.5"
+                      >
+                        Use →
+                      </a>
+                    ) : (
+                      <span className="text-[11px] text-accent whitespace-nowrap mt-0.5">✓ matches</span>
+                    )}
                   </div>
                 </div>
               )}

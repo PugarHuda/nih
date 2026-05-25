@@ -132,6 +132,37 @@ export function lookupHandle(handleId: string): { platform: string; username: st
   return KNOWN_HANDLES[handleId.toLowerCase()] ?? null;
 }
 
+export interface TopTipper {
+  address: string;
+  totalSent: string;
+  tipCount: string;
+}
+
+/**
+ * Top tippers by lifetime MUSD sent — global recognition for supporters.
+ * `Account.totalSent` is reliable (the mapping saves the sender last, so
+ * the self-tip overwrite bug that hits totalReceived doesn't affect it).
+ */
+export async function fetchTopTippers(limit = 10): Promise<TopTipper[]> {
+  if (!ENDPOINT) return [];
+  const query = `{
+    accounts(first: ${limit}, orderBy: totalSent, orderDirection: desc, where: { totalSent_gt: "0" }) {
+      address
+      totalSent
+      tipCount
+    }
+  }`;
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query }),
+    next: { revalidate: 30 },
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.accounts ?? [];
+}
+
 export async function fetchHandleStats(limit = 10): Promise<HandleStat[]> {
   if (!ENDPOINT) return [];
   const query = `{

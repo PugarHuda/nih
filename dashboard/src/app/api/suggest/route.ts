@@ -127,7 +127,12 @@ function heuristicSuggest(payload: SuggestPayload): { amount: number; reasoning:
 async function llmSuggest(payload: SuggestPayload, ctx: Record<string, string>) {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) return null;
-  const model = process.env.OPENROUTER_MODEL ?? "openai/gpt-oss-20b:free";
+  // Claude Haiku via OpenRouter. The previous default (a free OSS model)
+  // streamed reasoning padding + malformed JSON, so the call always failed
+  // and silently fell back to the heuristic — i.e. "AI suggest" never ran.
+  // Haiku returns clean JSON, is fast/cheap, and makes the "Claude" label true.
+  // `||` not `??` so an empty-string env still falls back to the default.
+  const model = process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku";
   try {
     const prompt = `You are a tipping assistant. Recommend a tip amount in MUSD (one of 1, 5, 10, 25) based on the post and on-chain reputation. Reply with ONLY a JSON object: {"amount": number, "reasoning": "one short sentence"} — no prose around it.
 
@@ -153,7 +158,9 @@ ${Object.entries(ctx).map(([k, v]) => `- ${k}: ${v}`).join("\n") || "- no prior 
         model,
         max_tokens: 200,
         temperature: 0.4,
-        response_format: { type: "json_object" },
+        // No response_format: Claude via Bedrock on OpenRouter doesn't honor
+        // the json_object flag and 400s on it. The prompt pins JSON-only and
+        // the regex below extracts the object robustly.
         messages: [{ role: "user", content: prompt }],
       }),
     });
@@ -164,10 +171,15 @@ ${Object.entries(ctx).map(([k, v]) => `- ${k}: ${v}`).join("\n") || "- no prior 
     if (!match) return null;
     const parsed = JSON.parse(match[0]);
     if (typeof parsed.amount === "number" && typeof parsed.reasoning === "string") {
+      // Label the source so the UI can credit Claude vs a generic model.
+      // `boar` suffix when the Boar mainnet read enriched the context.
+      const usedBoar = "senderMainnetBTC" in ctx;
+      const family = /claude/i.test(model) ? "claude" : "ai";
       return {
         amount: parsed.amount,
         reasoning: parsed.reasoning,
-        source: `openrouter:${model}+boar`,
+        source: usedBoar ? `${family}+boar` : family,
+        model,
       };
     }
   } catch {
