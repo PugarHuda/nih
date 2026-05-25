@@ -13,6 +13,8 @@ import { Input } from "@/components/ui/input";
 import { addresses, erc20Abi, streamAbi } from "@/lib/contracts";
 import { formatMUSD, truncateAddress } from "@/lib/utils";
 import { useRequireChain } from "@/lib/use-require-chain";
+import { HandlePreview } from "@/components/handle-preview";
+import { type Platform } from "@/lib/handle-utils";
 import { Loader2, Waves, ArrowRight, X } from "lucide-react";
 
 const DURATIONS = [
@@ -29,16 +31,33 @@ const SUB_PRESETS = [5, 10, 25];
 export default function StreamPage() {
   const { address, isConnected } = useAccount();
   const params = useSearchParams();
-  const [recipient, setRecipient] = useState("");
+  // Recipient can be entered two ways: by social handle (we resolve the
+  // wallet on-chain so the user never needs to know it) or by raw address.
+  const [recipientMode, setRecipientMode] = useState<"handle" | "address">("handle");
+  const [platform, setPlatform] = useState<Platform>("twitter");
+  const [handleUsername, setHandleUsername] = useState("");
+  const [resolvedOwner, setResolvedOwner] = useState<string | null>(null);
+  const [addressInput, setAddressInput] = useState("");
   const [amount, setAmount] = useState("");
   const [duration, setDuration] = useState(DURATIONS[3].seconds); // default 1 month — subscription bias
 
-  // Pre-fill from query params (used by /c/profile Subscribe buttons).
+  // Pre-fill from query params:
+  //  - ?platform=&username=  → extension "Subscribe" flow (handle mode)
+  //  - ?to=                  → legacy / profile Subscribe button (address mode)
   useEffect(() => {
+    const p = params.get("platform");
+    const u = params.get("username");
     const to = params.get("to");
+    if (p && u) {
+      setRecipientMode("handle");
+      setPlatform(p as Platform);
+      setHandleUsername(u.replace(/^@/, ""));
+    } else if (to) {
+      setRecipientMode("address");
+      setAddressInput(to);
+    }
     const amt = params.get("amount");
     const dur = params.get("duration");
-    if (to) setRecipient(to);
     if (amt) setAmount(amt);
     if (dur) {
       const seconds = Number(dur);
@@ -48,6 +67,13 @@ export default function StreamPage() {
   const [pending, setPending] = useState<"none" | "approve" | "create">("none");
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
+
+  // The wallet we actually stream to: resolved owner (handle mode) or the
+  // typed address. In handle mode an unclaimed handle yields no recipient.
+  const recipient =
+    recipientMode === "handle" ? resolvedOwner ?? "" : addressInput.trim();
+  const handleUnresolved =
+    recipientMode === "handle" && handleUsername.trim().length > 0 && !resolvedOwner;
 
   const amountWei = amount ? parseEther(amount) : 0n;
   const ratePerSec = amountWei && duration ? amountWei / BigInt(duration) : 0n;
@@ -106,7 +132,9 @@ export default function StreamPage() {
         args: [recipient as `0x${string}`, amountWei, BigInt(duration)],
       });
       txSuccess({ message: "Stream started", txHash });
-      setRecipient("");
+      setHandleUsername("");
+      setAddressInput("");
+      setResolvedOwner(null);
       setAmount("");
       await Promise.all([refetchOutgoing(), refetchIncoming()]);
     } catch (err) {
@@ -232,12 +260,80 @@ export default function StreamPage() {
 
               <div className="space-y-4 pt-4">
                 <div>
-                  <label className="text-xs uppercase tracking-wider text-muted mb-2 block">Recipient address</label>
-                  <Input value={recipient} onChange={(e) => setRecipient(e.target.value.trim())} placeholder="0x…" />
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs uppercase tracking-wider text-muted block">
+                      Recipient
+                    </label>
+                    {/* Toggle: subscribe by handle (no wallet needed) or paste an address. */}
+                    <div className="flex gap-1">
+                      {(["handle", "address"] as const).map((m) => (
+                        <button
+                          key={m}
+                          type="button"
+                          onClick={() => setRecipientMode(m)}
+                          className={`px-2.5 py-1 rounded-md text-[11px] font-medium border transition ${
+                            recipientMode === m
+                              ? "bg-brand text-bg border-brand"
+                              : "bg-surface text-fg border-border hover:border-brand/50"
+                          }`}
+                        >
+                          {m === "handle" ? "By handle" : "By address"}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {recipientMode === "handle" ? (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-1.5">
+                        {(["twitter", "youtube", "github", "linkedin"] as const).map((p) => (
+                          <button
+                            key={p}
+                            type="button"
+                            onClick={() => setPlatform(p)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
+                              platform === p
+                                ? "bg-brand text-bg border-brand"
+                                : "bg-surface text-fg border-border hover:border-brand/50"
+                            }`}
+                          >
+                            {p}
+                          </button>
+                        ))}
+                      </div>
+                      <Input
+                        value={handleUsername}
+                        onChange={(e) => setHandleUsername(e.target.value.trim().replace(/^@/, ""))}
+                        placeholder={platform === "twitter" ? "creator handle, e.g. hajislamet" : "creator handle"}
+                      />
+                      {handleUsername.trim() && (
+                        <HandlePreview
+                          platform={platform}
+                          username={handleUsername}
+                          onResolved={(owner) => setResolvedOwner(owner)}
+                        />
+                      )}
+                      {handleUnresolved && (
+                        <p className="text-[12px] leading-snug" style={{ color: "var(--ink-3)" }}>
+                          This creator hasn&apos;t claimed their handle on Nih yet, so there&apos;s
+                          no wallet to stream to. Ask them to verify at{" "}
+                          <a href="/claim" className="underline">/claim</a>, or switch to{" "}
+                          <b>By address</b> and paste their wallet directly.
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <Input
+                      value={addressInput}
+                      onChange={(e) => setAddressInput(e.target.value.trim())}
+                      placeholder="0x…"
+                    />
+                  )}
+
                   {recipientIsSelf && (
                     <p className="text-[12px] mt-1.5" style={{ color: "var(--bad)" }}>
-                      Stream recipient can&apos;t be your own wallet. Paste a
-                      different address.
+                      Stream recipient can&apos;t be your own wallet. Pick a
+                      different creator or address.
                     </p>
                   )}
                 </div>

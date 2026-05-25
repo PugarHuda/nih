@@ -43,7 +43,9 @@ export default function LandingPage() {
 
   return (
     <>
-      <link rel="stylesheet" href="/landing.css" />
+      {/* landing.css is now loaded globally in the root layout <head> so it
+          never injects/removes on nav (that was the flicker). Only the script
+          loads here. */}
       <Script src="/landing.js" strategy="afterInteractive" />
       <div className="lp">
         {/* Top nav — logo + nav links + ConnectWallet */}

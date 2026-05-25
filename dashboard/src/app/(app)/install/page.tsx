@@ -69,8 +69,16 @@ export default function InstallPage() {
           <div className="flex flex-col md:flex-row items-start md:items-center gap-5">
             <div className="flex-1">
               <CardHeader className="pb-2">
-                <CardTitle className="text-2xl">Download & install</CardTitle>
-                <CardDescription>2.1 MB · MV3 · open source · 4 platforms</CardDescription>
+                <CardTitle className="text-2xl" style={{ color: "var(--ink)" }}>
+                  Download &amp; install
+                </CardTitle>
+                {/* This card paints its own accent (yellow) background via
+                    inline style, so it misses the .comic-card.accent cascade
+                    that forces readable child text. Set an explicit dark ink
+                    here or the muted-grey description vanishes on yellow. */}
+                <CardDescription style={{ color: "rgba(0,0,0,0.72)" }}>
+                  ~0.5 MB · MV3 · open source · 4 platforms
+                </CardDescription>
               </CardHeader>
             </div>
             <Button size="lg" onClick={handleDownload} className="text-base">
@@ -179,7 +187,7 @@ export default function InstallPage() {
 │                                                                     │
 │  ╭─────────────────────────────────────────────────────────╮       │
 │  │  N  Nih — Tip MUSD anywhere                  ◐ enabled  │       │
-│  │     v0.1.0 · ID: efnaaaa…                               │       │
+│  │     v0.4.0 · ID: efnaaaa…                               │       │
 │  │     Details · Remove · Errors                           │       │
 │  ╰─────────────────────────────────────────────────────────╯       │
 └─────────────────────────────────────────────────────────────────────┘`}

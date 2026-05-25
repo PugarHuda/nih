@@ -21,6 +21,7 @@ export interface RecentTip {
   recipient: { address: string } | null;
   handleId: string;
   timestamp: string;
+  txHash?: string;
 }
 
 export interface RecentStream {
@@ -168,6 +169,40 @@ export async function fetchRecentTips(limit = 20): Promise<RecentTip[]> {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ query }),
     next: { revalidate: 30 },
+  });
+  if (!res.ok) return [];
+  const json = await res.json();
+  return json.data?.tips ?? [];
+}
+
+/**
+ * Tips a specific wallet has SENT — powers the "Tips you sent" history so a
+ * tipper can see where their MUSD went. Filtered by `sender` (the tip's
+ * payer); `handleId` resolves to the recipient creator via lookupHandle.
+ */
+export async function fetchTipsBySender(sender: string, limit = 25): Promise<RecentTip[]> {
+  if (!ENDPOINT || !sender) return [];
+  const query = `{
+    tips(
+      first: ${limit}
+      orderBy: timestamp
+      orderDirection: desc
+      where: { sender: "${sender.toLowerCase()}" }
+    ) {
+      id
+      amount
+      sender { address }
+      recipient { address }
+      handleId
+      timestamp
+      txHash
+    }
+  }`;
+  const res = await fetch(ENDPOINT, {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query }),
+    cache: "no-store",
   });
   if (!res.ok) return [];
   const json = await res.json();

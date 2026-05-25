@@ -52,9 +52,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Bangers&family=Space+Grotesk:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Caveat:wght@500;700&family=Instrument+Serif:ital@0;1&display=swap"
           rel="stylesheet"
         />
-        {/* Prefetch the landing assets so clicking the logo from an
-            app route doesn't trigger a network roundtrip + FOUC. */}
-        <link rel="prefetch" href="/landing.css" as="style" />
+        {/* Load landing.css globally + permanently rather than injecting it
+            from the landing page's React body. Injecting it there caused the
+            flicker: on entry the .lp markup painted before the stylesheet
+            applied (FOUC), and on exit React tore the <link> out (repaint).
+            Loaded here it's parsed once and applies instantly when .lp mounts.
+            Safe because every landing rule is scoped under .lp / .panel / .scp
+            / .lp-* / .story-* (the lone bare .sfx is now .lp .sfx), and its
+            keyframes are uniquely named — nothing leaks onto app routes. */}
+        <link rel="stylesheet" href="/landing.css" />
         <link rel="prefetch" href="/landing.js" as="script" />
       </head>
       <body

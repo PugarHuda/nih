@@ -148,7 +148,9 @@
 }
 
 /* SFX badges */
-.sfx {
+/* Scoped under .lp so this never collides with the dashboard's own .sfx
+   (globals.css) once landing.css is loaded globally in the root <head>. */
+.lp .sfx {
   position: absolute;
   font-family: "Bangers", sans-serif;
   color: #0A0A0A;
@@ -163,7 +165,7 @@
   text-transform: uppercase;
   font-size: 16px;
 }
-.sfx.star {
+.lp .sfx.star {
   clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
   background: #FFD32D;
   border: none;

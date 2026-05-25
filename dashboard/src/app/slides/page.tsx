@@ -449,17 +449,28 @@ function SLIDES(live: LiveStats): Slide[] { return [
     ),
   },
 
-  // ───────────────────── 6. Ask
+  // ───────────────────── 6. Why Nih wins
   {
-    kicker: "ask · 6 / 6",
+    kicker: "closing · 6 / 6",
     title: "Bitcoin spendable. Creators bankable.",
     body: (
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
         <div>
-          <p className="text-lg mb-5" style={{ color: "var(--ink-2)" }}>
-            We&apos;re asking for the <b>$5K veMEZO First Place (MUSD Track)</b> plus
-            a milestone grant for mainnet deployment with the first 100
-            verified creators within 90 days.
+          <p className="text-lg mb-4" style={{ color: "var(--ink-2)" }}>
+            Nih is a complete, working answer to the Supernormal MUSD brief:
+            turn idle Bitcoin into something you spend — one tip at a time.
+          </p>
+          <span className="kicker" style={{ color: "var(--ink-3)" }}>why it fits the MUSD track</span>
+          <ul className="mt-2 mb-5 space-y-1.5 text-sm" style={{ color: "var(--ink-2)" }}>
+            <li>✅ <b>Real MUSD end-to-end</b> — 6 contracts (tip · subscribe · borrow · earn · trove · vault) all wired to live Mezo MUSD, not a mock.</li>
+            <li>✅ <b>Wraps real Mezo primitives</b> — StabilityPool, BorrowerOperations, TroveManager, PriceFeed.</li>
+            <li>✅ <b>Shipped, not slides</b> — live dApp + Chrome extension on 4 platforms + Goldsky subgraph, 34/34 tests green.</li>
+            <li>✅ <b>New on-chain primitive</b> — handle→wallet registry with wallet-bound social verification, so you tip a username, not a hex address.</li>
+          </ul>
+          <span className="kicker" style={{ color: "var(--ink-3)" }}>where it goes next</span>
+          <p className="text-sm mt-1.5 mb-4" style={{ color: "var(--ink-2)" }}>
+            Mainnet deploy + Chrome Web Store + first 100 verified creators in
+            90 days. OAuth Tier-2, creator analytics, fee-treasury DAO to follow.
           </p>
           <ul className="space-y-2 text-sm" style={{ color: "var(--ink-2)" }}>
             <li>📚 docs: <a className="underline" href="/docs">/docs</a></li>
