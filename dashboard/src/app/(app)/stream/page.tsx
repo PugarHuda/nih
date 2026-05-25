@@ -163,10 +163,10 @@ export default function StreamPage() {
             Subscribe to creators.
           </h1>
           <p className="mb-6 max-w-xl" style={{ color: "var(--ink-3)" }}>
-            Pay creators MUSD by the second instead of one-shot tips. Works as a
-            Patreon-style subscription, a payroll stream, or per-second access
-            payments. Sender or recipient can cancel any time; unaccrued MUSD
-            refunds.
+            Support a creator a little every second instead of one big tip — like a
+            monthly membership (think Patreon), but the money trickles over in
+            real time. Change your mind? Cancel whenever and you only pay for the
+            time that already passed; the rest comes straight back.
           </p>
         </div>
 
@@ -178,20 +178,20 @@ export default function StreamPage() {
             style={{ color: "var(--ink-2)" }}
           >
             <li>
-              <b>1. Lock</b> the full MUSD amount up front. The contract escrows it
-              for the recipient.
+              <b>1. Set it up</b> — put the full amount aside up front. It&apos;s held
+              safely, earmarked for the creator.
             </li>
             <li>
-              <b>2. Accrue</b> per second — the recipient's claimable balance grows
-              continuously, no per-tx gas.
+              <b>2. It trickles</b> — every second, a little more becomes theirs.
+              No clicking, no gas fees along the way.
             </li>
             <li>
-              <b>3. Withdraw</b> any portion that's accrued. Recipient pulls when
-              they want; contract refuses to overpay.
+              <b>3. They collect</b> — the creator cashes out whatever has built up,
+              whenever they like.
             </li>
             <li>
-              <b>4. Cancel</b> any time, either side. Streamed amount stays with
-              the recipient, the rest refunds to the sender.
+              <b>4. Cancel anytime</b> — either side can stop it. They keep what
+              already trickled over; the rest returns to you.
             </li>
           </ol>
         </div>

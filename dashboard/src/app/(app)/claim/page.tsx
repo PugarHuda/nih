@@ -159,8 +159,9 @@ export default function ClaimPage() {
         <div className="fade-up">
           <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Claim your tips</h1>
           <p className="mb-6" style={{ color: "var(--ink-3)" }}>
-            Prove you own the handle by posting a challenge text on your public profile, then claim
-            on-chain.
+            Show that a social account is really yours, and any tips waiting for it
+            drop straight into your wallet. Takes about a minute — no password,
+            just a quick post.
           </p>
         </div>
 
@@ -168,24 +169,23 @@ export default function ClaimPage() {
             ("do I just connect my wallet?"). The answer: no, ownership
             of the *social handle* needs a separate proof. */}
         <div className="comic-card mb-8 px-5 py-4">
-          <span className="kicker">how verification works</span>
+          <span className="kicker">how it works</span>
           <ol
             className="mt-2 grid sm:grid-cols-3 gap-3 text-[12px] leading-snug"
             style={{ color: "var(--ink-2)" }}
           >
             <li>
-              <b>1. Pick your handle</b> — e.g. <code>twitter:hajislamet</code>. Your wallet
-              is already connected; this proves which <em>social</em> account is yours.
+              <b>1. Pick your account</b> — say, your Twitter handle. Your wallet&apos;s
+              already connected; this just links the two together.
             </li>
             <li>
-              <b>2. Post the challenge</b> — copy the one-line text the dashboard generates
-              and paste it on your public profile (tweet, channel description, README).
-              Our verifier reads it directly from the platform.
+              <b>2. Post the magic words</b> — copy the one-line code we give you and
+              post it from that account (a tweet, your channel description, a README).
+              We check it&apos;s really there.
             </li>
             <li>
-              <b>3. Sign the attestation</b> — the verifier returns a signature; you submit
-              it to NihRegistry on-chain. From then on, tips routed to your handle land
-              straight in your wallet — no more vault parking.
+              <b>3. You&apos;re verified</b> — confirm it on-chain once, and from then on
+              every tip to that handle lands straight in your wallet — no waiting room.
             </li>
           </ol>
         </div>

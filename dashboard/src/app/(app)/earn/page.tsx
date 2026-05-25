@@ -119,9 +119,10 @@ export default function EarnPage() {
           </div>
           <h1 className="h1 mb-2" style={{ fontSize: "clamp(40px, 5.5vw, 72px)" }}>Earn on your tips</h1>
           <p className="mb-8 max-w-md" style={{ color: "var(--ink-3)" }}>
-            Deposit tip income directly into Mezo&apos;s MUSD Stability Pool. You earn
-            BTC from every liquidation + MUSD from redemption fees. Pure pass-through —
-            Nih takes no fee. Withdraw any time.
+            Put your idle tips to work. Drop your MUSD into Mezo&apos;s savings pool and
+            it quietly earns you <b>real Bitcoin</b> over time — like a high-yield
+            savings account, except the interest comes in BTC. Nih takes nothing, and
+            you can pull your money out whenever.
           </p>
         </div>
 

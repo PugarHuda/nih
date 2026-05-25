@@ -114,15 +114,16 @@ export default function TrovePage() {
       <Header />
       <main className="container mx-auto px-6 py-12 max-w-3xl">
         <div className="fade-up">
-          <span className="kicker">mint real MUSD · powered by Mezo BorrowerOperations</span>
+          <span className="kicker">get spendable dollars · powered by Mezo</span>
           <h1 className="h1 mt-2 mb-2">
             <Bitcoin className="inline h-9 w-9 mr-2" style={{ color: "var(--accent-2)" }} />
-            Open a trove.
+            Turn BTC into MUSD.
           </h1>
           <p className="text-base mb-6" style={{ color: "var(--ink-3)" }}>
-            Deposit BTC as collateral, mint real Mezo MUSD against it. Same
-            primitive that powers Nih&apos;s tip economy, opened through a
-            per-user proxy clone so funds always credit your wallet directly.
+            Have Bitcoin but need spendable dollars? Lock some BTC here and unlock
+            real MUSD against it — <b>without selling a single sat</b>. Pay the MUSD
+            back and your Bitcoin comes home. It&apos;s the same engine that mints
+            the MUSD behind every tip on Nih.
           </p>
         </div>
 
@@ -133,10 +134,10 @@ export default function TrovePage() {
             className="mt-2 grid sm:grid-cols-4 gap-3 text-[12px] leading-snug"
             style={{ color: "var(--ink-2)" }}
           >
-            <li><b>1. Proxy</b> — first call deploys your personal NihTrove proxy (one-time gas).</li>
-            <li><b>2. Open</b> — send BTC as collateral, specify the MUSD debt you want minted.</li>
-            <li><b>3. Mint</b> — Mezo BorrowerOperations validates ICR + min-debt, mints MUSD to your wallet.</li>
-            <li><b>4. Close</b> — repay debt + 200 MUSD gas compensation, collateral released.</li>
+            <li><b>1. Set up</b> — the first time, you create your own personal vault (a quick one-time step).</li>
+            <li><b>2. Lock BTC</b> — choose how much Bitcoin to put in and how much MUSD to take out.</li>
+            <li><b>3. Get MUSD</b> — Mezo checks your deposit safely covers the loan, then sends MUSD to your wallet.</li>
+            <li><b>4. Get BTC back</b> — repay what you borrowed and your Bitcoin is released.</li>
           </ol>
         </div>
 

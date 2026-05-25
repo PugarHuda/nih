@@ -149,8 +149,10 @@ export default function BorrowPage() {
             Borrow.
           </h1>
           <p className="mt-3 text-base max-w-md" style={{ color: "var(--ink-3)" }}>
-            Lock claimed tips as collateral. Mint up to 60% as MUSD instantly. 1%
-            fixed rate. Repay any time to release collateral.
+            Tips piling up but you&apos;d rather not spend them? Set some aside as a
+            deposit and borrow up to 60% of it as cash you can use right now — for
+            just 1% a year. Pay it back whenever, and your deposit is free again.
+            Like a pawn shop, except you never hand over your stuff.
           </p>
         </div>
 
@@ -163,22 +165,21 @@ export default function BorrowPage() {
             style={{ color: "var(--ink-2)" }}
           >
             <li>
-              <b>1. Collateral</b> — pick how much of your claimed tip MUSD to
-              escrow in NihCredit. You keep ownership; you just can't spend it
-              until the loan closes.
+              <b>1. Set aside</b> — choose how much of your tip MUSD to put down as
+              a deposit. It&apos;s still yours; you just can&apos;t spend it until you
+              pay the loan back.
             </li>
             <li>
-              <b>2. Borrow</b> — receive 60% of that amount as freshly-minted
-              MUSD. 1% fixed APR accrues from the open block.
+              <b>2. Borrow</b> — get 60% of that as cash, instantly. Interest is a
+              flat 1% a year — no surprises.
             </li>
             <li>
-              <b>3. Monitor</b> — your live row below shows: principal, debt
-              (principal + interest), and the LTV ratio. Anything over 80% LTV
-              is liquidation territory.
+              <b>3. Keep an eye</b> — the row below shows what you owe and how much
+              of your deposit it&apos;s using. Stay well under the limit and you&apos;re safe.
             </li>
             <li>
-              <b>4. Repay</b> — pay back any portion; collateral unlocks
-              proportionally. Repay in full to close the position.
+              <b>4. Pay back</b> — repay any amount, any time; your deposit frees up
+              as you go. Pay it all and you&apos;re done.
             </li>
           </ol>
         </div>

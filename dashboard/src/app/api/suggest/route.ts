@@ -1,24 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createPublicClient, http } from "viem";
+import { createPublicClient, http, keccak256, encodePacked } from "viem";
 import { matsnet } from "@/lib/chain";
 import { addresses, routerAbi } from "@/lib/contracts";
 import { rateLimit, clientIp } from "@/lib/rate-limit";
 
 /**
- * AI tip-amount suggestion.
+ * "Tippy" — Nih's tip-amount suggestion assistant.
  *
  * Pipeline:
- *  1. Pull on-chain context via the Boar Network RPC (or default Mezo RPC):
- *     - recipient's lifetime tips received (social proof)
- *     - sender's lifetime tips sent (caller generosity)
- *  2. If ANTHROPIC_API_KEY is set, send context + post text to Claude for
- *     a personalised recommendation and a 1-line rationale.
- *  3. Otherwise fall back to the deterministic heuristic so the endpoint
- *     never blocks the UI in offline / no-budget demos.
+ *  1. Gather real signals (never a flat guess):
+ *     - the creator's typical tip: lifetime received ÷ tip count (subgraph)
+ *     - the tipper's own generosity: lifetime sent (router)
+ *     - the tipper's Bitcoin track record on mainnet (Boar Network RPC)
+ *     - the post + platform context
+ *  2. If OPENROUTER_API_KEY is set, send that context to an LLM for a
+ *     personalised amount + a short human rationale + the factors weighed.
+ *  3. Otherwise fall back to a deterministic heuristic so the endpoint never
+ *     blocks the UI offline. The UI brands all of this as "Tippy".
  *
- * The Boar MCP "blockchain context" pattern lives here — for production we'd
- * swap fetch() of public RPC with Boar's authenticated MCP endpoint that
- * exposes batched reads and ENS-style decoded responses.
+ * The Boar read is the "blockchain context for an AI agent" integration —
+ * in production we'd swap the raw RPC for Boar's authenticated MCP endpoint.
  */
 
 interface SuggestPayload {
@@ -42,8 +43,45 @@ const client = createPublicClient({
   transport: http(localRpc),
 });
 
+const GOLDSKY = process.env.NEXT_PUBLIC_GOLDSKY_URL;
+
+/** The creator's typical tip = lifetime received ÷ number of tips. */
+async function creatorTipProfile(platform?: string, username?: string) {
+  if (!GOLDSKY || !platform || !username) return null;
+  try {
+    const handleId = keccak256(
+      encodePacked(["string", "string", "string"], [platform, ":", username.replace(/^@/, "")]),
+    );
+    const res = await fetch(GOLDSKY, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        query: `{ handleStat(id: "${handleId}") { totalReceived tipCount } }`,
+      }),
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+    const j = await res.json();
+    const s = j?.data?.handleStat;
+    if (!s) return null;
+    const total = Number(s.totalReceived) / 1e18;
+    const count = Number(s.tipCount);
+    return { total, count, avg: count > 0 ? total / count : 0 };
+  } catch {
+    return null;
+  }
+}
+
 async function loadContext(payload: SuggestPayload) {
   const ctx: Record<string, string> = {};
+  // The creator's tipping history — the single strongest signal for "what's
+  // a normal tip for this person."
+  const prof = await creatorTipProfile(payload.platform, payload.authorHandle);
+  if (prof && prof.count > 0) {
+    ctx.creatorTypicalTip = `${prof.avg.toFixed(2)} MUSD avg (over ${prof.count} tips, ${prof.total.toFixed(2)} MUSD lifetime)`;
+  } else {
+    ctx.creatorTypicalTip = "no tips yet — brand new on Nih";
+  }
   if (payload.recipientAddress) {
     try {
       const v = (await client.readContract({
@@ -91,26 +129,50 @@ async function loadContext(payload: SuggestPayload) {
   return ctx;
 }
 
-function heuristicSuggest(payload: SuggestPayload): { amount: number; reasoning: string } {
+/**
+ * Offline fallback that still weighs real signals (post effort + the
+ * creator's typical tip from ctx) so "Tippy" is never a flat guess.
+ */
+function heuristicSuggest(
+  payload: SuggestPayload,
+  ctx: Record<string, string>,
+): { amount: number; reasoning: string; factors: string[] } {
   const text = (payload.postText ?? "").trim();
   const len = text.length;
   const hasCodeBlock = /```|`/.test(text);
-  const hasNumbers = /\d+/.test(text);
   const hasLink = /https?:\/\//.test(text);
   const wordCount = text.split(/\s+/).filter(Boolean).length;
+  const factors: string[] = [];
 
+  // Effort score from the post itself.
   let score = 0;
-  if (len > 500) score += 2;
-  else if (len > 200) score += 1;
-  if (hasCodeBlock) score += 2;
-  if (hasNumbers) score += 0.5;
+  if (len > 500) { score += 2; factors.push("a long, detailed post"); }
+  else if (len > 200) { score += 1; factors.push("a decent-length post"); }
+  if (hasCodeBlock) { score += 2; factors.push("it shares code"); }
   if (hasLink) score += 0.5;
   if (wordCount > 50) score += 1;
 
-  if (score >= 4) return { amount: 10, reasoning: "Long technical post — substantive contribution worth 10 MUSD." };
-  if (score >= 2) return { amount: 5, reasoning: "Solid post with depth. 5 MUSD feels right." };
-  if (score >= 1) return { amount: 1, reasoning: "Light post — encouragement tip of 1 MUSD." };
-  return { amount: 1, reasoning: "Default starter tip of 1 MUSD." };
+  // Anchor to the creator's typical tip when we know it.
+  const m = (ctx.creatorTypicalTip ?? "").match(/([0-9]+(?:\.[0-9]+)?) MUSD avg/);
+  const avg = m ? Number(m[1]) : 0;
+  if (avg > 0) factors.push(`this creator usually gets about ${avg.toFixed(0)} MUSD`);
+
+  const tiers = [1, 5, 10, 25];
+  let amount = score >= 4 ? 10 : score >= 2 ? 5 : 1;
+  if (avg > 0) {
+    // Snap toward the nearest tier to the creator's average, nudged by effort.
+    const nearest = tiers.reduce((a, b) => (Math.abs(b - avg) < Math.abs(a - avg) ? b : a));
+    amount = Math.max(amount, nearest);
+  }
+  if (factors.length === 0) factors.push("a quick post and no history yet");
+
+  const reasoning =
+    avg > 0
+      ? "Around what this creator usually gets, nudged by the post itself."
+      : score >= 2
+        ? "This post put in real effort, so a bit more than a starter tip."
+        : "A friendly starter tip — bump it up if you loved the post.";
+  return { amount, reasoning, factors };
 }
 
 /**
@@ -134,15 +196,24 @@ async function llmSuggest(payload: SuggestPayload, ctx: Record<string, string>) 
   // `||` not `??` so an empty-string env still falls back to the default.
   const model = process.env.OPENROUTER_MODEL || "anthropic/claude-3.5-haiku";
   try {
-    const prompt = `You are a tipping assistant. Recommend a tip amount in MUSD (one of 1, 5, 10, 25) based on the post and on-chain reputation. Reply with ONLY a JSON object: {"amount": number, "reasoning": "one short sentence"} — no prose around it.
+    const prompt = `You are "Tippy", the tip-amount assistant inside the Nih app. Recommend a tip in MUSD: one of 1, 5, 10, or 25.
+
+Weigh ALL of these signals and don't just pick a default — let them genuinely move the number:
+1. The creator's TYPICAL tip (anchor to it: suggest near their average; go higher only for clearly standout posts, lower if they're brand new).
+2. The tipper's own generosity history (a generous tipper can be nudged up; a first-timer, kept modest).
+3. The tipper's Bitcoin track record on mainnet (a well-funded, active wallet supports a larger tip).
+4. The post + platform (more effort/length/technical depth → higher; a one-liner → lower).
+
+Reply with ONLY a JSON object, no prose:
+{"amount": number, "reasoning": "one friendly sentence, no jargon", "factors": ["2-4 short phrases naming what actually drove THIS number"]}
 
 Post text:
-${(payload.postText ?? "").slice(0, 1500)}
+${(payload.postText ?? "").slice(0, 1500) || "(none provided)"}
 
 Author handle: ${payload.authorHandle ?? "unknown"}
 Platform: ${payload.platform ?? "unknown"}
 
-On-chain context (via Boar Network RPC):
+Signals:
 ${Object.entries(ctx).map(([k, v]) => `- ${k}: ${v}`).join("\n") || "- no prior activity"}`;
 
     const resp = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -174,15 +245,19 @@ ${Object.entries(ctx).map(([k, v]) => `- ${k}: ${v}`).join("\n") || "- no prior 
     if (!match) return null;
     const parsed = JSON.parse(match[0]);
     if (typeof parsed.amount === "number" && typeof parsed.reasoning === "string") {
-      // Label the source so the UI can credit Claude vs a generic model.
-      // `boar` suffix when the Boar mainnet read enriched the context.
+      // `source` tells the UI whether on-chain context (Boar) was used; the
+      // UI brands everything as "Tippy" regardless of the underlying model.
       const usedBoar = "senderMainnetBTC" in ctx;
       const family = /claude/i.test(model) ? "claude" : "ai";
+      const factors = Array.isArray(parsed.factors)
+        ? parsed.factors.filter((f: unknown) => typeof f === "string").slice(0, 4)
+        : undefined;
       return {
         amount: parsed.amount,
         reasoning: parsed.reasoning,
         source: usedBoar ? `${family}+boar` : family,
         model,
+        factors,
       };
     }
   } catch {
@@ -206,6 +281,6 @@ export async function POST(req: NextRequest) {
   const ctx = await loadContext(payload);
   const ai = await llmSuggest(payload, ctx);
   if (ai) return NextResponse.json(ai);
-  const fallback = heuristicSuggest(payload);
+  const fallback = heuristicSuggest(payload, ctx);
   return NextResponse.json({ ...fallback, source: "heuristic" });
 }

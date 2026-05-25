@@ -52,7 +52,10 @@ function TipInner() {
     | "github"
     | "linkedin";
   const username = (params.get("username") ?? "").replace(/^@/, "");
-  const amount = Number(params.get("amount") ?? "5");
+  // Amount is state (seeded from the URL) so the "Use Tippy's suggestion"
+  // button can change it instantly — a plain link to ?amount=N didn't
+  // reliably re-render through the view-transition nav.
+  const [amount, setAmount] = useState(Number(params.get("amount") ?? "5"));
   const context = params.get("context") ?? "";
 
   // Where to send the tipper after success. Prefer an explicit ?return=
@@ -65,8 +68,15 @@ function TipInner() {
   const [txHash, setTxHash] = useState<`0x${string}` | null>(null);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [feeInfo, setFeeInfo] = useState(false);
+  const [tippyInfo, setTippyInfo] = useState(false);
   const [payInMezo, setPayInMezo] = useState(params.get("feeMezo") === "1");
-  const [suggestion, setSuggestion] = useState<{ amount: number; reasoning: string; source: string; model?: string } | null>(null);
+  const [suggestion, setSuggestion] = useState<{
+    amount: number;
+    reasoning: string;
+    source: string;
+    model?: string;
+    factors?: string[];
+  } | null>(null);
   const { writeContractAsync } = useWriteContract();
   const { ensure } = useRequireChain();
 
@@ -204,11 +214,11 @@ function TipInner() {
                   Tip sent!
                 </h2>
                 <p className="muted text-sm mt-1">
-                  <strong>{amount} MUSD</strong> to <strong>@{username}</strong> on{" "}
+                  You sent <strong>{amount} MUSD</strong> to <strong>@{username}</strong> on{" "}
                   {PLATFORM_NAME[platform] ?? platform}.{" "}
                   {payInMezo
-                    ? "They received the full amount (fee paid in MEZO)."
-                    : `They received ${formatMUSD(netToCreator, 2)} MUSD after the 0.5% fee.`}
+                    ? "They got every cent — you covered the fee in MEZO."
+                    : `${formatMUSD(netToCreator, 2)} MUSD landed in their wallet.`}
                 </p>
               </div>
 
@@ -264,39 +274,40 @@ function TipInner() {
       <div className="fade-up" data-tour="tip-form">
         <Card>
           <CardHeader>
-            <CardTitle>Confirm your tip</CardTitle>
+            <CardTitle>Send your tip</CardTitle>
             <CardDescription>
-              You&apos;re tipping <strong>@{username || "—"}</strong> on{" "}
-              <strong>{platform}</strong>. The platform name is what makes the
-              recipient unique on-chain (handleId = keccak256(&quot;{platform}:{username || "…"}&quot;)).
+              You&apos;re sending a little thank-you to <strong>@{username || "—"}</strong> on{" "}
+              <strong>{PLATFORM_NAME[platform] ?? platform}</strong>. It&apos;s like slipping
+              someone a few dollars for a great post — except it lands in seconds and they
+              keep almost all of it.
             </CardDescription>
           </CardHeader>
 
           <div className="space-y-5 pt-2">
             <div className="rounded-xl border border-brand/30 bg-brand/5 p-5 text-center">
-              <p className="text-xs uppercase tracking-widest text-muted">Amount</p>
+              <p className="text-xs uppercase tracking-widest text-muted">You&apos;re sending</p>
               <p className="text-4xl font-semibold text-brand mt-1.5">
                 {formatMUSD(amountWei, 0)} MUSD
               </p>
               <p className="text-xs text-muted mt-1">
                 {payInMezo ? (
-                  <>creator gets the full {formatMUSD(amountWei, 0)} MUSD · fee 0.25% in MEZO</>
+                  <>@{username || "creator"} gets all {formatMUSD(amountWei, 0)} MUSD · you cover a tiny fee in MEZO</>
                 ) : (
-                  <>creator gets {formatMUSD(netToCreator, 2)} MUSD · 0.5% protocol fee</>
+                  <>@{username || "creator"} gets {formatMUSD(netToCreator, 2)} MUSD · small 0.5% fee keeps Nih running</>
                 )}
               </p>
             </div>
 
-            {/* Pay-fee-in-MEZO toggle + explainer. Answers "what is this?" */}
+            {/* Pay-fee-in-MEZO toggle + friendly explainer. */}
             <div
               className="rounded-lg p-3"
               style={{ border: "2px solid var(--ink)", background: "var(--paper)" }}
             >
               <label className="flex items-center justify-between cursor-pointer gap-3">
                 <div>
-                  <p className="text-sm font-semibold">Pay protocol fee in MEZO</p>
+                  <p className="text-sm font-semibold">Let the creator keep 100%</p>
                   <p className="text-[11px] text-muted">
-                    50% off the fee · creator receives 100% of your MUSD
+                    Cover the small fee with MEZO instead — and pay half as much
                   </p>
                 </div>
                 <input
@@ -316,19 +327,18 @@ function TipInner() {
                   className="h-3 w-3 transition-transform"
                   style={{ transform: feeInfo ? "rotate(180deg)" : "none" }}
                 />
-                What does this mean?
+                How does the fee work?
               </button>
               {feeInfo && (
                 <div className="mt-2 text-[11px] leading-relaxed text-muted space-y-1.5 fade-up">
                   <p>
-                    Nih charges a small protocol fee on each tip. <b>By default</b> it&apos;s{" "}
-                    <b>0.5%</b>, taken out of your MUSD — so the creator receives 99.5%.
+                    Like a card machine takes a tiny cut, Nih keeps a small slice of each tip to
+                    keep the lights on — normally <b>0.5%</b>, so the creator gets the other 99.5%.
                   </p>
                   <p>
-                    <b>Turn this on</b> and the fee drops to <b>0.25%</b> and is paid separately
-                    in <b>MEZO</b> (the network token). Two upsides: the creator gets <b>100%</b>{" "}
-                    of your MUSD tip, and you pay half the fee. The trade-off: you spend a little
-                    MEZO and approve it once.
+                    Flip this on and you cover the fee with <b>MEZO</b> (the network&apos;s own coin)
+                    instead. It&apos;s <b>half the cost</b>, and the creator pockets <b>every cent</b>{" "}
+                    of your tip. You&apos;ll just okay MEZO once, the first time.
                   </p>
                 </div>
               )}
@@ -343,27 +353,58 @@ function TipInner() {
                     </span>
                     <div className="flex-1 text-sm">
                       <p className="text-fg mb-1">
-                        {suggestion.source.includes("claude")
-                          ? "Claude suggests"
-                          : suggestion.source.includes("ai")
-                          ? "AI suggests"
-                          : "Heuristic suggests"}{" "}
+                        <strong>Tippy</strong>{" "}
+                        {suggestion.source.includes("heuristic") ? "guesses" : "suggests"}{" "}
                         <strong className="text-accent">{suggestion.amount} MUSD</strong>
-                        {suggestion.source.includes("boar") && (
-                          <span className="text-[10px] text-muted ml-1.5">· on-chain context via Boar</span>
-                        )}
                       </p>
                       <p className="text-muted text-xs leading-relaxed">{suggestion.reasoning}</p>
+                      <button
+                        type="button"
+                        onClick={() => setTippyInfo((v) => !v)}
+                        className="mt-1.5 inline-flex items-center gap-1 text-[11px] hover:underline"
+                        style={{ color: "var(--accent-2)" }}
+                      >
+                        <ChevronDown
+                          className="h-3 w-3 transition-transform"
+                          style={{ transform: tippyInfo ? "rotate(180deg)" : "none" }}
+                        />
+                        How does Tippy decide?
+                      </button>
+                      {tippyInfo && (
+                        <div className="mt-1.5 text-[11px] leading-relaxed text-muted fade-up">
+                          <p className="mb-1">
+                            Tippy is Nih&apos;s built-in helper. It weighs a few real signals — never
+                            just a flat number:
+                          </p>
+                          <ul className="space-y-0.5 pl-1">
+                            {(suggestion.factors && suggestion.factors.length > 0
+                              ? suggestion.factors
+                              : [
+                                  "How much this creator usually receives per tip",
+                                  "How generous you've been before",
+                                  "Your wallet's track record on Bitcoin",
+                                  "What's normal for this platform",
+                                ]
+                            ).map((f, i) => (
+                              <li key={i}>· {f}</li>
+                            ))}
+                          </ul>
+                          {suggestion.source.includes("boar") && (
+                            <p className="mt-1 opacity-80">It reads your on-chain history live to do this.</p>
+                          )}
+                        </div>
+                      )}
                     </div>
                     {suggestion.amount !== amount ? (
-                      <a
-                        href={`/tip?platform=${platform}&username=${encodeURIComponent(username)}&amount=${suggestion.amount}${payInMezo ? "&feeMezo=1" : ""}${returnUrl ? `&return=${encodeURIComponent(returnUrl)}` : ""}`}
+                      <button
+                        type="button"
+                        onClick={() => setAmount(suggestion.amount)}
                         className="text-xs text-brand hover:underline whitespace-nowrap mt-0.5"
                       >
-                        Use →
-                      </a>
+                        Use it →
+                      </button>
                     ) : (
-                      <span className="text-[11px] text-accent whitespace-nowrap mt-0.5">✓ matches</span>
+                      <span className="text-[11px] text-accent whitespace-nowrap mt-0.5">✓ using this</span>
                     )}
                   </div>
                 </div>
@@ -398,11 +439,11 @@ function TipInner() {
             {/* Recognition nudge — tips from a wallet that owns a verified
                 handle are credited to that handle on the leaderboard. */}
             <p className="text-[11px] text-center text-muted">
-              Want to be recognized as the tipper on the leaderboard?{" "}
+              Want your tips to show your name instead of a wallet address?{" "}
               <Link href="/claim" className="hover:underline" style={{ color: "var(--accent-2)" }}>
                 Claim your handle
               </Link>{" "}
-              — then tips you send show your name, not just your address.
+              and you&apos;ll appear by name on the leaderboard.
             </p>
           </div>
         </Card>
