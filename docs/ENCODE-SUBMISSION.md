@@ -8,9 +8,53 @@ Paste each block into the matching Encode dashboard field.
 
 ---
 
+## Links (paste into the matching fields)
+```
+Link to Code:        https://github.com/PugarHuda/nih
+Link to Presentation: https://nih-seven.vercel.app/slides
+Live Demo Link:      https://nih-seven.vercel.app
+Testnet staging:     https://nih-seven.vercel.app
+Link to Demo Video:  <YOU RECORD — see docs/DEMO-SCRIPT.md>
+```
+
 ## Project Name
 ```
 Nih
+```
+
+## Submission Details (detailed explanation of the work)
+```
+WHAT I BUILT
+Nih is a Bitcoin-backed tipping product on Mezo with three shipped layers:
+a Chrome MV3 browser extension (Twitter, YouTube, GitHub, LinkedIn), a
+18-route Next.js dashboard, and 7 Solidity contracts wired end-to-end to
+Mezo's REAL MUSD — no mock on the money path. Tip a social @handle in one
+click; the creator receives real MUSD, can borrow against accumulated tips
+at 1% APR, run per-second subscriptions, and earn BTC yield through Mezo's
+real Stability Pool — without ever selling their Bitcoin.
+
+PROCESS
+Built solo across the hackathon window with Claude Code pair-programming.
+Started from Mezo's primitives: rather than fork or simulate, NihEarn wraps
+the real StabilityPool, NihTrove wraps real BorrowerOperations (per-user
+proxy clones so funds always credit the user), and every tip routes through
+the real MUSD token (0xf9BB…0af). Verified ownership of social handles with
+a wallet-bound challenge (post a one-line code, our signer attests Tier-1).
+Indexed everything with a Goldsky subgraph so the dashboard, leaderboard,
+and live ticker all read real on-chain events.
+
+KEY ACHIEVEMENTS
+- FULL_REAL: all 7 Nih contracts use real Mezo MUSD; 3 real Mezo primitives
+  wrapped (StabilityPool, BorrowerOperations, TroveManager).
+- 34/34 contract tests (29 functional + 5 invariants).
+- Working extension on 4 platforms with custom-amount per-post tip buttons.
+- "Tippy" — an AI tip-amount helper (Claude via OpenRouter) that reads the
+  creator's tip history + the tipper's on-chain track record through Boar's
+  RPC and explains its reasoning.
+- On-chain Supporter tiers (Bronze→Diamond) reward tippers by lifetime sent.
+- 6 partner integrations live (Goldsky, Spectrum, Boar, OpenRouter,
+  Tenderly, Validation Cloud).
+- Live, public, auto-deployed: https://nih-seven.vercel.app
 ```
 
 ## Description (Optional / brief summary)
@@ -69,7 +113,7 @@ Nih ships three layers on Mezo:
    /c/[platform]/[username] - public creator profile
    /onboarding - interactive product tour
    /docs - developer reference with code snippets
-   /slides - 5-slide pitch deck
+   /slides - 8-slide pitch deck (incl. How-it-works + Roadmap)
    /leaderboard - top recipients live from Goldsky
 
 MUSD POSITIONING
@@ -129,7 +173,7 @@ DASHBOARD
   transport)
 - View Transitions API for cross-route fade
 - Goldsky GraphQL client for live indexing
-- OpenRouter LLM (free model) for AI tip suggestions
+- "Tippy" AI tip suggestions — Claude (claude-3.5-haiku) via OpenRouter + Boar on-chain context
 
 BROWSER EXTENSION
 - Plasmo (Chrome MV3) on Twitter, YouTube, GitHub, LinkedIn
@@ -144,7 +188,7 @@ PARTNER INTEGRATIONS (all live)
 - Goldsky — subgraph indexing
 - Spectrum Nodes — 3 GraphQL endpoints (/api/spectrum-stats wire)
 - Boar Network — Mezo mainnet RPC powering the /api/suggest AI agent
-- OpenRouter — LLM aggregator (default openai/gpt-oss-20b:free)
+- OpenRouter — LLM aggregator powering Tippy (model: anthropic/claude-3.5-haiku)
 - Tenderly — simulator deep-link in every tx-toast
 - Validation Cloud — mainnet RPC plan (chain.ts mainnet endpoint)
 
@@ -204,11 +248,11 @@ M+180 days — CONSUMER SCALE + DAO
 
 ## Team Info
 ```
-Pugar Huda Mantoro — solo builder + product / engineering
-X: @hajislamet
-LinkedIn: pugarhuda
-GitHub: PugarHuda
-Email: pugarhudam@gmail.com
+Pugar Huda Mantoro — solo builder · product + engineering (Leader)
+X: @BangDropID
+LinkedIn: https://www.linkedin.com/in/pugar-huda-mantoro/
+GitHub: https://github.com/PugarHuda
+Email: hudapugar@gmail.com
 Indonesian builder, AI + workflow automation background. Built Nih
 solo across the hackathon window with Claude Code pair-programming.
 ```
