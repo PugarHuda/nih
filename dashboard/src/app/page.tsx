@@ -520,15 +520,15 @@ export default function LandingPage() {
       <span className="kicker">tipping that lives where you scroll</span>
       <h1>nih<span className="dot-big"></span></h1>
       <p className="tagline">Tip MUSD on every platform. Borrow against it. Keep your Bitcoin.</p>
-      <div className="ctas">
-        <a className="lp-cta primary" href="/dashboard">
+      <div className="ctas" style={{ position: "relative", zIndex: 10 }}>
+        <Link className="lp-cta primary" href="/dashboard" prefetch={false}>
           Enter the app
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
-        </a>
-        <a className="lp-cta" href="/onboarding">
+        </Link>
+        <Link className="lp-cta" href="/onboarding" prefetch={false}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
           Walk through it (3 min)
-        </a>
+        </Link>
       </div>
     </main>
 
@@ -781,7 +781,7 @@ export default function LandingPage() {
     <footer className="lp-foot">
       <h2>Every social handle is now a Bitcoin-backed bank account.</h2>
       <div className="ctas">
-        <a className="lp-cta primary" href="/dashboard">Open the app →</a>
+        <Link className="lp-cta primary" href="/dashboard" prefetch={false}>Open the app →</Link>
         <a className="lp-cta" style={{ "background": "transparent", "color": "var(--paper)", "borderColor": "rgba(255,255,255,.4)", "boxShadow": "4px 4px 0 0 rgba(255,255,255,.2)" }} href="/claim">Claim my tips</a>
       </div>
       <div className="mini">

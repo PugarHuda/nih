@@ -369,6 +369,42 @@ export default function ClaimPage() {
               </Card>
             )}
 
+            {!isRegistered && (
+              <div
+                className="comic-card p-4"
+                style={{ borderColor: "var(--accent-2)" }}
+              >
+                <span className="kicker" style={{ color: "var(--accent-2)" }}>
+                  if verification keeps failing
+                </span>
+                <p className="text-[12px] mt-2 leading-snug" style={{ color: "var(--ink-2)" }}>
+                  <b>Twitter syndication is rate-limited and only refreshes for
+                  active accounts</b> — for brand-new handles the API often
+                  returns the cached &quot;no tweets yet&quot; response for ~1 hour.
+                  Alternatives:
+                </p>
+                <ul className="mt-2 space-y-1 text-[12px]" style={{ color: "var(--ink-2)" }}>
+                  <li>
+                    <b>GitHub</b>: paste the challenge into your profile README at
+                    <code className="mono ml-1">github.com/{`{user}`}/{`{user}`}/blob/main/README.md</code>
+                    (a personal repo with the same name as your username — GitHub auto-shows it on the profile). Verifier reads it raw, no rate limit.
+                  </li>
+                  <li>
+                    <b>YouTube</b>: paste into your channel description at
+                    <code className="mono ml-1">youtube.com/@{`{handle}`}/about</code>. Description is in the page HTML on every fetch.
+                  </li>
+                  <li>
+                    <b>LinkedIn</b>: paste into the &quot;About&quot; section at
+                    <code className="mono ml-1">linkedin.com/in/{`{slug}`}</code>. Public for non-logged-in fetchers.
+                  </li>
+                  <li>
+                    <b>Twitter (workaround)</b>: post the challenge AND tag at
+                    least one tweet to it (reply, retweet, anything that pings
+                    syndication&apos;s cache). Wait ~3 min then retry.
+                  </li>
+                </ul>
+              </div>
+            )}
             <Card>
               <CardHeader>
                 <CardTitle>{isRegistered ? "3. Claim" : "3. Verify ownership"}</CardTitle>

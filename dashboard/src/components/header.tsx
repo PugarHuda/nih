@@ -7,16 +7,28 @@ import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { ConnectWallet } from "./connect-wallet";
 
-// Slimmer top nav — 5 primary links (Dashboard + the 4 money flows).
-// "Trove" merges into Borrow flow on dashboard. /leaderboard, /install,
-// /onboarding, /docs, /slides reachable via the dashboard's "things-to-do"
-// + footer; not every minor route needs a top-nav slot.
+// Primary top-nav slots (always visible). "Tip" deliberately omitted —
+// tipping is the extension's job + the dashboard's profile page already
+// surfaces tip CTAs.
 const NAV_LINKS = [
   { href: "/dashboard", label: "Dashboard" },
-  { href: "/tip", label: "Tip" },
   { href: "/stream", label: "Subscribe" },
   { href: "/borrow", label: "Borrow" },
   { href: "/earn", label: "Earn" },
+];
+
+// Secondary nav — surfaced via a "More ▾" dropdown so nothing is cut,
+// but the primary bar stays uncluttered.
+const MORE_LINKS = [
+  { href: "/trove", label: "Trove (mint MUSD)" },
+  { href: "/claim", label: "Claim handle" },
+  { href: "/leaderboard", label: "Leaderboard" },
+  { href: "/unlock", label: "Pay-to-unlock" },
+  { href: "/onboarding", label: "Onboarding tour" },
+  { href: "/install", label: "Install extension" },
+  { href: "/faucet", label: "Faucet" },
+  { href: "/docs", label: "Developer docs" },
+  { href: "/slides", label: "Pitch deck" },
 ];
 
 export function Header() {
@@ -74,6 +86,7 @@ export function Header() {
                 {l.label}
               </NavLink>
             ))}
+            <MoreMenu />
           </nav>
 
           <div className="flex items-center gap-2 flex-none">
@@ -124,14 +137,14 @@ export function Header() {
             }}
           >
             <ul className="flex flex-col gap-2">
-              {NAV_LINKS.map((l) => {
+              {[...NAV_LINKS, ...MORE_LINKS].map((l) => {
                 const active = pathname === l.href || pathname.startsWith(l.href + "/");
                 return (
                   <li key={l.href}>
                     <Link
                       href={l.href}
                       onClick={() => setMenuOpen(false)}
-                      className="block px-4 py-3 text-base"
+                      className="block px-4 py-2.5 text-sm"
                       style={{
                         fontFamily: "var(--font-display)",
                         textTransform: "uppercase",
@@ -152,6 +165,101 @@ export function Header() {
         </div>
       )}
     </>
+  );
+}
+
+function MoreMenu() {
+  const [open, setOpen] = useState(false);
+  const pathname = usePathname();
+  const anyActive = MORE_LINKS.some((l) => pathname === l.href || pathname.startsWith(l.href + "/"));
+
+  // Close on outside click + Esc.
+  useEffect(() => {
+    if (!open) return;
+    function onClick(e: MouseEvent) {
+      const t = e.target as HTMLElement;
+      if (!t.closest("[data-more-menu]")) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("click", onClick);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("click", onClick);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div data-more-menu style={{ position: "relative" }}>
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className="transition-colors"
+        style={{
+          background: "transparent",
+          border: 0,
+          padding: 0,
+          font: "inherit",
+          letterSpacing: "0.04em",
+          textTransform: "uppercase",
+          color: anyActive ? "var(--accent-2)" : "var(--ink-2)",
+          cursor: "pointer",
+        }}
+        aria-haspopup="menu"
+        aria-expanded={open}
+      >
+        More ▾
+      </button>
+      {open && (
+        <div
+          role="menu"
+          style={{
+            position: "absolute",
+            top: "calc(100% + 10px)",
+            right: 0,
+            minWidth: 240,
+            background: "var(--paper)",
+            border: "3px solid var(--ink)",
+            boxShadow: "4px 4px 0 0 var(--ink)",
+            padding: 8,
+            zIndex: 50,
+          }}
+        >
+          {MORE_LINKS.map((l) => {
+            const active = pathname === l.href || pathname.startsWith(l.href + "/");
+            return (
+              <Link
+                key={l.href}
+                href={l.href}
+                onClick={() => setOpen(false)}
+                role="menuitem"
+                className="block"
+                style={{
+                  padding: "8px 10px",
+                  fontSize: 12,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.04em",
+                  color: active ? "var(--accent-ink)" : "var(--ink)",
+                  background: active ? "var(--accent)" : "transparent",
+                  border: active ? "2px solid var(--ink)" : "2px solid transparent",
+                  textDecoration: "none",
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) e.currentTarget.style.background = "var(--bg-2)";
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) e.currentTarget.style.background = "transparent";
+                }}
+              >
+                {l.label}
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
   );
 }
 

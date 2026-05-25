@@ -105,7 +105,8 @@ function TipInner() {
             <CardTitle>Confirm your tip</CardTitle>
             <CardDescription>
               You&apos;re tipping <strong>@{username || "—"}</strong> on{" "}
-              <strong>{platform}</strong>
+              <strong>{platform}</strong>. The platform name is what makes the
+              recipient unique on-chain (handleId = keccak256(&quot;{platform}:{username || "…"}&quot;)).
             </CardDescription>
           </CardHeader>
 
