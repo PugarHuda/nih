@@ -7,7 +7,7 @@ import { fetchRecentTips, fetchHandleStats } from "@/lib/goldsky";
 import { formatMUSD } from "@/lib/utils";
 
 /**
- * /slides — 5-slide hackathon pitch deck.
+ * /slides — 6-slide hackathon pitch deck.
  *
  * Keyboard: ←/→ or Space to advance, Esc to exit to home.
  * Mobile: tap left/right halves.
@@ -71,7 +71,7 @@ export default function SlidesPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const n = Number(new URLSearchParams(window.location.search).get("n"));
-    if (Number.isFinite(n) && n >= 1 && n <= 5) setIdx(n - 1);
+    if (Number.isFinite(n) && n >= 1 && n <= 6) setIdx(n - 1);
   }, []);
 
   // Mirror current slide into URL (no router push — replaceState).
@@ -239,7 +239,7 @@ interface Slide {
 function SLIDES(live: LiveStats): Slide[] { return [
   // ───────────────────── 1. Problem
   {
-    kicker: "the problem · 1 / 5",
+    kicker: "the problem · 1 / 6",
     title: "Tipping in Bitcoin is too painful to use.",
     body: (
       <div className="grid sm:grid-cols-2 gap-6">
@@ -264,7 +264,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
 
   // ───────────────────── 2. Solution
   {
-    kicker: "the solution · 2 / 5",
+    kicker: "the solution · 2 / 6",
     title: "Nih — tip MUSD anywhere on the web.",
     body: (
       <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-start">
@@ -298,7 +298,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
 
   // ───────────────────── 3. Demo / traction
   {
-    kicker: "demo · 3 / 5",
+    kicker: "demo · 3 / 6",
     title: "Live on matsnet with real data.",
     body: (
       <div className="space-y-5">
@@ -320,7 +320,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
         </div>
         <div className="grid lg:grid-cols-2 gap-5 items-start">
           <ul className="space-y-2 text-[14px]" style={{ color: "var(--ink-2)" }}>
-            <li>📦 <b>10 contracts</b> on Mezo matsnet · 29/29 tests.</li>
+            <li>📦 <b>7 Nih contracts</b> on Mezo matsnet · 34/34 tests.</li>
             <li>💰 <b>FULL_REAL</b> — every Nih primitive uses real Mezo MUSD (<code className="mono text-[10px]">0xf9BB…0af</code>).</li>
             <li>📊 Goldsky subgraph <b>nih/v4</b> indexing live (numbers above).</li>
             <li>🧩 Plasmo extension (Chrome MV3) on 4 platforms.</li>
@@ -363,7 +363,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
 
   // ───────────────────── 4. Tech / partners
   {
-    kicker: "tech · 4 / 5",
+    kicker: "tech · 4 / 6",
     title: "Built on real Mezo primitives + 6 partners.",
     body: (
       <div className="grid lg:grid-cols-2 gap-6">
@@ -462,7 +462,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
           </p>
           <span className="kicker" style={{ color: "var(--ink-3)" }}>why it fits the MUSD track</span>
           <ul className="mt-2 mb-5 space-y-1.5 text-sm" style={{ color: "var(--ink-2)" }}>
-            <li>✅ <b>Real MUSD end-to-end</b> — 6 contracts (tip · subscribe · borrow · earn · trove · vault) all wired to live Mezo MUSD, not a mock.</li>
+            <li>✅ <b>Real MUSD end-to-end</b> — 7 contracts (registry · tip · subscribe · borrow · earn · trove · vault) all wired to live Mezo MUSD, not a mock.</li>
             <li>✅ <b>Wraps real Mezo primitives</b> — StabilityPool, BorrowerOperations, TroveManager, PriceFeed.</li>
             <li>✅ <b>Shipped, not slides</b> — live dApp + Chrome extension on 4 platforms + Goldsky subgraph, 34/34 tests green.</li>
             <li>✅ <b>New on-chain primitive</b> — handle→wallet registry with wallet-bound social verification, so you tip a username, not a hex address.</li>

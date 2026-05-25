@@ -62,7 +62,13 @@ export function ExtensionBridge() {
 
   if (missingNonce) {
     return (
-      <div className="comic-card fixed top-4 right-4 max-w-xs z-50 p-4">
+      <div
+        className="comic-card max-w-xs p-4"
+        // position:fixed inline — .comic-card sets position:relative which
+        // otherwise wins over Tailwind's `fixed` (same specificity, later in
+        // the sheet) and drops this banner into flow, shoving the navbar down.
+        style={{ position: "fixed", bottom: 16, right: 16, zIndex: 60 }}
+      >
         <span className="kicker" style={{ color: "var(--bad)" }}>extension bridge · refused</span>
         <h3 className="h3 mt-1">Suspicious link</h3>
         <p className="text-[12px] mt-1 leading-snug" style={{ color: "var(--ink-3)" }}>
@@ -77,8 +83,17 @@ export function ExtensionBridge() {
 
   return (
     <div
-      className="comic-card accent fixed top-4 right-4 max-w-xs z-50 p-4"
-      style={{ animation: "nih-pop .35s cubic-bezier(.2,.7,.2,1)" }}
+      className="comic-card accent max-w-xs p-4"
+      // position:fixed inline — .comic-card's position:relative would
+      // otherwise override Tailwind `fixed` and push the navbar down.
+      // Bottom-right so it never overlaps the top nav / connect button.
+      style={{
+        position: "fixed",
+        bottom: 16,
+        right: 16,
+        zIndex: 60,
+        animation: "nih-pop .35s cubic-bezier(.2,.7,.2,1)",
+      }}
     >
       <span className="kicker" style={{ opacity: 0.7 }}>extension bridge</span>
       {synced ? (
