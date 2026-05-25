@@ -70,8 +70,15 @@ export default function StreamPage() {
 
   // The wallet we actually stream to: resolved owner (handle mode) or the
   // typed address. In handle mode an unclaimed handle yields no recipient.
+  // Gate on a non-empty username so a stale resolvedOwner (left over after
+  // the user clears the field — HandlePreview unmounts without resetting it)
+  // can't silently target a handle that's no longer shown.
   const recipient =
-    recipientMode === "handle" ? resolvedOwner ?? "" : addressInput.trim();
+    recipientMode === "handle"
+      ? handleUsername.trim()
+        ? resolvedOwner ?? ""
+        : ""
+      : addressInput.trim();
   const handleUnresolved =
     recipientMode === "handle" && handleUsername.trim().length > 0 && !resolvedOwner;
 
@@ -290,7 +297,10 @@ export default function StreamPage() {
                           <button
                             key={p}
                             type="button"
-                            onClick={() => setPlatform(p)}
+                            onClick={() => {
+                              setPlatform(p);
+                              setResolvedOwner(null); // re-resolve under the new platform
+                            }}
                             className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition ${
                               platform === p
                                 ? "bg-brand text-bg border-brand"
@@ -303,7 +313,10 @@ export default function StreamPage() {
                       </div>
                       <Input
                         value={handleUsername}
-                        onChange={(e) => setHandleUsername(e.target.value.trim().replace(/^@/, ""))}
+                        onChange={(e) => {
+                          setHandleUsername(e.target.value.trim().replace(/^@/, ""));
+                          setResolvedOwner(null); // clear stale resolution until preview re-resolves
+                        }}
                         placeholder={platform === "twitter" ? "creator handle, e.g. hajislamet" : "creator handle"}
                       />
                       {handleUsername.trim() && (
