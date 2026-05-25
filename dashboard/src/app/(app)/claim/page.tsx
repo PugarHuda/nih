@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAccount, useReadContract, useWriteContract } from "wagmi";
 import { keccak256, encodePacked } from "viem";
@@ -278,15 +279,31 @@ export default function ClaimPage() {
                 </div>
 
                 {username && (
-                  <div className="rounded-lg border border-border bg-bg/50 p-4 flex items-center justify-between fade-up">
-                    <div>
-                      <p className="text-xs text-muted">Pending in vault</p>
-                      <p className="text-2xl font-semibold mt-1">{formatMUSD(pendingAmount)} MUSD</p>
+                  <div className="rounded-lg border border-border bg-bg/50 p-4 fade-up">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-muted">
+                          {isRegistered ? "Pending in vault (pre-verification only)" : "Pending in vault"}
+                        </p>
+                        <p className="text-2xl font-semibold mt-1">{formatMUSD(pendingAmount)} MUSD</p>
+                      </div>
+                      {pendingAmount > 0n ? (
+                        <CheckCircle2 className="h-6 w-6 text-accent" />
+                      ) : (
+                        <CheckCircle2 className="h-6 w-6" style={{ color: "var(--ink-3)" }} />
+                      )}
                     </div>
-                    {pendingAmount > 0n ? (
-                      <CheckCircle2 className="h-6 w-6 text-accent" />
-                    ) : (
-                      <AlertCircle className="h-6 w-6 text-muted" />
+                    {isRegistered && pendingAmount === 0n && (
+                      <p
+                        className="text-[12px] mt-3 leading-snug"
+                        style={{ color: "var(--ink-2)" }}
+                      >
+                        <b>This is correct.</b> Your handle is already verified, so new tips
+                        flow straight to <code className="mono">{(resolvedTuple?.[0] ?? "").slice(0, 6)}…{(resolvedTuple?.[0] ?? "").slice(-4)}</code> —
+                        the vault only holds <em>orphan</em> tips that arrived <em>before</em>
+                        anyone claimed the handle. Check your wallet balance / dashboard to see
+                        the latest tips.
+                      </p>
                     )}
                   </div>
                 )}
@@ -451,11 +468,19 @@ export default function ClaimPage() {
             )}
             <Card>
               <CardHeader>
-                <CardTitle>{isRegistered ? "3. Claim" : "3. Verify ownership"}</CardTitle>
+                <CardTitle>
+                  {!isRegistered
+                    ? "3. Verify ownership"
+                    : pendingAmount > 0n
+                    ? "3. Claim"
+                    : "3. You're all set"}
+                </CardTitle>
                 <CardDescription>
-                  {isRegistered
+                  {!isRegistered
+                    ? "We'll fetch your public profile, look for the challenge text, and sign your Tier 1 attestation."
+                    : pendingAmount > 0n
                     ? "All set — claim accumulated tips into your wallet."
-                    : "We'll fetch your public profile, look for the challenge text, and sign your Tier 1 attestation."}
+                    : "Handle verified. Any new tip lands directly in your wallet — nothing to claim here."}
                 </CardDescription>
               </CardHeader>
               <div className="pt-2">
@@ -469,10 +494,10 @@ export default function ClaimPage() {
                       "Verify handle"
                     )}
                   </Button>
-                ) : (
+                ) : pendingAmount > 0n ? (
                   <Button
                     onClick={handleClaim}
-                    disabled={pendingAmount === 0n || step === "claiming"}
+                    disabled={step === "claiming"}
                     className="w-full"
                   >
                     {step === "claiming" ? (
@@ -482,6 +507,12 @@ export default function ClaimPage() {
                     ) : (
                       `Claim ${formatMUSD(pendingAmount)} MUSD`
                     )}
+                  </Button>
+                ) : (
+                  <Button asChild variant="outline" className="w-full">
+                    <Link href={`/c/${platform}/${username}`}>
+                      View your public profile →
+                    </Link>
                   </Button>
                 )}
               </div>
