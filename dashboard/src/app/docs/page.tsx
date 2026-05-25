@@ -250,7 +250,7 @@ curl -X POST https://nih-seven.vercel.app/api/verify \\
           rows={[
             ["GET /api/health", "Network + contract address dump (env mirror)"],
             ["POST /api/verify", "Verifier-signed Tier-1 attestation"],
-            ["POST /api/suggest", "AI tip-amount recommender (OpenRouter + Boar RPC)"],
+            ["POST /api/suggest", "Tippy — AI tip-amount recommender (Claude via OpenRouter + Boar RPC)"],
             ["GET /api/spectrum-stats", "Spectrum Nodes blockchainapi read-through"],
             ["GET /api/og", "OpenGraph card renderer for /c/[platform]/[username]"],
           ]}
@@ -273,8 +273,8 @@ curl -X POST https://nih-seven.vercel.app/api/verify \\
             context loader at <code>/api/suggest</code>.
           </li>
           <li>
-            <b>OpenRouter</b> — LLM aggregator powering the AI tip
-            recommender (default model: <code>openai/gpt-oss-20b:free</code>).
+            <b>OpenRouter</b> — LLM aggregator powering <b>Tippy</b>, our tip-amount
+            recommender (model: <code>anthropic/claude-3.5-haiku</code>).
           </li>
           <li>
             <b>Tenderly</b> — every tx-toast carries a Tenderly simulator

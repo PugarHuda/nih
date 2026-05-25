@@ -19,6 +19,8 @@
 - 💰 **Real Earn**: NihEarn wraps Mezo's StabilityPool for liquidation yield
 - 🏦 **Real Trove + UI**: NihTrove wraps Mezo's BorrowerOperations — open trove via `/trove`, mint MUSD from BTC collateral
 - 🔓 **Pay-to-unlock**: /unlock — MUSD-gated content reveal (consumer dApp showcase)
+- 🤖 **Tippy**: built-in AI tip-amount helper (Claude via OpenRouter, reading on-chain history through Boar) that weighs the creator's typical tip + your generosity
+- 🏅 **Supporter tiers**: tippers earn on-chain Bronze→Diamond status from lifetime MUSD sent — shown on the dashboard + leaderboard
 - ✅ **34/34 contract tests** (including 5 property-style invariant tests)
 - 🚀 **Auto-deploy**: every push to `main` ships to Vercel production
 
@@ -166,7 +168,7 @@ See [`docs/BONUS-PRIZES.md`](docs/BONUS-PRIZES.md) for full proof + endpoints.
 - **Goldsky** ✅ live (`nih/v4`)
 - **Spectrum Nodes** ✅ 3 GraphQL endpoints wired via `/api/spectrum-stats`
 - **Boar Network** ✅ Mainnet RPC powering AI agent at `/api/suggest`
-- **OpenRouter** ✅ LLM aggregator (free model default) for tip recommender
+- **OpenRouter** ✅ LLM aggregator (Claude Haiku) powering **Tippy**, the tip-amount recommender at `/api/suggest`
 - **Tenderly** ✅ Simulator deep-link in every tx-toast
 - **Validation Cloud** ✅ Documented in mainnet plan
 

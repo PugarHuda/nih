@@ -5,11 +5,12 @@
 
 ## M+0 (now, hackathon submission)
 
-- ✅ 10 contracts on Mezo matsnet (FULL_REAL — real Mezo MUSD end-to-end)
-- ✅ NihRouter, NihVault, NihCredit, NihStream, NihEarn (real StabilityPool wrapper), NihTrove (real BorrowerOperations proxy)
-- ✅ 29/29 contract tests + 5 invariant tests
+- ✅ 7 Nih contracts on Mezo matsnet (FULL_REAL — real Mezo MUSD end-to-end)
+- ✅ NihRegistry, NihRouter, NihVault, NihCredit, NihStream, NihEarn (real StabilityPool wrapper), NihTrove (real BorrowerOperations proxy)
+- ✅ 34/34 contract tests (29 functional + 5 invariant)
 - ✅ Plasmo Chrome MV3 extension on Twitter, YouTube, GitHub, LinkedIn
-- ✅ 18-route Next.js dashboard (tip, subscribe, borrow, earn, trove, claim, unlock, profile, leaderboard, docs, onboarding tour, 5-slide pitch deck)
+- ✅ 18-route Next.js dashboard (tip, subscribe, borrow, earn, trove, claim, unlock, profile, leaderboard, docs, onboarding tour, 8-slide pitch deck)
+- ✅ "Tippy" AI tip-amount suggestions (Claude via OpenRouter + Boar on-chain context) + on-chain Supporter tiers for tippers
 - ✅ Goldsky subgraph `nih/v4` indexing live; Spectrum, Boar, OpenRouter, Tenderly, Validation Cloud all wired
 
 ## M+30d — Wave-1 launch (mainnet ready)

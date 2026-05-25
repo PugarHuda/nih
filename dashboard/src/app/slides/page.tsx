@@ -7,7 +7,7 @@ import { fetchRecentTips, fetchHandleStats } from "@/lib/goldsky";
 import { formatMUSD } from "@/lib/utils";
 
 /**
- * /slides — 6-slide hackathon pitch deck.
+ * /slides — 8-slide hackathon pitch deck.
  *
  * Keyboard: ←/→ or Space to advance, Esc to exit to home.
  * Mobile: tap left/right halves.
@@ -71,7 +71,7 @@ export default function SlidesPage() {
   useEffect(() => {
     if (typeof window === "undefined") return;
     const n = Number(new URLSearchParams(window.location.search).get("n"));
-    if (Number.isFinite(n) && n >= 1 && n <= 6) setIdx(n - 1);
+    if (Number.isFinite(n) && n >= 1 && n <= 8) setIdx(n - 1);
   }, []);
 
   // Mirror current slide into URL (no router push — replaceState).
@@ -239,7 +239,7 @@ interface Slide {
 function SLIDES(live: LiveStats): Slide[] { return [
   // ───────────────────── 1. Problem
   {
-    kicker: "the problem · 1 / 6",
+    kicker: "the problem · 1 / 8",
     title: "Tipping in Bitcoin is too painful to use.",
     body: (
       <div className="grid sm:grid-cols-2 gap-6">
@@ -264,7 +264,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
 
   // ───────────────────── 2. Solution
   {
-    kicker: "the solution · 2 / 6",
+    kicker: "the solution · 2 / 8",
     title: "Nih — tip MUSD anywhere on the web.",
     body: (
       <div className="grid lg:grid-cols-[1fr_auto] gap-6 items-start">
@@ -296,9 +296,51 @@ function SLIDES(live: LiveStats): Slide[] { return [
     ),
   },
 
-  // ───────────────────── 3. Demo / traction
+  // ───────────────────── 3. How it works
   {
-    kicker: "demo · 3 / 6",
+    kicker: "how it works · 3 / 8",
+    title: "Four steps. No jargon.",
+    body: (
+      <div className="space-y-5">
+        <p className="text-base max-w-2xl" style={{ color: "var(--ink-2)" }}>
+          The whole loop, the way a first-time user actually experiences it —
+          everything below is a real on-chain action, no mockups.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            { n: "1", h: "Tip a name", d: "See a great post, tap the Nih button, send MUSD to their @handle — no wallet address needed." },
+            { n: "2", h: "It lands (or waits)", d: "Verified creators get it in seconds. Not on Nih yet? It's held safe until they claim it." },
+            { n: "3", h: "Borrow, don't sell", d: "Creators set their tips aside as a deposit and draw cash at 1% a year. Bitcoin stays theirs." },
+            { n: "4", h: "Or earn on it", d: "Park idle MUSD in Mezo's savings pool and it quietly earns real Bitcoin over time." },
+          ].map((s) => (
+            <div key={s.n} className="comic-card p-4">
+              <span
+                className="inline-flex h-8 w-8 items-center justify-center mb-2"
+                style={{
+                  fontFamily: "var(--font-display)",
+                  background: "var(--accent)",
+                  color: "var(--ink)",
+                  border: "2.5px solid var(--ink)",
+                }}
+              >
+                {s.n}
+              </span>
+              <b className="text-[15px] block" style={{ fontFamily: "var(--font-display)" }}>{s.h}</b>
+              <p className="text-[12px] mt-1" style={{ color: "var(--ink-3)" }}>{s.d}</p>
+            </div>
+          ))}
+        </div>
+        <p className="text-[13px]" style={{ color: "var(--ink-3)" }}>
+          Tippy, our built-in helper, even suggests how much to tip — reading the
+          creator&apos;s history and yours, live on-chain.
+        </p>
+      </div>
+    ),
+  },
+
+  // ───────────────────── 4. Demo / traction
+  {
+    kicker: "demo · 4 / 8",
     title: "Live on matsnet with real data.",
     body: (
       <div className="space-y-5">
@@ -363,7 +405,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
 
   // ───────────────────── 4. Tech / partners
   {
-    kicker: "tech · 4 / 6",
+    kicker: "tech · 5 / 8",
     title: "Built on real Mezo primitives + 6 partners.",
     body: (
       <div className="grid lg:grid-cols-2 gap-6">
@@ -399,7 +441,7 @@ function SLIDES(live: LiveStats): Slide[] { return [
 
   // ───────────────────── 5. Market + economics
   {
-    kicker: "market · 5 / 6",
+    kicker: "market · 6 / 8",
     title: "TAM × unit economics.",
     body: (
       <div className="grid lg:grid-cols-2 gap-5">
@@ -425,23 +467,22 @@ function SLIDES(live: LiveStats): Slide[] { return [
           </ul>
         </div>
         <div className="comic-card accent p-5 lg:col-span-2">
-          <span className="kicker" style={{ opacity: 0.8 }}>mainnet roadmap</span>
+          <span className="kicker" style={{ opacity: 0.8 }}>why us · the moat</span>
           <ol
             className="mt-2 grid sm:grid-cols-3 gap-3 text-[12px] leading-snug"
             style={{ color: "rgba(0,0,0,0.78)" }}
           >
             <li>
-              <b>M+30d</b>: deploy contracts to mainnet (Validation Cloud RPC),
-              Chrome Web Store live, 100 verified creators.
+              <b>Three revenue lines, not one</b>: 0.5% tip fee + 1% APR on borrowed
+              tips + a share of Stability Pool yield.
             </li>
             <li>
-              <b>M+90d</b>: OAuth Tier-2 (NextAuth Twitter/GitHub), Wave-2 partners
-              (Lolli, sign-in-with-wallet, Boar dashboards), $50K MUSD volume.
+              <b>Only Mezo can ship this stack</b>: native MUSD + 1% borrow + BTC
+              yield in one place — no other Bitcoin L2 has all three.
             </li>
             <li>
-              <b>M+180d</b>: per-post tip injection (Twitter/GitHub/LinkedIn),
-              creator analytics dashboard, mobile PWA polish, DAO migration of
-              fee treasury.
+              <b>Sticky by design</b>: once a creator borrows against their tips,
+              they keep tipping to keep their credit line alive.
             </li>
           </ol>
         </div>
@@ -449,9 +490,58 @@ function SLIDES(live: LiveStats): Slide[] { return [
     ),
   },
 
-  // ───────────────────── 6. Why Nih wins
+  // ───────────────────── 7. Roadmap / milestones
   {
-    kicker: "closing · 6 / 6",
+    kicker: "roadmap · 7 / 8",
+    title: "From hackathon to mainnet.",
+    body: (
+      <div className="space-y-5">
+        <p className="text-base max-w-2xl" style={{ color: "var(--ink-2)" }}>
+          Today is the <b>M+0</b> snapshot — already shipped and live. Here&apos;s the
+          credible 6-month plan with concrete milestones.
+        </p>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {[
+            {
+              when: "M+0 · now",
+              accent: true,
+              items: ["7 contracts live on matsnet (real MUSD)", "34/34 tests · nih/v4 subgraph", "Extension on 4 platforms", "Tippy AI + Supporter tiers"],
+            },
+            {
+              when: "M+30d · mainnet",
+              items: ["Deploy to Mezo mainnet", "Chrome Web Store listing", "First 100 verified creators", "$5K MUSD tipped"],
+            },
+            {
+              when: "M+90d · creators",
+              items: ["1-click OAuth verify (Tier-2)", "Per-post tips + creator analytics", "Partners: Lolli, Boar, SSO", "1K creators · $50K volume"],
+            },
+            {
+              when: "M+180d · scale",
+              items: ["Mobile PWA polish", "Fee treasury → DAO (veMEZO)", "Cross-chain tipping (x402)", "10K creators · $15K MRR"],
+            },
+          ].map((col) => (
+            <div key={col.when} className={"comic-card p-4" + (col.accent ? " accent" : "")}>
+              <span className="kicker" style={{ opacity: col.accent ? 0.8 : 1 }}>{col.when}</span>
+              <ul className="mt-2 space-y-1 text-[12px] leading-snug" style={{ color: col.accent ? "rgba(0,0,0,0.8)" : "var(--ink-2)" }}>
+                {col.items.map((it, i) => (
+                  <li key={i}>{col.accent ? "✓ " : "· "}{it}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p className="text-[12px]" style={{ color: "var(--ink-3)" }}>
+          Why it&apos;s realistic: Patreon paid out $1B to creators in 4 years — Nih needs
+          0.05% of that pace to hit Year-2 targets, and Mezo&apos;s native MUSD + 1% borrow
+          + BTC yield is a stack no other Bitcoin L2 can ship today.
+        </p>
+      </div>
+    ),
+  },
+
+  // ───────────────────── 8. Why Nih wins
+  {
+    kicker: "closing · 8 / 8",
     title: "Bitcoin spendable. Creators bankable.",
     body: (
       <div className="grid lg:grid-cols-[1.4fr_1fr] gap-6 items-start">
